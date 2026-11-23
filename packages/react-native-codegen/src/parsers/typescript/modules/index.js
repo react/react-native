@@ -29,6 +29,7 @@ const {
   UnsupportedEnumDeclarationParserError,
   UnsupportedGenericParserError,
   UnsupportedObjectPropertyWithIndexerTypeAnnotationParserError,
+  UnsupportedRecordTypeParserError,
   UnsupportedTypeAnnotationParserError,
 } = require('../../errors');
 const {parseObjectProperty} = require('../../parsers-commons');
@@ -47,6 +48,7 @@ const {
   typeAliasResolution,
   typeEnumResolution,
 } = require('../../parsers-primitives');
+const {getTypeArguments} = require('../../utils');
 const {flattenProperties} = require('../components/componentsUtils');
 const {flattenIntersectionType} = require('../parseTopLevelType');
 
@@ -155,6 +157,30 @@ function translateTypeReferenceAnnotation(
         nullable,
         translateTypeAnnotation,
       );
+    }
+    case 'Record': {
+      // Record<string, T> is a dictionary, like {[key: string]: T}
+      const typeArguments = getTypeArguments(typeAnnotation)?.params ?? [];
+      if (
+        typeArguments.length !== 2 ||
+        typeArguments[0].type !== 'TSStringKeyword'
+      ) {
+        throw new UnsupportedRecordTypeParserError(
+          hasteModuleName,
+          typeAnnotation,
+        );
+      }
+      const valueType = translateTypeAnnotation(
+        hasteModuleName,
+        typeArguments[1],
+        types,
+        aliasMap,
+        enumMap,
+        tryParse,
+        cxxOnly,
+        parser,
+      );
+      return emitDictionary(nullable, valueType);
     }
     default: {
       const commonType = emitCommonTypes(

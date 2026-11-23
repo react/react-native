@@ -386,7 +386,7 @@ UIDeviceOrientation RCTDeviceOrientation(void)
 
 CGSize RCTScreenSize(void)
 {
-  static std::atomic<CGSize> cachedSize;
+  static constinit std::atomic<CGSize> cachedSize;
   __block CGSize size = cachedSize.load(std::memory_order_relaxed);
 
   if (CGSizeEqualToSize(size, CGSizeZero)) {

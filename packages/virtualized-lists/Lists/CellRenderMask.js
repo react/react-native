@@ -23,7 +23,7 @@ export class CellRenderMask {
   constructor(numCells: number) {
     invariant(
       numCells >= 0,
-      'CellRenderMask must contain a non-negative number os cells',
+      'CellRenderMask must contain a non-negative number of cells',
     );
 
     this._numCells = numCells;

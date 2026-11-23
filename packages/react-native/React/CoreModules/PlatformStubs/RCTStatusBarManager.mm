@@ -21,6 +21,11 @@ RCT_EXPORT_MODULE()
 {
 }
 
+- (NSString *_Nullable)getVerticalBarEdge
+{
+  return nil;
+}
+
 - (void)setStyle:(NSString *)style animated:(BOOL)animated
 {
 }

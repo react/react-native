@@ -80,7 +80,7 @@ const IOS_TABS = [
 
 const NO_INSETS: ContentInsets = {top: 0, left: 0, bottom: 0, right: 0};
 
-type BackButton = ({onBack: () => void}) => React.Node;
+type BackButton = (v: {onBack: () => void}) => React.Node;
 
 const RNTesterApp = ({
   testList,
@@ -204,7 +204,6 @@ const RNTesterApp = ({
         rawModuleKey,
         `${rawModuleKey}Index`,
         `${rawModuleKey}Example`,
-        // $FlowFixMe[invalid-computed-prop]
       ].filter(k => RNTesterList.Modules[k] != null);
       if (validModuleKeys.length !== 1) {
         if (validModuleKeys.length === 0) {
@@ -220,7 +219,6 @@ const RNTesterApp = ({
       }
 
       const resolvedModuleKey = validModuleKeys[0];
-      // $FlowFixMe[invalid-computed-prop]
       const exampleModule = RNTesterList.Modules[resolvedModuleKey];
 
       if (exampleKey != null) {
@@ -274,7 +272,6 @@ const RNTesterApp = ({
   }
 
   const activeModule =
-    // $FlowFixMe[invalid-computed-prop]
     activeModuleKey != null ? RNTesterList.Modules[activeModuleKey] : null;
   const activeModuleExample =
     activeModuleExampleKey != null

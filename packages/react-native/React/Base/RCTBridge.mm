@@ -6,7 +6,6 @@
  */
 
 #import "RCTBridge.h"
-#import "RCTBridge+Inspector.h"
 #import "RCTBridge+Private.h"
 
 #import <objc/runtime.h>
@@ -24,8 +23,6 @@
 #import "RCTInspectorUtils.h"
 #import "RCTJSThread.h"
 #import "RCTLog.h"
-#import "RCTModuleData.h"
-#import "RCTPausedInDebuggerOverlayController.h"
 #import "RCTPerformanceLogger.h"
 #import "RCTReloadCommand.h"
 #import "RCTUtils.h"
@@ -33,8 +30,22 @@
 #if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 static NSMutableArray<Class> *RCTModuleClasses;
 static dispatch_queue_t RCTModuleClassesSyncQueue;
+
+// RCTGetModuleClasses may run before (or without) any RCTRegisterModule call, e.g. in
+// apps that register no legacy modules, so both entry points must initialize the registry.
+static void RCTEnsureModuleClassesRegistry()
+{
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    RCTModuleClasses = [NSMutableArray new];
+    RCTModuleClassesSyncQueue =
+        dispatch_queue_create("com.facebook.react.ModuleClassesSyncQueue", DISPATCH_QUEUE_CONCURRENT);
+  });
+}
+
 NSArray<Class> *RCTGetModuleClasses(void)
 {
+  RCTEnsureModuleClassesRegistry();
   __block NSArray<Class> *result;
   dispatch_sync(RCTModuleClassesSyncQueue, ^{
     result = [RCTModuleClasses copy];
@@ -144,12 +155,7 @@ void RCTRegisterModule(Class moduleClass)
   if (RCTAreLegacyLogsEnabled() && ![getCoreModuleClasses() containsObject:[moduleClass description]]) {
     addModuleLoadedWithOldArch([moduleClass description]);
   }
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    RCTModuleClasses = [NSMutableArray new];
-    RCTModuleClassesSyncQueue =
-        dispatch_queue_create("com.facebook.react.ModuleClassesSyncQueue", DISPATCH_QUEUE_CONCURRENT);
-  });
+  RCTEnsureModuleClassesRegistry();
 
   RCTAssert(
       [moduleClass conformsToProtocol:@protocol(RCTBridgeModule)],
@@ -181,16 +187,6 @@ NSString *RCTBridgeModuleNameForClass(Class cls)
   }
 
   return RCTDropReactPrefixes(name);
-}
-
-BOOL RCTTurboModuleEnabled(void)
-{
-  return YES;
-}
-
-void RCTEnableTurboModule(BOOL enabled)
-{
-  // The new Architecture is enabled by default and we are ignoring changes to the TurboModule system.
 }
 
 #ifndef RCT_REMOVE_LEGACY_MODULE_INTEROP
@@ -229,34 +225,7 @@ void RCTSetTurboModuleInteropBridgeProxyLogLevel(RCTBridgeProxyLoggingLevel logL
   bridgeProxyLoggingLevel = logLevel;
 }
 
-BOOL kDispatchAccessibilityManagerInitOntoMain = NO;
-BOOL RCTUIManagerDispatchAccessibilityManagerInitOntoMain(void)
-{
-  return kDispatchAccessibilityManagerInitOntoMain;
-}
-
-void RCTUIManagerSetDispatchAccessibilityManagerInitOntoMain(BOOL enabled)
-{
-  kDispatchAccessibilityManagerInitOntoMain = enabled;
-}
-
 @implementation RCTBridge
-- (instancetype)initWithDelegate:(id<RCTBridgeDelegate>)delegate launchOptions:(NSDictionary *)launchOptions
-{
-  return self;
-}
-
-- (instancetype)initWithBundleURL:(NSURL *)bundleURL
-                   moduleProvider:(__strong RCTBridgeModuleListProvider)block
-                    launchOptions:(NSDictionary *)launchOptions
-{
-  return self;
-}
-
-- (void)enqueueJSCall:(NSString *)moduleDotMethod args:(NSArray *)args
-{
-}
-
 - (void)enqueueJSCall:(NSString *)module
                method:(NSString *)method
                  args:(NSArray *)args
@@ -292,35 +261,8 @@ void RCTUIManagerSetDispatchAccessibilityManagerInitOntoMain(BOOL enabled)
   return nil;
 }
 
-- (NSArray *)modulesConformingToProtocol:(Protocol *)protocol
-{
-  return @[];
-}
-
-- (BOOL)moduleIsInitialized:(Class)moduleClass
-{
-  return NO;
-}
-
-- (void)reload __attribute__((deprecated("Use RCTReloadCommand instead")))
-{
-}
-
-- (void)reloadWithReason:(NSString *)reason __attribute__((deprecated("Use RCTReloadCommand instead")))
-{
-}
-
 - (void)onFastRefresh
 {
-}
-
-- (void)requestReload __attribute__((deprecated("Use RCTReloadCommand instead")))
-{
-}
-
-- (BOOL)isBatchActive
-{
-  return NO;
 }
 
 - (void)enqueueCallback:(NSNumber *)cbID args:(NSArray *)args

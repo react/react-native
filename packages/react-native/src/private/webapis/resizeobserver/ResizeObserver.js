@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {ResizeObserverId} from './internals/ResizeObserverManager';
 import type ResizeObserverEntry from './ResizeObserverEntry';
 

@@ -198,9 +198,7 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
     const itemSeparator: React.Node = isValidElement(ItemSeparatorComponent)
       ? // $FlowFixMe[incompatible-type]
         ItemSeparatorComponent
-      : // $FlowFixMe[incompatible-type]
-        ItemSeparatorComponent && (
-          // $FlowFixMe[incompatible-type]
+      : ItemSeparatorComponent && (
           // $FlowFixMe[not-a-component]
           <ItemSeparatorComponent {...this.state.separatorProps} />
         );

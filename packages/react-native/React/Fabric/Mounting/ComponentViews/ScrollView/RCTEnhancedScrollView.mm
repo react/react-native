@@ -15,6 +15,7 @@
 @implementation RCTEnhancedScrollView {
   __weak id<UIScrollViewDelegate> _publicDelegate;
   BOOL _isSetContentOffsetDisabled;
+  UIEdgeInsets _safeAreaContentInsetAdjustment;
 }
 
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key
@@ -111,7 +112,84 @@
   if (contentSize.height < boundsSize.height) {
     top = (boundsSize.height - contentSize.height) * 0.5f;
   }
-  self.contentInset = UIEdgeInsetsMake(top, left, top, left);
+  self.baseContentInset = UIEdgeInsetsMake(top, left, top, left);
+}
+
+- (void)setBaseContentInset:(UIEdgeInsets)baseContentInset
+{
+  _baseContentInset = baseContentInset;
+  [self applyContentInsetPreservingExternalInsets:NO];
+}
+
+- (void)setHorizontal:(BOOL)horizontal
+{
+  _horizontal = horizontal;
+  if (_padsContentForSafeArea) {
+    [self applyContentInsetPreservingExternalInsets:YES];
+  }
+}
+
+- (void)setPadsContentForSafeArea:(BOOL)padsContentForSafeArea
+{
+  if (_padsContentForSafeArea == padsContentForSafeArea) {
+    return;
+  }
+  _padsContentForSafeArea = padsContentForSafeArea;
+  [self applyContentInsetPreservingExternalInsets:YES];
+}
+
+- (void)adjustedContentInsetDidChange
+{
+  [super adjustedContentInsetDidChange];
+  if (_padsContentForSafeArea) {
+    [self applyContentInsetPreservingExternalInsets:YES];
+  }
+}
+
+/*
+ * Cancels UIKit's safe area inset across the scrollable axis while the content is padded for it. Only this
+ * correction is replaced; native controls can independently adjust the content inset.
+ */
+- (void)applyContentInsetPreservingExternalInsets:(BOOL)preserveExternalInsets
+{
+  UIEdgeInsets current = self.contentInset;
+  UIEdgeInsets adjustment = UIEdgeInsetsZero;
+  if (_padsContentForSafeArea) {
+    UIEdgeInsets adjusted = self.adjustedContentInset;
+    if (_horizontal) {
+      adjustment.top = adjusted.top - current.top;
+      adjustment.bottom = adjusted.bottom - current.bottom;
+    } else {
+      adjustment.left = adjusted.left - current.left;
+      adjustment.right = adjusted.right - current.right;
+    }
+  }
+  UIEdgeInsets inset = preserveExternalInsets ? current : _baseContentInset;
+  UIEdgeInsets previousAdjustment = preserveExternalInsets ? _safeAreaContentInsetAdjustment : UIEdgeInsetsZero;
+  UIEdgeInsets contentInset = UIEdgeInsetsMake(
+      inset.top + (previousAdjustment.top - adjustment.top),
+      inset.left + (previousAdjustment.left - adjustment.left),
+      inset.bottom + (previousAdjustment.bottom - adjustment.bottom),
+      inset.right + (previousAdjustment.right - adjustment.right));
+  // Updating contentInset can synchronously call adjustedContentInsetDidChange.
+  _safeAreaContentInsetAdjustment = adjustment;
+  if (UIEdgeInsetsEqualToEdgeInsets(contentInset, current)) {
+    return;
+  }
+  // Content pinned to the leading edge across the scrollable axis stays pinned, as UIKit keeps it when it changes the
+  // adjusted content inset itself.
+  UIEdgeInsets before = self.adjustedContentInset;
+  self.contentInset = contentInset;
+  UIEdgeInsets after = self.adjustedContentInset;
+  CGPoint contentOffset = self.contentOffset;
+  if (_horizontal && contentOffset.y <= -before.top) {
+    contentOffset.y = -after.top;
+  } else if (!_horizontal && contentOffset.x <= -before.left) {
+    contentOffset.x = -after.left;
+  }
+  if (!CGPointEqualToPoint(contentOffset, self.contentOffset)) {
+    self.contentOffset = contentOffset;
+  }
 }
 
 - (void)setContentOffset:(CGPoint)contentOffset

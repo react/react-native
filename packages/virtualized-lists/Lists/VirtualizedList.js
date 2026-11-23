@@ -612,7 +612,6 @@ class VirtualizedList extends StateSafePureComponent<
     }
 
     if (__DEV__ && !this._hasWarned.flexWrap) {
-      // $FlowFixMe[underconstrained-implicit-instantiation]
       const flatStyles = StyleSheet.flatten(this.props.contentContainerStyle);
       if (flatStyles != null && flatStyles.flexWrap === 'wrap') {
         console.warn(
@@ -1191,7 +1190,6 @@ class VirtualizedList extends StateSafePureComponent<
         ListHeaderComponent
       ) : (
         // $FlowFixMe[not-a-component]
-        // $FlowFixMe[incompatible-type]
         <ListHeaderComponent />
       );
       cells.push(
@@ -1225,7 +1223,6 @@ class VirtualizedList extends StateSafePureComponent<
           ListEmptyComponent
         ) : (
           // $FlowFixMe[not-a-component]
-          // $FlowFixMe[incompatible-type]
           <ListEmptyComponent />
         )
       ) as any;
@@ -1314,7 +1311,6 @@ class VirtualizedList extends StateSafePureComponent<
         ListFooterComponent
       ) : (
         // $FlowFixMe[not-a-component]
-        // $FlowFixMe[incompatible-type]
         <ListFooterComponent />
       );
       cells.push(
@@ -1471,7 +1467,7 @@ class VirtualizedList extends StateSafePureComponent<
     }
   }
 
-  _cellRefs: {[string]: null | CellRenderer<any>} = {};
+  _cellRefs: {[key: string]: null | CellRenderer<any>} = {};
   _fillRateHelper: FillRateHelper;
   _listMetrics: ListMetricsAggregator = new ListMetricsAggregator();
   _footerLength = 0;
@@ -1479,9 +1475,10 @@ class VirtualizedList extends StateSafePureComponent<
   _hasTriggeredInitialScrollToIndex = false;
   _hasInteracted = false;
   _hasMore = false;
-  _hasWarned: {[string]: boolean} = {};
+  _hasWarned: {[key: string]: boolean} = {};
   _headerLength = 0;
   _hiPriInProgress: boolean = false; // flag to prevent infinite hiPri cell limit update
+  _hiPriUpdateId: number = 0;
   _indicesToKeys: Map<number, string> = new Map();
   _isAncestorSuppressed: boolean = false;
   _lastFocusedCellKey: ?string = null;
@@ -1552,14 +1549,11 @@ class VirtualizedList extends StateSafePureComponent<
           '`',
       );
       return (
-        // $FlowFixMe[prop-missing] Invalid prop usage
-        // $FlowFixMe[incompatible-use]
         <ScrollView
           {...props}
           refreshControl={
             props.refreshControl == null ? (
               <RefreshControl
-                // $FlowFixMe[incompatible-type]
                 refreshing={props.refreshing}
                 onRefresh={onRefresh}
                 progressViewOffset={props.progressViewOffset}
@@ -1571,8 +1565,6 @@ class VirtualizedList extends StateSafePureComponent<
         />
       );
     } else {
-      // $FlowFixMe[prop-missing] Invalid prop usage
-      // $FlowFixMe[incompatible-use]
       return <ScrollView {...props} />;
     }
   };
@@ -1660,6 +1652,7 @@ class VirtualizedList extends StateSafePureComponent<
             this._notifyCrossOrientationChildren();
           }
         },
+        // $FlowFixMe[missing-local-annot]
         error => {
           console.warn(
             "VirtualizedList: Encountered an error while measuring a list's" +
@@ -2094,7 +2087,12 @@ class VirtualizedList extends StateSafePureComponent<
         clearTimeout(this._updateCellsToRenderTimeoutID);
         this._updateCellsToRenderTimeoutID = null;
       }
-      this._updateCellsToRender();
+      const hiPriUpdateId = ++this._hiPriUpdateId;
+      this._updateCellsToRender(() => {
+        if (this._hiPriUpdateId === hiPriUpdateId) {
+          this._hiPriInProgress = false;
+        }
+      });
       return;
     } else {
       if (this._updateCellsToRenderTimeoutID == null) {
@@ -2200,7 +2198,7 @@ class VirtualizedList extends StateSafePureComponent<
     this.props.onMomentumScrollEnd && this.props.onMomentumScrollEnd(e);
   };
 
-  _updateCellsToRender = () => {
+  _updateCellsToRender = (onUpdateComplete?: () => void) => {
     this._updateViewableItems(this.props, this.state.cellsAroundViewport);
     this._notifyCrossOrientationChildren();
 
@@ -2217,9 +2215,7 @@ class VirtualizedList extends StateSafePureComponent<
       this._listMetrics.getContentLength() > 0 &&
       VirtualizedList._computeCellsUpdate(this, this.props, this.state) == null
     ) {
-      // No update means no componentDidUpdate to reset this, which would
-      // push the next hiPri update onto the batching timer.
-      this._hiPriInProgress = false;
+      onUpdateComplete?.();
       return;
     }
 
@@ -2227,7 +2223,7 @@ class VirtualizedList extends StateSafePureComponent<
     this.setState<'cellsAroundViewport' | 'renderMask'>((state, props) => {
       this._hasPendingStateUpdate = false;
       return VirtualizedList._computeCellsUpdate(this, props, state);
-    });
+    }, onUpdateComplete);
   };
 
   _createViewToken = (

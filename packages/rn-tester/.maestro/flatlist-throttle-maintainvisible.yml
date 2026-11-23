@@ -2,7 +2,7 @@
 # Throttle affects timing but not final delta: should be ~44px
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

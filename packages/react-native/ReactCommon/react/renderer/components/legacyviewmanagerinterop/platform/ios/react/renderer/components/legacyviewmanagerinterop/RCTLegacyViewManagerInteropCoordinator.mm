@@ -14,7 +14,6 @@
 #include <React/RCTBridgeProxy.h>
 #include <React/RCTComponentData.h>
 #include <React/RCTEventDispatcherProtocol.h>
-#include <React/RCTModuleData.h>
 #include <React/RCTModuleMethod.h>
 #include <React/RCTUIManager.h>
 #include <React/RCTUIManagerUtils.h>

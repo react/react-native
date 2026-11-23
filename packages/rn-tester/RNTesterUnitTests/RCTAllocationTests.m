@@ -8,10 +8,22 @@
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 
-#import <RCTTest/RCTTestRunner.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTInvalidating.h>
 #import <React/RCTModuleMethod.h>
+
+#define RCT_RUN_RUNLOOP_WHILE(CONDITION)                                                            \
+  {                                                                                                 \
+    NSDate *timeout = [NSDate dateWithTimeIntervalSinceNow:30];                                     \
+    NSRunLoop *runloop = [NSRunLoop mainRunLoop];                                                   \
+    while ((CONDITION)) {                                                                           \
+      [runloop runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.01]]; \
+      if ([timeout timeIntervalSinceNow] <= 0) {                                                    \
+        XCTFail(@"Runloop timed out before condition was met");                                     \
+        break;                                                                                      \
+      }                                                                                             \
+    }                                                                                               \
+  }
 
 @interface AllocationTestModule : NSObject <RCTBridgeModule, RCTInvalidating>
 

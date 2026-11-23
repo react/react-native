@@ -36,7 +36,7 @@ function resolveBoxStyle(
   right: number | string,
   top: number | string,
 }> {
-  const flatStyle: ?Readonly<{[string]: unknown}> = flattenStyle(style);
+  const flatStyle: ?Readonly<{[key: string]: unknown}> = flattenStyle(style);
   if (flatStyle == null) {
     return null;
   }

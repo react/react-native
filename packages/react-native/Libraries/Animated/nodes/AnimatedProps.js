@@ -37,12 +37,16 @@ type TargetView = {
 type TargetViewInstance = React.ElementRef<React.ElementType>;
 
 function createAnimatedProps(
-  inputProps: {[string]: unknown},
+  inputProps: {[key: string]: unknown},
   allowlist: ?AnimatedPropsAllowlist,
-): [ReadonlyArray<string>, ReadonlyArray<AnimatedNode>, {[string]: unknown}] {
+): [
+  ReadonlyArray<string>,
+  ReadonlyArray<AnimatedNode>,
+  {[key: string]: unknown},
+] {
   const nodeKeys: Array<string> = [];
   const nodes: Array<AnimatedNode> = [];
-  const props: {[string]: unknown} = {};
+  const props: {[key: string]: unknown} = {};
 
   const keys = Object.keys(inputProps);
   for (let ii = 0, length = keys.length; ii < length; ii++) {
@@ -99,12 +103,12 @@ export default class AnimatedProps extends AnimatedNode {
   _callback: () => void;
   _nodeKeys: ReadonlyArray<string>;
   _nodes: ReadonlyArray<AnimatedNode>;
-  _props: {[string]: unknown};
+  _props: {[key: string]: unknown};
   _target: ?TargetView = null;
   _rootTag: ?RootTag = undefined;
 
   constructor(
-    inputProps: {[string]: unknown},
+    inputProps: {[key: string]: unknown},
     callback: () => void,
     allowlist?: ?AnimatedPropsAllowlist,
     rootTag?: RootTag,
@@ -121,7 +125,7 @@ export default class AnimatedProps extends AnimatedNode {
 
   // $FlowFixMe[unclear-type]
   __getValue(): any {
-    const props: {[string]: unknown} = {};
+    const props: {[key: string]: unknown} = {};
 
     const keys = Object.keys(this._props);
     for (let ii = 0, length = keys.length; ii < length; ii++) {
@@ -147,7 +151,7 @@ export default class AnimatedProps extends AnimatedNode {
    */
   // $FlowFixMe[unclear-type]
   __getValueWithStaticProps(staticProps: any): any {
-    const props: {[string]: unknown} = {...staticProps};
+    const props: {[key: string]: unknown} = {...staticProps};
 
     const keys = Object.keys(staticProps);
     for (let ii = 0, length = keys.length; ii < length; ii++) {
@@ -158,7 +162,7 @@ export default class AnimatedProps extends AnimatedNode {
         const staticStyle = staticProps.style;
         const flatStaticStyle = flattenStyle(staticStyle);
         if (maybeNode instanceof AnimatedStyle) {
-          const mutableStyle: {[string]: unknown} =
+          const mutableStyle: {[key: string]: unknown} =
             flatStaticStyle == null
               ? {}
               : flatStaticStyle === staticStyle
@@ -198,9 +202,8 @@ export default class AnimatedProps extends AnimatedNode {
     return tuples;
   }
 
-  // $FlowFixMe[unclear-type]
   __getAnimatedValue(): Object {
-    const props: {[string]: unknown} = {};
+    const props: {[key: string]: unknown} = {};
 
     const nodeKeys = this._nodeKeys;
     const nodes = this._nodes;
@@ -267,6 +270,9 @@ export default class AnimatedProps extends AnimatedNode {
   setNativeView(instance: TargetViewInstance): void {
     if (this._target?.instance === instance) {
       return;
+    }
+    if (this.__isNative && this._target != null) {
+      this.#disconnectAnimatedView(this._target);
     }
     const target = (this._target = {instance, connectedViewTag: null});
     if (this.__isNative) {
@@ -359,10 +365,9 @@ export default class AnimatedProps extends AnimatedNode {
     }
   }
 
-  // $FlowFixMe[unclear-type]
   __getNativeConfig(): Object {
     const platformConfig = this.__getPlatformConfig();
-    const propsConfig: {[string]: number} = {};
+    const propsConfig: {[key: string]: number} = {};
 
     const nodeKeys = this._nodeKeys;
     const nodes = this._nodes;
@@ -384,10 +389,8 @@ export default class AnimatedProps extends AnimatedNode {
 
 // Supported versions of JSC do not implement the newer Object.hasOwn. Remove
 // this shim when they do.
-// $FlowFixMe[method-unbinding]
 const _hasOwnProp = Object.prototype.hasOwnProperty;
 const hasOwn: (obj: Readonly<{...}>, prop: string) => boolean =
-  // $FlowFixMe[method-unbinding]
   /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
    * unsoundness in flow */
   Object.hasOwn ?? ((obj, prop) => _hasOwnProp.call(obj, prop));

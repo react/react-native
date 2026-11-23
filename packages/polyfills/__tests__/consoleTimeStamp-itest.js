@@ -16,7 +16,6 @@ describe('console.timeStamp()', () => {
   });
 
   it("doesn't throw when label is not specified", () => {
-    // $FlowExpectedError[incompatible-call] not passing label intentionally
     expect(() => console.timeStamp()).not.toThrow();
   });
 

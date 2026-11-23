@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4b66991416806affd46aab79e36c4a45>>
+ * @generated SignedSource<<a1bae43cd758186d0ef2bd0bbc0784ee>>
  */
 
 /**
@@ -29,10 +29,6 @@ class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlags
  public:
     ReactNativeFeatureFlagsOverridesOSSCanary() = default;
 
-  bool cxxNativeAnimatedEnabled() override {
-    return true;
-  }
-
   bool enableAccessibilityOrder() override {
     return true;
   }
@@ -53,15 +49,23 @@ class ReactNativeFeatureFlagsOverridesOSSCanary : public ReactNativeFeatureFlags
     return true;
   }
 
-  bool fuseboxFrameRecordingEnabled() override {
+  bool fixProgrammaticScrollMomentumEventsIOS() override {
     return true;
   }
 
-  bool fuseboxWebSocketEventsEnabled() override {
+  bool fixTextInlineViewLineHeight() override {
+    return true;
+  }
+
+  bool optimizedAnimatedPropUpdates() override {
     return true;
   }
 
   bool useNativeViewConfigsInBridgelessMode() override {
+    return true;
+  }
+
+  bool useSharedAnimatedBackend() override {
     return true;
   }
 

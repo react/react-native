@@ -48,16 +48,15 @@ async function stopMetroServer(metroServer: MetroServer): Promise<void> {
     });
   });
 
-  // $FlowFixMe[method-unbinding] Node 18.2+ API
   if (typeof metroServer.closeIdleConnections === 'function') {
     /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
      * unsoundness in flow */
     metroServer.closeIdleConnections();
   }
 
+  let timeoutId;
   const timeout = new Promise<void>(resolve => {
-    setTimeout(() => {
-      // $FlowFixMe[method-unbinding] Node 18.2+ API
+    timeoutId = setTimeout(() => {
       if (typeof metroServer.closeAllConnections === 'function') {
         /* $FlowFixMe[incompatible-type] Error exposed after fixing this typing
          * unsoundness in flow */
@@ -67,5 +66,9 @@ async function stopMetroServer(metroServer: MetroServer): Promise<void> {
     }, SHUTDOWN_TIMEOUT_MS);
   });
 
-  await Promise.race([closed, timeout]);
+  try {
+    await Promise.race([closed, timeout]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }

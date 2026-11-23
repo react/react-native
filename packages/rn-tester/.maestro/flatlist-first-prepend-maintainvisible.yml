@@ -2,7 +2,7 @@
 # Single prepend with fixed-height items: delta should be ~44px (40px height + 4px margin)
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 # Change to portrait

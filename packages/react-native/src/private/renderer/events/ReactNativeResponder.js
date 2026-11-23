@@ -53,7 +53,6 @@ function getHandler(
 
 // Temporary cast until ReadOnlyNode extends EventTarget ungated.
 function asEventTarget(node: ReadOnlyElement): ReadOnlyNodeWithEventTarget {
-  // $FlowFixMe[incompatible-type]
   const eventTarget: ReadOnlyNodeWithEventTarget = node;
   return eventTarget;
 }
@@ -87,7 +86,6 @@ function getResponderParentElement(
 ): ReadOnlyElement | null {
   // `ReadOnlyElement` extends `EventTarget` at runtime when the new
   // event-dispatching pipeline is enabled (the only case this module runs in).
-  // $FlowFixMe[incompatible-type]
   const eventTarget: EventTarget = node;
   const parent = getEventTargetParent(eventTarget);
   if (parent instanceof ReadOnlyElement) {
@@ -165,7 +163,7 @@ const startDependencies = ['topTouchStart'];
 const moveDependencies = ['topTouchMove'];
 const endDependencies = ['topTouchCancel', 'topTouchEnd'];
 
-const responderEventTypes: {[string]: DispatchConfig} = {
+const responderEventTypes: {[key: string]: DispatchConfig} = {
   /**
    * On a `touchStart`/`mouseDown`, is it desired that this element become the
    * responder?
@@ -263,7 +261,7 @@ const responderEventTypes: {[string]: DispatchConfig} = {
 function negotiateResponder(
   target: ReadOnlyElement,
   topLevelType: string,
-  nativeEvent: {[string]: unknown},
+  nativeEvent: {[key: string]: unknown},
 ): ReadOnlyElement | null {
   const shouldSetEventName = getShouldSetEventName(topLevelType);
 
@@ -372,7 +370,7 @@ export function rethrowCaughtError(): void {
 function dispatchResponderEvent(
   node: ReadOnlyElement,
   eventName: string,
-  nativeEvent: {[string]: unknown},
+  nativeEvent: {[key: string]: unknown},
   eventTarget: ReadOnlyElement | null,
 ): unknown {
   const dispatchConfig = responderEventTypes[eventName];
@@ -416,7 +414,7 @@ function dispatchResponderEvent(
 function canTriggerTransfer(
   topLevelType: string,
   target: ReadOnlyElement | null,
-  nativeEvent: {[string]: unknown},
+  nativeEvent: {[key: string]: unknown},
 ): boolean {
   return (
     target != null &&
@@ -433,7 +431,7 @@ function canTriggerTransfer(
  * longer any touches that started inside of descendants of the current
  * responder.
  */
-function noResponderTouches(nativeEvent: {[string]: unknown}): boolean {
+function noResponderTouches(nativeEvent: {[key: string]: unknown}): boolean {
   const touches = nativeEvent.touches;
   return !Array.isArray(touches) || touches.length === 0;
 }
@@ -591,8 +589,8 @@ function isResponderRelevantTopLevelType(topLevelType: string): boolean {
  */
 export function processResponderEvent(
   topLevelType: string,
-  eventTarget: EventTarget | null,
-  nativeEvent: {[string]: unknown},
+  eventTarget: ?EventTarget,
+  nativeEvent: {[key: string]: unknown},
 ): void {
   // Fast path: if this event isn't one the responder system cares about and
   // there is no active responder, exit immediately. This is the dominant case

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<bb06401cf84ea9f84603f4c19ebf87fc>>
+ * @generated SignedSource<<2b7964e40792fa3438a17bfeb92e4140>>
  */
 
 /**
@@ -42,7 +42,6 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool disableViewPreallocationAndroid() = 0;
   virtual bool enableAccessibilityOrder() = 0;
   virtual bool enableAccumulatedUpdatesInRawPropsAndroid() = 0;
-  virtual bool enableAndroidAutoOffscreenCompositingForElevation() = 0;
   virtual bool enableAndroidTextMeasurementOptimizations() = 0;
   virtual bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid() = 0;
   virtual bool enableBridgelessArchitecture() = 0;
@@ -57,15 +56,16 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableFabricLogs() = 0;
   virtual bool enableFlexboxAutoMinSizeInStrictMode() = 0;
   virtual bool enableFollowUpMountItemDispatchAndroid() = 0;
-  virtual bool enableFontScaleChangesUpdatingLayout() = 0;
   virtual bool enableIOSCompressedTextFrameAdjustment() = 0;
   virtual bool enableIOSTextBaselineOffsetPerLine() = 0;
   virtual bool enableIOSViewClipToPaddingBox() = 0;
   virtual bool enableImagePrefetchingAndroid() = 0;
   virtual bool enableImageTransparentTintColor() = 0;
   virtual bool enableImmediateUpdateModeForContentOffsetChanges() = 0;
+  virtual bool enableImmediateUpdateModeForScrollContentView() = 0;
   virtual bool enableImperativeEvents() = 0;
   virtual bool enableImperativeFocus() = 0;
+  virtual bool enableInteractableResponderViews() = 0;
   virtual bool enableInteropViewManagerClassLookUpOptimizationIOS() = 0;
   virtual bool enableIntersectionObserverByDefault() = 0;
   virtual bool enableKeyEvents() = 0;
@@ -89,6 +89,8 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableVirtualViewContainerStateExperimental() = 0;
   virtual bool fixBorderlessRippleAndroid() = 0;
   virtual bool fixMappingOfEventPrioritiesBetweenFabricAndReact() = 0;
+  virtual bool fixProgrammaticScrollMomentumEventsIOS() = 0;
+  virtual bool fixTextInlineViewLineHeight() = 0;
   virtual bool fixTextLayoutOnPixelDensityChange() = 0;
   virtual bool fixYogaFlexBasisFitContentInMainAxis() = 0;
   virtual bool fuseboxAssertSingleHostState() = 0;

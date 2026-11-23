@@ -324,6 +324,7 @@ class TouchableNativeFeedback extends React.Component<
         accessibilityLanguage: this.props.accessibilityLanguage,
         accessibilityLabel: accessibilityLabel,
         accessibilityRole: this.props.accessibilityRole,
+        role: this.props.role,
         accessibilityState: _accessibilityState,
         accessibilityActions: this.props.accessibilityActions,
         onAccessibilityAction: this.props.onAccessibilityAction,
@@ -362,7 +363,7 @@ class TouchableNativeFeedback extends React.Component<
     this.state.pressability.configure(this._createPressabilityConfig());
   }
 
-  componentDidMount(): unknown {
+  componentDidMount(): void {
     this.state.pressability.configure(this._createPressabilityConfig());
   }
 
@@ -379,9 +380,7 @@ const getBackgroundProp =
         useForeground && TouchableNativeFeedback.canUseNativeForeground()
           ? {nativeForegroundAndroid: background}
           : {nativeBackgroundAndroid: background}
-    : /* $FlowFixMe[missing-local-annot] The type annotation(s) required by
-       * Flow's LTI update could not be added via codemod */
-      (background, useForeground: boolean) => null;
+    : (background, useForeground: boolean) => null;
 
 TouchableNativeFeedback.displayName = 'TouchableNativeFeedback';
 

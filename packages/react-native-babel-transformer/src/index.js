@@ -100,7 +100,6 @@ const getBabelRC = (function () {
     // If a babel config file doesn't exist in the project then
     // the default preset for react-native will be used instead.
     // $FlowFixMe[incompatible-use] `extends` is missing in null or undefined.
-    // $FlowFixMe[incompatible-type] `extends` is missing in null or undefined.
     if (!babelRC.extends) {
       const {
         babelRuntimeModuleName,
@@ -199,7 +198,6 @@ const transform /*: BabelTransformer['transform'] */ = ({
   src,
   plugins,
 }) => {
-  // $FlowFixMe[prop-missing] Remove suppression after next Metro release
   const {babelRuntimeModuleName, babelRuntimeVersion} = options;
   const babelConfig /*: BabelCoreOptions */ = {
     // ES modules require sourceType='module' but OSS may not always want that
@@ -211,7 +209,6 @@ const transform /*: BabelTransformer['transform'] */ = ({
       name: 'metro',
       bundler: 'metro',
       platform: options.platform,
-      // $FlowFixMe[prop-missing] Remove suppression after next Metro release
       inlinePlatform: options.inlinePlatform,
       experimentalImportSupport: options.experimentalImportSupport,
       unstable_transformProfile: options.unstable_transformProfile,
@@ -220,6 +217,8 @@ const transform /*: BabelTransformer['transform'] */ = ({
       ...(babelRuntimeModuleName != null && babelRuntimeVersion != null
         ? {babelRuntimeModuleName, enableBabelRuntime: babelRuntimeVersion}
         : null),
+      // Whether `metro:inline` specifiers will resolve.
+      supportsInlineModules: options.supportsInlineModules,
     },
     ast: true,
 

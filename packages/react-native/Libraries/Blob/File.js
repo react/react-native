@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 'use strict';
 
 import type {BlobOptions} from './BlobTypes';
@@ -42,6 +40,7 @@ class File extends Blob {
   /**
    * Name of the file.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get name(): string {
     invariant(this.data.name != null, 'Files must have a name set.');
     return this.data.name;
@@ -50,6 +49,7 @@ class File extends Blob {
   /*
    * Last modified time of the file.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get lastModified(): number {
     return this.data.lastModified || 0;
   }

@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {ArrayLike} from '../utils/ArrayLikeUtils';
 import type DOMRectReadOnly from './DOMRectReadOnly';
 
@@ -19,7 +17,6 @@ import {setPlatformObject} from '../webidl/PlatformObjects';
 // IMPORTANT: The Flow type definition for this module is defined in `DOMRectList.js.flow`
 // because Flow only supports indexers in classes in declaration files.
 
-// $FlowFixMe[incompatible-type] Flow doesn't understand [Symbol.iterator]() {} and thinks this class doesn't implement the Iterable interface.
 export default class DOMRectList implements Iterable<DOMRectReadOnly> {
   #length: number;
 
@@ -42,6 +39,7 @@ export default class DOMRectList implements Iterable<DOMRectReadOnly> {
     this.#length = elements.length;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get length(): number {
     return this.#length;
   }
@@ -58,8 +56,7 @@ export default class DOMRectList implements Iterable<DOMRectReadOnly> {
     return arrayLike[index];
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow does not support computed properties in classes.
-  [Symbol.iterator](): Iterator<DOMRectReadOnly> {
+  [Symbol.iterator](): IteratorObject<DOMRectReadOnly> {
     return createValueIterator(this);
   }
 }
@@ -87,5 +84,4 @@ export const DOMRectList_public: typeof DOMRectList =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 DOMRectList_public.prototype = DOMRectList.prototype;

@@ -80,7 +80,7 @@ export const aspectRatioAttribute: AnyAttributeType = nativeCSSParsing
   ? true
   : {process: processAspectRatio};
 
-const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
+const ReactNativeStyleAttributes: {[key: string]: AnyAttributeType, ...} = {
   /**
    * Layout
    */
@@ -88,8 +88,14 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   alignItems: true,
   alignSelf: true,
   aspectRatio: aspectRatioAttribute,
+  borderBlockEndWidth: true,
+  borderBlockStartWidth: true,
+  borderBlockWidth: true,
   borderBottomWidth: true,
   borderEndWidth: true,
+  borderInlineEndWidth: true,
+  borderInlineStartWidth: true,
+  borderInlineWidth: true,
   borderLeftWidth: true,
   borderRightWidth: true,
   borderStartWidth: true,
@@ -241,6 +247,9 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   borderEndColor: colorAttribute,
   borderEndEndRadius: true,
   borderEndStartRadius: true,
+  borderInlineColor: colorAttribute,
+  borderInlineEndColor: colorAttribute,
+  borderInlineStartColor: colorAttribute,
   borderLeftColor: colorAttribute,
   borderRadius: true,
   borderRightColor: colorAttribute,

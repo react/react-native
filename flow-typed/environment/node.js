@@ -56,6 +56,7 @@ type buffer$ToJSONRet = {
   ...
 };
 
+// $FlowFixMe[incompatible-type]
 declare class Buffer extends Uint8Array {
   constructor(
     value: Array<number> | number | string | Buffer | ArrayBuffer,
@@ -71,6 +72,7 @@ declare class Buffer extends Uint8Array {
     sourceStart?: number,
     sourceEnd?: number,
   ): number;
+  // $FlowFixMe[incompatible-type]
   entries(): IteratorObject<[number, number]>;
   equals(otherBuffer: Buffer): boolean;
   fill(
@@ -116,6 +118,7 @@ declare class Buffer extends Uint8Array {
   readUIntBE(offset: number, byteLength: number, noAssert?: boolean): number;
   readUIntLE(offset: number, byteLength: number, noAssert?: boolean): number;
   slice(start?: number, end?: number): this;
+  subarray(start?: number, end?: number): this;
   swap16(): Buffer;
   swap32(): Buffer;
   swap64(): Buffer;
@@ -423,7 +426,7 @@ type child_process$spawnSyncRet<T extends string | Buffer> = Readonly<{
   // TODO: subprocess.status may be null in case of error or signal
   status: number,
   signal: string | null,
-  error: Error | void,
+  error: Error | undefined,
 }>;
 
 type child_process$spawnSyncOpts = Readonly<{
@@ -536,9 +539,9 @@ declare module 'child_process' {
         ? StreamForChannel<FD>
         : E extends string
           ? null
-          : E[FD] extends child_process$StdioPipe
+          : NonNullable<E>[FD] extends child_process$StdioPipe
             ? StreamForChannel<FD>
-            : E[FD] extends string | number
+            : NonNullable<E>[FD] extends string | number
               ? null
               : null | StreamForChannel<FD>
       : PipeByDefault extends true
@@ -1106,13 +1109,13 @@ declare module 'crypto' {
     salt: string | Buffer,
     keylen: number,
     options:
-      | {|N?: number, r?: number, p?: number, maxmem?: number|}
-      | {|
+      | {N?: number, r?: number, p?: number, maxmem?: number}
+      | {
           cost?: number,
           blockSize?: number,
           parallelization?: number,
           maxmem?: number,
-        |},
+        },
     callback: (err: ?Error, derivedKey: Buffer) => void,
   ): void;
   declare function scrypt(
@@ -1126,13 +1129,13 @@ declare module 'crypto' {
     salt: string | Buffer,
     keylen: number,
     options?:
-      | {|N?: number, r?: number, p?: number, maxmem?: number|}
-      | {|
+      | {N?: number, r?: number, p?: number, maxmem?: number}
+      | {
           cost?: number,
           blockSize?: number,
           parallelization?: number,
           maxmem?: number,
-        |},
+        },
   ): Buffer;
   declare function privateDecrypt(
     private_key: crypto$key,
@@ -1627,7 +1630,7 @@ declare module 'fs' {
   ): void;
   declare function unlinkSync(path: string): void;
 
-  declare type RmDirOptions = {|
+  declare type RmDirOptions = {
     /**
      * If an `EBUSY`, `EMFILE`, `ENFILE`, `ENOTEMPTY`, or
      * `EPERM` error is encountered, Node.js will retry the operation with a linear
@@ -1653,7 +1656,7 @@ declare module 'fs' {
      * @default 100
      */
     retryDelay?: number | void,
-  |};
+  };
 
   declare function rmdir(
     path: PathLike,
@@ -1666,12 +1669,12 @@ declare module 'fs' {
   ): void;
   declare function rmdirSync(path: PathLike, options?: RmDirOptions): void;
 
-  declare type RmOptions = {|
+  declare type RmOptions = {
     /**
      * When `true`, exceptions will be ignored if `path` does not exist.
      * @default false
      */
-    force?: boolean | void,
+    force?: boolean | undefined,
     /**
      * If an `EBUSY`, `EMFILE`, `ENFILE`, `ENOTEMPTY`, or
      * `EPERM` error is encountered, Node.js will retry the operation with a linear
@@ -1680,20 +1683,20 @@ declare module 'fs' {
      * `true`.
      * @default 0
      */
-    maxRetries?: number | void,
+    maxRetries?: number | undefined,
     /**
      * If `true`, perform a recursive directory removal. In
      * recursive mode, operations are retried on failure.
      * @default false
      */
-    recursive?: boolean | void,
+    recursive?: boolean | undefined,
     /**
      * The amount of time in milliseconds to wait between retries.
      * This option is ignored if the `recursive` option is not `true`.
      * @default 100
      */
-    retryDelay?: number | void,
-  |};
+    retryDelay?: number | undefined,
+  };
 
   /**
    * Asynchronously removes files and directories (modeled on the standard POSIX `rm`utility). No arguments other than a possible exception are given to the
@@ -2422,8 +2425,8 @@ declare module 'fs' {
       options?: GlobOptions<WithFileTypes>,
     ): Node$Conditional<
       WithFileTypes,
-      AsyncIterator<Dirent>,
-      AsyncIterator<string>,
+      AsyncIteratorObject<Dirent>,
+      AsyncIteratorObject<string>,
     >,
     lchmod(path: FSPromisePath, mode: number): Promise<void>,
     lchown(path: FSPromisePath, uid: number, guid: number): Promise<void>,
@@ -2533,7 +2536,7 @@ declare module 'fs' {
         maxQueue?: number,
         overflow?: 'ignore' | 'throw',
       }>,
-    ): AsyncIterator<{eventType: string, filename: ?string}>,
+    ): AsyncIteratorObject<{eventType: string, filename: ?string}>,
     write<T extends Buffer | Uint8Array>(
       filehandle: FileHandle,
       buffer: T,
@@ -2546,7 +2549,7 @@ declare module 'fs' {
       ...
     }>,
     writeFile(
-      FSPromisePath | FileHandle,
+      file: FSPromisePath | FileHandle,
       data: string | Buffer | Uint8Array,
       options?: string | WriteOptions,
     ): Promise<void>,
@@ -2720,7 +2723,7 @@ declare class https$Server extends tls$Server {
   timeout: number;
 }
 
-type requestOptions = {|
+type requestOptions = {
   auth?: string,
   defaultPort?: number,
   family?: number,
@@ -2735,7 +2738,7 @@ type requestOptions = {|
   setHost?: boolean,
   socketPath?: string,
   timeout?: number,
-|};
+};
 
 type http$requestOptions = {
   ...requestOptions,
@@ -3340,9 +3343,9 @@ declare module 'perf_hooks' {
     setResourceTimingBufferSize(maxSize: number): void;
     readonly timeOrigin: number;
     timerify<TArgs extends Iterable<unknown>, TReturn>(
-      fn: (...TArgs) => TReturn,
+      fn: (...args: TArgs) => TReturn,
       options?: Readonly<{histogram?: RecordableHistogram}>,
-    ): (...TArgs) => TReturn;
+    ): (...args: TArgs) => TReturn;
     toJSON(): unknown;
   }
 
@@ -3521,11 +3524,11 @@ declare module 'node:sqlite' {
     ): boolean;
   }
 
-  declare export var constants: {|
+  declare export var constants: {
     readonly SQLITE_CHANGESET_OMIT: number,
     readonly SQLITE_CHANGESET_REPLACE: number,
     readonly SQLITE_CHANGESET_ABORT: number,
-  |};
+  };
 }
 
 type readline$InterfaceCompleter = (
@@ -3534,7 +3537,7 @@ type readline$InterfaceCompleter = (
   | [Array<string>, string]
   | ((
       line: string,
-      ((err: ?Error, data: [Array<string>, string]) => void),
+      callback: (err: ?Error, data: [Array<string>, string]) => void,
     ) => void);
 
 declare class readline$Interface extends events$EventEmitter {
@@ -3543,7 +3546,7 @@ declare class readline$Interface extends events$EventEmitter {
   prompt(preserveCursor?: boolean): void;
   question(
     query: string,
-    optionsOrCallback: {|signal?: AbortSignal|} | ((answer: string) => void),
+    optionsOrCallback: {signal?: AbortSignal} | ((answer: string) => void),
     callback?: (answer: string) => void,
   ): void;
   resume(): void;
@@ -3744,6 +3747,7 @@ type duplexStreamOptions = writableStreamOptions &
     writableHighWaterMark?: number,
     ...
   };
+// prettier-ignore
 declare class stream$Duplex extends stream$Readable mixins stream$Writable {
   // This is an unusual class at runtime, per the docs it "prototypally extends from Readable,
   // and then parasitically from Writable." Its static methods have incompatible signatures
@@ -3752,13 +3756,10 @@ declare class stream$Duplex extends stream$Readable mixins stream$Writable {
 
   // $FlowFixMe[incompatible-exact] See above
   // $FlowFixMe[incompatible-type] See above
-  static fromWeb(
-    pair: Readonly<{
-      readable: ReadableStream,
-      writable: WritableStream,
-    }>,
-    options?: duplexStreamOptions,
-  ): this;
+  static fromWeb(pair: Readonly<{
+    readable: ReadableStream,
+    writable: WritableStream,
+  }>, options?: duplexStreamOptions): this;
 
   // $FlowFixMe[incompatible-type] See above
   static toWeb(streamDuplex: stream$Duplex): {
@@ -4097,7 +4098,7 @@ type tls$Certificate = {
   fingerprint256: string,
   ext_key_usage?: Array<string>,
   subjectaltname?: string,
-  infoAccess?: {[string]: Array<string>, ...},
+  infoAccess?: {[key: string]: Array<string>, ...},
   issuerCertificate?: tls$Certificate,
   ...
 };
@@ -4271,7 +4272,7 @@ declare module 'timers/promises' {
     delay?: number,
     value?: T,
     options?: TimerOptions,
-  ): AsyncIterator<T>;
+  ): AsyncIteratorObject<T>;
 
   declare export var scheduler: Readonly<{
     wait(delay: number, options?: TimerOptions): Promise<void>,
@@ -4280,7 +4281,7 @@ declare module 'timers/promises' {
 }
 
 declare module 'url' {
-  declare type Url = {|
+  declare type Url = {
     protocol: string | null,
     slashes: boolean | null,
     auth: string | null,
@@ -4289,21 +4290,21 @@ declare module 'url' {
     hostname: string | null,
     hash: string | null,
     search: string | null,
-    query: string | null | {[string]: string, ...},
+    query: string | null | {[key: string]: string, ...},
     pathname: string | null,
     path: string | null,
     href: string,
-  |};
+  };
 
-  declare type UrlWithStringQuery = {|
+  declare type UrlWithStringQuery = {
     ...Url,
     query: string | null,
-  |};
+  };
 
-  declare type UrlWithParsedQuery = {|
+  declare type UrlWithParsedQuery = {
     ...Url,
-    query: {[string]: string, ...},
-  |};
+    query: {[key: string]: string, ...},
+  };
 
   declare function parse(
     urlStr: string,
@@ -4344,7 +4345,7 @@ declare module 'url' {
         | string
         | URLSearchParams
         | Array<[string, string]>
-        | {[string]: string, ...},
+        | {[key: string]: string, ...},
     ): void;
     append(name: string, value: string): void;
     delete(name: string, value?: void): void;
@@ -4493,30 +4494,30 @@ type util$ParseArgsOptionToValue<TOption> = TOption['type'] extends 'boolean'
     : empty;
 
 type util$ParseArgsOptionsToValues<TOptions> = {
-  [key in keyof TOptions]: util$ParseArgsOptionToValue<{|
+  [key in keyof TOptions]: util$ParseArgsOptionToValue<{
     multiple: false,
     ...TOptions[key],
-  |}>,
+  }>,
 };
 
 type util$ParseArgsToken =
-  | {|
+  | {
       kind: 'option',
       index: number,
       name: string,
       rawName: string,
       value?: string,
       inlineValue?: boolean,
-    |}
-  | {|
+    }
+  | {
       kind: 'positional',
       index: number,
       value: string,
-    |}
-  | {|
+    }
+  | {
       kind: 'option-terminator',
       index: number,
-    |};
+    };
 
 declare module 'util' {
   declare function debuglog(section: string): (data: any, ...args: any) => void;
@@ -4534,7 +4535,7 @@ declare module 'util' {
   declare function stripVTControlCharacters(str: string): string;
 
   declare function parseArgs<
-    TOptions extends {readonly [string]: util$ParseArgsOption} = {},
+    TOptions extends {readonly [key: string]: util$ParseArgsOption} = {},
   >(config: {
     args?: Array<string>,
     options?: TOptions,
@@ -4548,7 +4549,7 @@ declare module 'util' {
   };
 
   declare function parseArgs<
-    TOptions extends {[string]: util$ParseArgsOption} = {},
+    TOptions extends {[key: string]: util$ParseArgsOption} = {},
   >(config: {
     args?: Array<string>,
     options?: TOptions,
@@ -4835,7 +4836,7 @@ type zlib$brotliOptions = {
   finishFlush?: number,
   chunkSize?: number,
   params?: {
-    [number]: boolean | number,
+    [key: number]: boolean | number,
     ...
   },
   maxOutputLength?: number,
@@ -4847,7 +4848,7 @@ type zlib$zstdOptions = {
   finishFlush?: number,
   chunkSize?: number,
   params?: {
-    [number]: boolean | number,
+    [key: number]: boolean | number,
     ...
   },
   maxOutputLength?: number,
@@ -5611,6 +5612,26 @@ type process$CPUUsage = {
   ...
 };
 
+type process$ResourceUsage = {
+  fsRead: number,
+  fsWrite: number,
+  involuntaryContextSwitches: number,
+  ipcReceived: number,
+  ipcSent: number,
+  majorPageFault: number,
+  maxRSS: number,
+  minorPageFault: number,
+  sharedMemorySize: number,
+  signalsCount: number,
+  swappedOut: number,
+  systemCPUTime: number,
+  unsharedDataSize: number,
+  unsharedStackSize: number,
+  userCPUTime: number,
+  voluntaryContextSwitches: number,
+  ...
+};
+
 declare class Process extends events$EventEmitter {
   abort(): void;
   allowedNodeEnvironmentFlags: Set<string>;
@@ -5623,22 +5644,22 @@ declare class Process extends events$EventEmitter {
   cwd(): string;
   disconnect?: () => void;
   domain?: domain$Domain;
-  env: {[key: string]: string | void, ...};
+  env: {[key: string]: string | undefined, ...};
   emitWarning(warning: string | Error): void;
   emitWarning(
     warning: string,
-    typeOrCtor: string | ((...empty) => unknown),
+    typeOrCtor: string | ((...args: empty) => unknown),
   ): void;
   emitWarning(
     warning: string,
     type: string,
-    codeOrCtor: string | ((...empty) => unknown),
+    codeOrCtor: string | ((...args: empty) => unknown),
   ): void;
   emitWarning(
     warning: string,
     type: string,
     code: string,
-    ctor?: (...empty) => unknown,
+    ctor?: (...args: empty) => unknown,
   ): void;
   execArgv: Array<string>;
   execPath: string;
@@ -5668,7 +5689,7 @@ declare class Process extends events$EventEmitter {
     },
     rss: () => number,
   };
-  nextTick: <T>(cb: (...T) => unknown, ...T) => void;
+  nextTick: <T>(cb: (...args: T) => unknown, ...args: T) => void;
   pid: number;
   platform: string;
   release: {
@@ -5679,6 +5700,7 @@ declare class Process extends events$EventEmitter {
     libUrl: string,
     ...
   };
+  resourceUsage(): process$ResourceUsage;
   send?: (
     message: any,
     sendHandleOrCallback?: net$Socket | net$Server | any,
@@ -5780,7 +5802,7 @@ declare module 'worker_threads' {
     off(event: string | Symbol, listener: (...args: any[]) => void): this;
   }
 
-  declare type WorkerOptions = {|
+  declare type WorkerOptions = {
     env?: any,
     eval?: boolean,
     workerData?: any,
@@ -5788,7 +5810,7 @@ declare module 'worker_threads' {
     stdout?: boolean,
     stderr?: boolean,
     execArgv?: string[],
-  |};
+  };
 
   declare class Worker extends events$EventEmitter {
     readonly stdin: stream$Writable | null;

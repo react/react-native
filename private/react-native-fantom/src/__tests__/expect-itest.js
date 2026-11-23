@@ -8,6 +8,7 @@
  * @format
  */
 
+import fantomExpect from '../../runtime/expect';
 import * as React from 'react';
 
 function ensureError(fn: () => void): void {
@@ -20,7 +21,226 @@ function ensureError(fn: () => void): void {
   throw new Error(`Expected function to throw, but it didn't`);
 }
 
+function assertMatcherResult(assertion: () => void, pass: boolean): void {
+  let threw = false;
+  try {
+    assertion();
+  } catch (error: unknown) {
+    if (!(error instanceof Error)) {
+      throw new Error(`Unexpected thrown value: ${String(error)}`);
+    }
+    threw = true;
+  }
+  expect(threw).toBe(!pass);
+}
+
+function assertCallerBlame(stack: ?string, caller: string): void {
+  const firstJavaScriptFrame = stack
+    ?.split('\n')
+    .find(line => /^\s*at .+ \(.+:\d+:\d+\)$/.test(line));
+  expect(firstJavaScriptFrame).toContain(caller);
+}
+
+function failEqualityAtCaller(): void {
+  expect(0).toBe(-0);
+}
+
+function failNullAtCaller(): void {
+  expect(null).not.toBeNull();
+}
+
+function failCloseToAtCaller(): void {
+  expect(Infinity).not.toBeCloseTo(Infinity);
+}
+
+function failNumericAtCaller(): void {
+  expect('1').not.toBeCloseTo(1);
+}
+
 describe('expect', () => {
+  const equalityCases: Array<[unknown, unknown, boolean]> = [
+    [NaN, NaN, true],
+    [NaN, 0, false],
+    [0, NaN, false],
+    [0, -0, false],
+    [-0, 0, false],
+    [0, 0, true],
+    [-0, -0, true],
+    [1, 1, true],
+    [1, '1', false],
+  ];
+  for (const [index, [received, expected, pass]] of equalityCases.entries()) {
+    test(`toBe edge case ${index}`, () => {
+      assertMatcherResult(() => expect(received).toBe(expected), pass);
+      assertMatcherResult(() => expect(received).not.toBe(expected), !pass);
+      assertMatcherResult(
+        () => fantomExpect(received).not.not.toBe(expected),
+        pass,
+      );
+    });
+  }
+
+  const nullCases: Array<[unknown, boolean]> = [
+    [null, true],
+    [undefined, false],
+    [0, false],
+    [false, false],
+    ['', false],
+  ];
+  for (const [index, [received, pass]] of nullCases.entries()) {
+    test(`toBeNull edge case ${index}`, () => {
+      assertMatcherResult(() => expect(received).toBeNull(), pass);
+      assertMatcherResult(() => expect(received).not.toBeNull(), !pass);
+    });
+  }
+
+  const closeToCases: Array<[number, number, number, boolean]> = [
+    [0.004, 0, 2, true],
+    [0.005, 0, 2, false],
+    [0.006, 0, 2, false],
+    [-0.004, 0, 2, true],
+    [-0.005, 0, 2, false],
+    [0.49, 0, 0, true],
+    [0.5, 0, 0, false],
+    [0.0004, 0, 3, true],
+    [0.0005, 0, 3, false],
+    [4, 0, -1, true],
+    [5, 0, -1, false],
+    [0.2 + 0.1, 0.3, 2, true],
+    [0, -0, 2, true],
+    [NaN, NaN, 2, false],
+    [NaN, 0, 2, false],
+    [0, NaN, 2, false],
+    [Infinity, Infinity, 2, true],
+    [-Infinity, -Infinity, 2, true],
+    [Infinity, -Infinity, 2, false],
+    [-Infinity, Infinity, 2, false],
+    [Infinity, 1, 2, false],
+    [1, Infinity, 2, false],
+    [-Infinity, 1, 2, false],
+    [1, -Infinity, 2, false],
+  ];
+  for (const [
+    index,
+    [received, expected, precision, pass],
+  ] of closeToCases.entries()) {
+    test(`toBeCloseTo edge case ${index}`, () => {
+      assertMatcherResult(
+        () => expect(received).toBeCloseTo(expected, precision),
+        pass,
+      );
+      assertMatcherResult(
+        () => expect(received).not.toBeCloseTo(expected, precision),
+        !pass,
+      );
+    });
+  }
+
+  test('toBeCloseTo defaults to two digits of precision', () => {
+    assertMatcherResult(() => expect(0.004).toBeCloseTo(0), true);
+    assertMatcherResult(() => expect(0.005).not.toBeCloseTo(0), true);
+    assertMatcherResult(() => expect(0.005).toBeCloseTo(0), false);
+    assertMatcherResult(() => expect(0.004).not.toBeCloseTo(0), false);
+  });
+
+  const nonnumericCases: Array<unknown> = [
+    '1',
+    null,
+    undefined,
+    true,
+    [],
+    Object(1),
+    Symbol('1'),
+  ];
+  for (const [index, value] of nonnumericCases.entries()) {
+    test(`toBeCloseTo rejects nonnumeric argument ${index}`, () => {
+      const message = `Expected ${String(value)} to be a number but it was a ${typeof value}`;
+      expect(() => expect(value).toBeCloseTo(1)).toThrow(message);
+      expect(() => expect(value).not.toBeCloseTo(1)).toThrow(message);
+      expect(() => fantomExpect(1).toBeCloseTo(value)).toThrow(message);
+      expect(() => fantomExpect(1).not.toBeCloseTo(value)).toThrow(message);
+    });
+  }
+
+  test('toBeCloseTo does not coerce received values', () => {
+    const valueOf = jest.fn(() => 1);
+    expect(() => expect({valueOf}).toBeCloseTo(1)).toThrow(
+      'Expected [object Object] to be a number but it was a object',
+    );
+    expect(valueOf).not.toHaveBeenCalled();
+  });
+
+  const blameCases: Array<[() => void, string, string]> = [
+    [
+      failEqualityAtCaller,
+      'failEqualityAtCaller',
+      'Expected 0 but received 0.',
+    ],
+    [failNullAtCaller, 'failNullAtCaller', 'Expected null not to be null'],
+    [
+      failCloseToAtCaller,
+      'failCloseToAtCaller',
+      'Expected Infinity not to be close to Infinity',
+    ],
+    [
+      failNumericAtCaller,
+      'failNumericAtCaller',
+      'Expected 1 to be a number but it was a string',
+    ],
+  ];
+  for (const [assertion, caller, message] of blameCases) {
+    test(`preserves native matcher blame at ${caller}`, () => {
+      let failure: ?Error;
+      try {
+        assertion();
+      } catch (error: unknown) {
+        if (!(error instanceof Error)) {
+          throw new Error(`Unexpected thrown value: ${String(error)}`);
+        }
+        failure = error;
+      }
+      if (failure == null) {
+        throw new Error('Expected matcher failure');
+      }
+      expect(failure.name).toBe('Error');
+      expect(failure.message).toBe(message);
+      const stack = failure.stack;
+      assertCallerBlame(stack, caller);
+      expect(failure.stack).toBe(stack);
+
+      // Legacy Hermes can retain native construction frames before the first
+      // JavaScript frame. Exercise that prefix through the real error class.
+      failure.stack = [
+        `Error: ${message}`,
+        '    at construct (native)',
+        '    at apply (native)',
+        ...Array.from(
+          {length: 6},
+          (_, index) => `    at helper${index} (expect.js:1:1)`,
+        ),
+        `    at ${caller} (expect-itest.js:1:1)`,
+      ].join('\n');
+      const nativePrefixedStack = failure.stack;
+      assertCallerBlame(nativePrefixedStack, caller);
+      expect(failure.stack).toBe(nativePrefixedStack);
+    });
+  }
+
+  test('caller blame rejects earlier JavaScript helper frames', () => {
+    ensureError(() =>
+      assertCallerBlame(
+        [
+          'Error: matcher failed',
+          '    at construct (native)',
+          '    at apply (native)',
+          '    at toBe (expect.js:1:1)',
+          '    at caller (expect-itest.js:1:1)',
+        ].join('\n'),
+        'caller',
+      ),
+    );
+  });
+
   test('toThrow', () => {
     expect(() => {
       throw new Error();

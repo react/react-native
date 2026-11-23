@@ -48,6 +48,29 @@ class TextLayoutManagerStartOverhangTest {
 
   @Test
   @Config(sdk = [35])
+  fun `EXACTLY mode keeps advance based width measurement for LTR text`() {
+    val layout =
+        createLayout(
+            YogaMeasureMode.EXACTLY,
+            text = SpannableString("Just listed"),
+            ellipsizeMode = TextUtils.TruncateAt.END,
+            maxNumberOfLines = 1,
+        )
+
+    assertThat(getBooleanLayoutProperty(layout, "getUseBoundsForWidth")).isFalse()
+    assertThat(getBooleanLayoutProperty(layout, "getShiftDrawingOffsetForStartOverhang")).isFalse()
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun `EXACTLY mode enables start overhang support for mixed LTR and RTL text`() {
+    val layout = createLayout(YogaMeasureMode.EXACTLY, text = SpannableString("Hello שלום"))
+
+    assertThat(getBooleanLayoutProperty(layout, "getUseBoundsForWidth")).isTrue()
+  }
+
+  @Test
+  @Config(sdk = [35])
   fun `RTL right overhang is rounded up to reserve whole pixels`() {
     val layout = mock<Layout>()
     whenever(layout.lineCount).thenReturn(2)

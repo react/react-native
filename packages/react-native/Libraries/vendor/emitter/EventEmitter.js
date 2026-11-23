@@ -50,7 +50,9 @@ type Registry<
     Record<string, ReadonlyArray<UnsafeEventObject>>,
   >,
 > = {
-  [K in keyof TEventToArgsMap]: Set<Registration<TEventToArgsMap[K]>>,
+  -readonly [K in keyof TEventToArgsMap]?: Set<
+    Registration<TEventToArgsMap[K]>,
+  >,
 };
 
 /**
@@ -99,11 +101,10 @@ export default class EventEmitter<
         'EventEmitter.addListener(...): 2nd argument must be a function.',
       );
     }
-    const registrations = allocate<
-      TEventToArgsMap,
-      keyof TEventToArgsMap,
-      TEventToArgsMap[TEvent],
-    >(this.#registry, eventType);
+    const registrations = allocate<TEventToArgsMap, keyof TEventToArgsMap>(
+      this.#registry,
+      eventType,
+    );
     const registration: Registration<TEventToArgsMap[TEvent]> = {
       context,
       listener,
@@ -147,7 +148,6 @@ export default class EventEmitter<
       // $FlowFixMe[incompatible-type]
       this.#registry = Object.create(null);
     } else {
-      // $FlowFixMe[cannot-write]
       delete this.#registry[eventType];
     }
   }
@@ -177,7 +177,6 @@ function allocate<
     registry[eventType];
   if (registrations == null) {
     registrations = new Set();
-    // $FlowFixMe[cannot-write]
     registry[eventType] = registrations;
   }
   return registrations;

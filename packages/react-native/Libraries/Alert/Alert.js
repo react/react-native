@@ -205,7 +205,7 @@ class Alert {
             (btn.text != null && btn.text !== '') ||
             index < callbackOrButtons.length - 1
           ) {
-            const btnDef: {[number]: string} = {};
+            const btnDef: {[key: number]: string} = {};
             btnDef[index] = btn.text || '';
             buttons.push(btnDef);
           }

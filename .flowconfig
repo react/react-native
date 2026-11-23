@@ -5,6 +5,9 @@ packages/react-native/sdks/**
 ; Ignore fb_internal modules
 packages/react-native/src/fb_internal/**
 
+; Ignore files excluded from the open-source repository
+**/*.fb.*
+
 ; Ignore the codegen e2e tests
 packages/react-native-codegen/e2e/__test_fixtures__/modules/NativeEnumTurboModule.js
 
@@ -40,6 +43,7 @@ flow-typed/
 packages/react-native/flow/
 
 [options]
+experimental.tslib_syntax=true
 builtin_lib=core-only
 
 emoji=true
@@ -68,13 +72,31 @@ module.name_mapper='^react-native/src/fb_internal/\(.*\)$' -> '<PROJECT_ROOT>/pa
 # `src/fb_internal/*` stay importable.
 module.name_mapper='^react-native/\(Libraries\|src/private\|src/types\)/.*$' -> 'react-native-deep-import-is-not-part-of-the-public-api'
 module.name_mapper='^@react-native/dev-middleware$' -> '<PROJECT_ROOT>/packages/dev-middleware'
-module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\|xml\|ktx\|heic\|heif\)$' -> '<PROJECT_ROOT>/packages/react-native/Libraries/Image/RelativeImageStub'
+module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\|xml\|ktx\|heic\|ttf\|heif\)$' -> '<PROJECT_ROOT>/packages/react-native/Libraries/Image/RelativeImageStub'
 
 module.system.haste.module_ref_prefix=m#
 
 react.runtime=automatic
 
 ban_spread_key_props=true
+
+experimental.react_managed_attributes=true
+experimental.jsx_intrinsic_elements=true
+experimental.require_function_type_param_name=true
+experimental.require_dictionary_key_label=true
+experimental.ban_explicit_exact_object_types=true
+experimental.strict_es6_import_export=true
+experimental.export_star_excludes_default=true
+
+unsuppressable_error_codes=invalid-type-cast-syntax
+unsuppressable_error_codes=deprecated-utility
+unsuppressable_error_codes=missing-function-type-param-name
+unsuppressable_error_codes=missing-dictionary-key-label
+unsuppressable_error_codes=unsupported-exact-object-type
+unsuppressable_error_codes=react-rule-hook-naming-convention
+unsuppressable_error_codes=react-rule-hook-definitely-not-in-component-or-hook
+unsuppressable_error_codes=react-rule-hook-mixed-with-non-hook
+unsuppressable_error_codes=react-rule-hook-non-hook-syntax
 
 [lints]
 sketchy-null-number=warn
@@ -97,4 +119,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.337.0
+^0.342.0

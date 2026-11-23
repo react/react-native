@@ -8,9 +8,46 @@
  * @format
  */
 
+import type {
+  ____TransformStyle_Internal,
+  ImageStyle,
+  NativeColorValue,
+  TextStyle,
+} from '../StyleSheet/StyleSheetTypes';
+import type {
+  InterpolationConfigSupportedOutputType,
+  InterpolationConfigType,
+} from './nodes/AnimatedInterpolation';
+import type {AnimatedNodeConfig} from './nodes/AnimatedNode';
 import type {AnimatedPropsAllowlist} from './nodes/AnimatedProps';
 
 import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
+
+type KeyAllowlist<K extends string> = Readonly<Partial<Record<K, true>>>;
+type KeyOfUnion<T> = T extends unknown ? keyof T : empty;
+
+type AnimatableStyle = Readonly<{...TextStyle, ...ImageStyle}>;
+type StyleKey = keyof AnimatableStyle;
+type ColorStyleKey = Values<{
+  [K in StyleKey]: NativeColorValue extends NonNullable<AnimatableStyle[K]>
+    ? K
+    : empty,
+}>;
+
+type TransformEntry = Exclude<
+  NonNullable<____TransformStyle_Internal['transform']>,
+  string,
+>[number];
+type TransformKey = KeyOfUnion<NonNullable<TransformEntry>>;
+type LegacyTransformStyleKey = Extract<
+  TransformKey,
+  'scaleX' | 'scaleY' | 'translateX' | 'translateY',
+>;
+
+type InterpolationParamKey = Exclude<
+  keyof InterpolationConfigType<InterpolationConfigSupportedOutputType>,
+  keyof AnimatedNodeConfig,
+>;
 
 /**
  * Styles allowed by the native animated implementation.
@@ -18,7 +55,7 @@ import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNa
  * In general native animated implementation should support any numeric or color property that
  * doesn't need to be updated through the shadow view hierarchy (all non-layout properties).
  */
-const SUPPORTED_COLOR_STYLES: {[string]: true} = {
+const SUPPORTED_COLOR_STYLES = {
   backgroundColor: true,
   borderBottomColor: true,
   borderColor: true,
@@ -29,9 +66,9 @@ const SUPPORTED_COLOR_STYLES: {[string]: true} = {
   borderTopColor: true,
   color: true,
   tintColor: true,
-};
+} as const satisfies KeyAllowlist<ColorStyleKey>;
 
-const SUPPORTED_STYLES: {[string]: true} = {
+const SUPPORTED_STYLES = {
   ...SUPPORTED_COLOR_STYLES,
   borderBottomEndRadius: true,
   borderBottomLeftRadius: true,
@@ -61,7 +98,7 @@ const SUPPORTED_STYLES: {[string]: true} = {
   translateY: true,
   // eslint-disable-next-line react-hooks/rules-of-hooks
   ...(ReactNativeFeatureFlags.useSharedAnimatedBackend()
-    ? {
+    ? ({
         /* dimension */
         height: true,
         maxHeight: true,
@@ -114,11 +151,11 @@ const SUPPORTED_STYLES: {[string]: true} = {
         gap: true,
         rowGap: true,
         columnGap: true,
-      }
+      } as const)
     : {}),
-};
+} as const satisfies KeyAllowlist<StyleKey | LegacyTransformStyleKey>;
 
-const SUPPORTED_TRANSFORMS: {[string]: true} = {
+const SUPPORTED_TRANSFORMS = {
   translateX: true,
   translateY: true,
   scale: true,
@@ -132,18 +169,18 @@ const SUPPORTED_TRANSFORMS: {[string]: true} = {
   skewX: true,
   skewY: true,
   ...(ReactNativeFeatureFlags.shouldUseAnimatedObjectForTransform()
-    ? {matrix: true}
+    ? ({matrix: true} as const)
     : {}),
-};
+} as const satisfies KeyAllowlist<TransformKey>;
 
-const SUPPORTED_INTERPOLATION_PARAMS: {[string]: true} = {
+const SUPPORTED_INTERPOLATION_PARAMS = {
   inputRange: true,
   outputRange: true,
   extrapolate: true,
   extrapolateRight: true,
   extrapolateLeft: true,
   easing: true,
-};
+} as const satisfies KeyAllowlist<InterpolationParamKey>;
 
 /**
  * Default allowlist for component props that support native animated values.

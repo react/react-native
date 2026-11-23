@@ -19,13 +19,15 @@ const {
 const fs = require('node:fs');
 
 /*::
+type TestInventoryHeader = {
+  naturalPath: string,
+  bucket: string,
+  lang: string,
+  identities: Array<{source: string}>,
+  includes?: {internal: Array<{naturalPath: string, cxxGuarded: boolean}>},
+};
 type TestInventoryManifest = {
-  headers: Array<{
-    naturalPath: string,
-    bucket: string,
-    lang: string,
-    identities: Array<{source: string}>,
-  }>,
+  headers: Array<TestInventoryHeader>,
 };
 */
 
@@ -45,7 +47,7 @@ const entry = (
   naturalPath /*: string */,
   bucket /*: string */,
   source /*:: ?: string */,
-) => ({
+) /*: TestInventoryHeader */ => ({
   naturalPath,
   bucket,
   lang: 'objc',
@@ -206,6 +208,108 @@ describe('R5 invalid-identifier exemption assert (H5)', () => {
     const m = validManifest();
     m.headers.push(entry('jsinspector-modern/Foo.h', 'objcxx'));
     expect(() => planFromInventoryForTest(m)).not.toThrow();
+  });
+});
+
+describe('R13 stable API guards are textual module members', () => {
+  const includes = (
+    ...deps /*: Array<[string, boolean]> */
+  ) /*: {internal: Array<{naturalPath: string, cxxGuarded: boolean}>} */ => ({
+    internal: deps.map(([naturalPath, cxxGuarded]) => ({
+      naturalPath,
+      cxxGuarded,
+    })),
+  });
+  const guardedManifest = () => {
+    const m = validManifest();
+    m.headers.push(
+      entry('react/cxxstableapi/UmbrellaGuard.h', 'objc-modular-candidate'),
+      {
+        ...entry('react/debug/flags.h', 'objc-modular-candidate'),
+        includes: includes(['react/cxxstableapi/UmbrellaGuard.h', false]),
+      },
+      {
+        ...entry('react/debug/UsesFlags.h', 'objc-modular-candidate'),
+        includes: includes(['react/debug/flags.h', false]),
+      },
+      {
+        ...entry('react/runtime/CApi.h', 'objc-modular-candidate'),
+        includes: includes(['react/cxxstableapi/UmbrellaGuard.h', true]),
+      },
+      entry('react/runtime/Plain.h', 'objc-modular-candidate'),
+    );
+    return m;
+  };
+
+  test('guards and members that reach one stay in the module, marked textual', () => {
+    const plan = planFromInventoryForTest(guardedManifest());
+    expect(plan.namespaceModules.react).toEqual([
+      'react/cxxstableapi/UmbrellaGuard.h',
+      'react/debug/UsesFlags.h',
+      'react/debug/flags.h',
+      'react/runtime/CApi.h',
+      'react/runtime/Plain.h',
+    ]);
+    expect(plan.textualNamespaceHeaders).toEqual([
+      'react/cxxstableapi/UmbrellaGuard.h',
+      'react/debug/UsesFlags.h',
+      'react/debug/flags.h',
+    ]);
+  });
+
+  test('a guard reached only under #ifdef __cplusplus does not count', () => {
+    const plan = planFromInventoryForTest(guardedManifest());
+    expect(plan.textualNamespaceHeaders).not.toContain('react/runtime/CApi.h');
+  });
+
+  test('module map declares them `textual header`', () => {
+    const plan = planFromInventoryForTest(guardedManifest());
+    const mm = renderNamespaceModuleMap(
+      plan.namespaceModules,
+      plan.textualNamespaceHeaders,
+    );
+    expect(mm).toContain('module ReactNativeHeaders_react {');
+    expect(mm).toContain(
+      '  textual header "react/cxxstableapi/UmbrellaGuard.h"',
+    );
+    expect(mm).toContain('  textual header "react/debug/flags.h"');
+    expect(mm).not.toMatch(/^\s*header "react\/debug\/flags\.h"/m);
+    expect(mm).toContain('  header "react/runtime/Plain.h"');
+  });
+
+  test('without stable API guards every member stays modular', () => {
+    const plan = planFromInventoryForTest(validManifest());
+    expect(plan.textualNamespaceHeaders).toEqual([]);
+    expect(
+      renderNamespaceModuleMap(
+        plan.namespaceModules,
+        plan.textualNamespaceHeaders,
+      ),
+    ).not.toContain('textual header');
+  });
+
+  test('ObjC verify fixture imports a modular member, never a textual one', () => {
+    const {renderObjcFixture} = require('../headers-verify');
+    const m = guardedManifest();
+    m.headers.push(
+      entry('reactperflogger/Guarded.h', 'objc-modular-candidate'),
+    );
+    const guardedOnly = m.headers.find(
+      x => x.naturalPath === 'reactperflogger/Guarded.h',
+    );
+    if (guardedOnly == null) {
+      throw new Error('fixture missing reactperflogger/Guarded.h');
+    }
+    guardedOnly.includes = includes([
+      'react/cxxstableapi/UmbrellaGuard.h',
+      false,
+    ]);
+    const tu = renderObjcFixture(planFromInventoryForTest(m));
+    // First modular member in sort order (the textual ones sort before it).
+    expect(tu).toContain('#import <react/runtime/CApi.h>');
+    expect(tu).not.toContain('#import <react/cxxstableapi/');
+    // A module whose members are all textual has nothing to precompile.
+    expect(tu).not.toContain('#import <reactperflogger/');
   });
 });
 

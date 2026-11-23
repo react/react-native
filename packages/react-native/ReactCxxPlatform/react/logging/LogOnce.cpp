@@ -34,7 +34,6 @@ LogOnceWrapper::~LogOnceWrapper() {
     case Severity::Fatal:
     default:
       LOG(FATAL) << message;
-      break;
   }
 
   loggedMessages.insert(message);

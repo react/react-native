@@ -51,6 +51,85 @@ describe('<TouchableHighlight>', () => {
 
     accessibilityPropsSuite(ComponentWithAccessibilityProps);
 
+    describe('aria state props', () => {
+      it('maps aria-checked to accessibilityState', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableHighlight aria-checked={true}>
+              <View />
+            </TouchableHighlight>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:false,selected:null,checked:Checked,busy:false,expanded:null}" />,
+        );
+      });
+
+      it('maps aria-busy, aria-expanded and aria-selected to accessibilityState', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableHighlight
+              aria-busy={true}
+              aria-expanded={true}
+              aria-selected={true}>
+              <View />
+            </TouchableHighlight>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:false,selected:true,checked:None,busy:true,expanded:true}" />,
+        );
+      });
+
+      it('maps aria-disabled to accessibilityState', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableHighlight aria-disabled={true}>
+              <View />
+            </TouchableHighlight>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:true,selected:null,checked:None,busy:false,expanded:null}" />,
+        );
+      });
+
+      it('gives aria-checked precedence over accessibilityState', () => {
+        const root = Fantom.createRoot();
+
+        Fantom.runTask(() => {
+          root.render(
+            <TouchableHighlight
+              aria-checked={false}
+              accessibilityState={{checked: true}}>
+              <View />
+            </TouchableHighlight>,
+          );
+        });
+
+        expect(
+          root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+        ).toEqual(
+          <rn-view accessibilityState="{disabled:false,selected:null,checked:Unchecked,busy:false,expanded:null}" />,
+        );
+      });
+    });
+
     describe('style', () => {
       it('applies style props', () => {
         const root = Fantom.createRoot();

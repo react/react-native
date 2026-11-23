@@ -154,8 +154,8 @@ component NestedListExample() {
 component OuterItemRenderer(
   index: number,
   item: OuterItem,
-  dispatchOuter: ItemsAction => void,
-  dispatchInner: ItemsAction => void,
+  dispatchOuter: (v: ItemsAction) => void,
+  dispatchInner: (v: ItemsAction) => void,
 ) {
   useEffect(() => {
     dispatchOuter({
@@ -255,7 +255,10 @@ component OuterItemRenderer(
   }
 }
 
-component InnerItemRenderer(item: number, dispatchInner: ItemsAction => void) {
+component InnerItemRenderer(
+  item: number,
+  dispatchInner: (v: ItemsAction) => void,
+) {
   useEffect(() => {
     dispatchInner({
       type: 'add-rendered',

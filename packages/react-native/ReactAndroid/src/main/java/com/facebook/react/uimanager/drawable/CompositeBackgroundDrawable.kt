@@ -167,6 +167,22 @@ internal class CompositeBackgroundDrawable(
     )
   }
 
+  fun withNewOriginalBackground(newOriginalBackground: Drawable?): CompositeBackgroundDrawable {
+    return CompositeBackgroundDrawable(
+        context,
+        newOriginalBackground,
+        outerShadows,
+        background,
+        backgroundImage,
+        border,
+        feedbackUnderlay,
+        innerShadows,
+        outline,
+        borderInsets,
+        borderRadius,
+    )
+  }
+
   fun withNewFeedbackUnderlay(newUnderlay: Drawable?): CompositeBackgroundDrawable {
     return CompositeBackgroundDrawable(
         context,

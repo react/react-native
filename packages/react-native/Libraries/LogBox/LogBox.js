@@ -55,7 +55,7 @@ interface ILogBox {
   install(): void;
   uninstall(): void;
   isInstalled(): boolean;
-  ignoreLogs(ReadonlyArray<IgnorePattern>): void;
+  ignoreLogs(v: ReadonlyArray<IgnorePattern>): void;
   ignoreAllLogs(value?: boolean): void;
   clearAllLogs(): void;
   addLog(log: LogData): void;
@@ -200,7 +200,6 @@ if (__DEV__) {
           let componentStack = result.componentStack;
           if (
             (!componentStack || componentStack.length === 0) &&
-            // $FlowExpectedError[prop-missing]
             React.captureOwnerStack
           ) {
             const ownerStack = React.captureOwnerStack();

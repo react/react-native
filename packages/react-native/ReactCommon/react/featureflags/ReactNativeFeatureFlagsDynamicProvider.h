@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<17e0a39921047c969013e0dacc6bee97>>
+ * @generated SignedSource<<c936bbf73a21cd34668645173f36c1fb>>
  */
 
 /**
@@ -182,15 +182,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableAccumulatedUpdatesInRawPropsAndroid();
   }
 
-  bool enableAndroidAutoOffscreenCompositingForElevation() override {
-    auto value = values_["enableAndroidAutoOffscreenCompositingForElevation"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableAndroidAutoOffscreenCompositingForElevation();
-  }
-
   bool enableAndroidTextMeasurementOptimizations() override {
     auto value = values_["enableAndroidTextMeasurementOptimizations"];
     if (!value.isNull()) {
@@ -317,15 +308,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableFollowUpMountItemDispatchAndroid();
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    auto value = values_["enableFontScaleChangesUpdatingLayout"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableFontScaleChangesUpdatingLayout();
-  }
-
   bool enableIOSCompressedTextFrameAdjustment() override {
     auto value = values_["enableIOSCompressedTextFrameAdjustment"];
     if (!value.isNull()) {
@@ -380,6 +362,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableImmediateUpdateModeForContentOffsetChanges();
   }
 
+  bool enableImmediateUpdateModeForScrollContentView() override {
+    auto value = values_["enableImmediateUpdateModeForScrollContentView"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableImmediateUpdateModeForScrollContentView();
+  }
+
   bool enableImperativeEvents() override {
     auto value = values_["enableImperativeEvents"];
     if (!value.isNull()) {
@@ -396,6 +387,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableImperativeFocus();
+  }
+
+  bool enableInteractableResponderViews() override {
+    auto value = values_["enableInteractableResponderViews"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableInteractableResponderViews();
   }
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS() override {
@@ -603,6 +603,24 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::fixMappingOfEventPrioritiesBetweenFabricAndReact();
+  }
+
+  bool fixProgrammaticScrollMomentumEventsIOS() override {
+    auto value = values_["fixProgrammaticScrollMomentumEventsIOS"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::fixProgrammaticScrollMomentumEventsIOS();
+  }
+
+  bool fixTextInlineViewLineHeight() override {
+    auto value = values_["fixTextInlineViewLineHeight"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::fixTextInlineViewLineHeight();
   }
 
   bool fixTextLayoutOnPixelDensityChange() override {

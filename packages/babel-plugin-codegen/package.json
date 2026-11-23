@@ -25,7 +25,7 @@
     "index.js"
   ],
   "dependencies": {
-    "@babel/traverse": "^7.29.0",
+    "@babel/traverse": "^7.29.10",
     "@react-native/codegen": "0.87.0-main"
   },
   "devDependencies": {

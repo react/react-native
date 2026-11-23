@@ -14,6 +14,7 @@ import type {BuildSchemaFN, Parser} from '../../parser';
 import type {ASTNode, PropAST, TypeDeclarationMap} from '../../utils';
 
 const {verifyPropNotAlreadyDefined} = require('../../parsers-commons');
+const {getTypeArguments} = require('../../utils');
 const {getValueFromTypes} = require('../utils.js');
 
 // $FlowFixMe[unsupported-variance-annotation]
@@ -52,7 +53,7 @@ function getTypeAnnotationForArray<out T>(
       return {
         type: 'ObjectTypeAnnotation',
         properties: flattenProperties(
-          objectType.typeParameters.params[0].properties,
+          getTypeArguments(objectType).params[0].properties,
           types,
           parser,
         )
@@ -68,7 +69,7 @@ function getTypeAnnotationForArray<out T>(
       // We need to go yet another level deeper to resolve
       // types that may be defined in a type alias
       const nestedObjectType = getValueFromTypes(
-        objectType.typeParameters.params[0],
+        getTypeArguments(objectType).params[0],
         types,
       );
 
@@ -77,7 +78,7 @@ function getTypeAnnotationForArray<out T>(
         elementType: {
           type: 'ObjectTypeAnnotation',
           properties: flattenProperties(
-            nestedObjectType.typeParameters.params[0].properties,
+            getTypeArguments(nestedObjectType).params[0].properties,
             types,
             parser,
           )
@@ -239,7 +240,7 @@ function getTypeAnnotation<out T>(
       type: 'ArrayTypeAnnotation',
       elementType: getTypeAnnotationForArray(
         name,
-        typeAnnotation.typeParameters.params[0],
+        getTypeArguments(typeAnnotation).params[0],
         defaultValue,
         types,
         parser,
@@ -256,7 +257,7 @@ function getTypeAnnotation<out T>(
     return {
       type: 'ObjectTypeAnnotation',
       properties: flattenProperties(
-        typeAnnotation.typeParameters.params[0].properties,
+        getTypeArguments(typeAnnotation).params[0].properties,
         types,
         parser,
       )
@@ -467,16 +468,16 @@ function getSchemaInfo(
     type === 'GenericTypeAnnotation' &&
     typeAnnotationName === 'WithDefault'
   ) {
-    if (typeAnnotation.typeParameters.params.length === 1) {
+    if (getTypeArguments(typeAnnotation).params.length === 1) {
       throw new Error(
         `WithDefault requires two parameters, did you forget to provide a default value for "${name}"?`,
       );
     }
 
-    defaultValue = typeAnnotation.typeParameters.params[1].value;
-    const defaultValueType = typeAnnotation.typeParameters.params[1].type;
+    defaultValue = getTypeArguments(typeAnnotation).params[1].value;
+    const defaultValueType = getTypeArguments(typeAnnotation).params[1].type;
 
-    typeAnnotation = typeAnnotation.typeParameters.params[0];
+    typeAnnotation = getTypeArguments(typeAnnotation).params[0];
     type =
       typeAnnotation.type === 'GenericTypeAnnotation'
         ? typeAnnotationName

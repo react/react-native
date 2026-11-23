@@ -53,7 +53,7 @@ declare type rxjs$ObservableInput<T> =
   rxjs$SubscribableOrPromise<T> | Array<T> | Iterable<T>;
 
 declare type rxjs$InteropObservable<T> = {
-  [string | unknown]: () => rxjs$Subscribable<T>,
+  [key: string | unknown]: () => rxjs$Subscribable<T>,
   ...
 };
 /** OBSERVER INTERFACES */
@@ -116,9 +116,9 @@ declare class rxjs$Observable<T> implements rxjs$Subscribable<T> {
   constructor(
     subscribe?: (subscriber: rxjs$Subscriber<T>) => rxjs$TeardownLogic,
   ): void;
-  static create(
-    subscribe?: (subscriber: rxjs$Subscriber<T>) => rxjs$TeardownLogic,
-  ): rxjs$Observable<T>;
+  static create<U>(
+    subscribe?: (subscriber: rxjs$Subscriber<U>) => rxjs$TeardownLogic,
+  ): rxjs$Observable<U>;
   lift<R>(operator: rxjs$Operator<T, R>): rxjs$Observable<R>;
   subscribe(observer?: rxjs$PartialObserver<T>): rxjs$Subscription;
   subscribe(

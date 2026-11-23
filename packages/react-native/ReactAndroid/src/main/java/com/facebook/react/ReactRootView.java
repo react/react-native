@@ -138,9 +138,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     setRootViewTag(ReactRootViewTagGenerator.getNextRootViewTag());
     setClipChildren(false);
 
-    if (ReactNativeFeatureFlags.enableFontScaleChangesUpdatingLayout()) {
-      DisplayMetricsHolder.initDisplayMetrics(getContext().getApplicationContext());
-    }
+    DisplayMetricsHolder.initDisplayMetrics(getContext().getApplicationContext());
   }
 
   @Override

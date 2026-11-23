@@ -30,7 +30,7 @@ export type NodeProps = {...};
 type EventHandler = (
   target: ?InternalInstanceHandle,
   type: string,
-  payload: {[string]: unknown},
+  payload: {[key: string]: unknown},
 ) => void;
 type Rect = {
   x: number,

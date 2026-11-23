@@ -44,65 +44,90 @@ import typeof dispatchNativeEvent from './private/renderer/events/dispatchNative
 export type {PublicRootInstance} from '../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance';
 export type PublicTextInstance = ReturnType<createPublicTextInstance>;
 
-// flowlint unsafe-getters-setters:off
+type ReactNativeFeatureFlagsForReact = {
+  ...ReactNativeFeatureFlags,
+  enableNativeEventTargetEventDispatching: () => boolean,
+};
+
 // eslint-disable-next-line @react-native/monorepo/no-commonjs-exports
 module.exports = {
+  // $FlowFixMe[unsafe-getters-setters]
   get BatchedBridge(): BatchedBridge {
     return require('../Libraries/BatchedBridge/BatchedBridge').default;
   },
-  get ReactNativeFeatureFlags(): ReactNativeFeatureFlags {
-    return require('./private/featureflags/ReactNativeFeatureFlags');
+  // $FlowFixMe[unsafe-getters-setters]
+  get ReactNativeFeatureFlags(): ReactNativeFeatureFlagsForReact {
+    return {
+      ...require('./private/featureflags/ReactNativeFeatureFlags'),
+      // Removed from React Native (always enabled) but still read by the
+      // vendored React renderer.
+      enableNativeEventTargetEventDispatching: () => true,
+    };
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get ReactNativeViewConfigRegistry(): ReactNativeViewConfigRegistry {
     return require('../Libraries/Renderer/shims/ReactNativeViewConfigRegistry');
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get fabricUIManager(): ?FabricUIManager {
     return require('../Libraries/ReactNative/FabricUIManager').getFabricUIManager();
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get deepFreezeAndThrowOnMutationInDev(): deepFreezeAndThrowOnMutationInDev<
     {...} | Array<unknown>,
   > {
     return require('../Libraries/Utilities/deepFreezeAndThrowOnMutationInDev')
       .default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get ReactFiberErrorDialog(): ReactFiberErrorDialog {
     return require('../Libraries/Core/ReactFiberErrorDialog').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get RawEventEmitter(): RawEventEmitter {
     return require('../Libraries/Core/RawEventEmitter').default;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get createAttributePayload(): createAttributePayload {
     return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload')
       .create;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get diffAttributePayloads(): diffAttributePayloads {
     return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload')
       .diff;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get createPublicRootInstance(): createPublicRootInstance {
     return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
       .createPublicRootInstance;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get createPublicInstance(): createPublicInstance {
     return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
       .createPublicInstance;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get createPublicTextInstance(): createPublicTextInstance {
     return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
       .createPublicTextInstance;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get getNativeTagFromPublicInstance(): getNativeTagFromPublicInstance {
     return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
       .getNativeTagFromPublicInstance;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get getNodeFromPublicInstance(): getNodeFromPublicInstance {
     return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
       .getNodeFromPublicInstance;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get getInternalInstanceHandleFromPublicInstance(): getInternalInstanceHandleFromPublicInstance {
     return require('../Libraries/ReactNative/ReactFabricPublicInstance/ReactFabricPublicInstance')
       .getInternalInstanceHandleFromPublicInstance;
   },
+  // $FlowFixMe[unsafe-getters-setters]
   get dispatchNativeEvent(): dispatchNativeEvent {
     return require('./private/renderer/events/dispatchNativeEvent').default;
   },

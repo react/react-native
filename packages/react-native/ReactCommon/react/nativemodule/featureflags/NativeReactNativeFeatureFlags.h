@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<08c7aeb5d0329359da0e21fea43007df>>
+ * @generated SignedSource<<23d1a2b0fa50a9a8d138dc1b06288b24>>
  */
 
 /**
@@ -68,8 +68,6 @@ class NativeReactNativeFeatureFlags
 
   bool enableAccumulatedUpdatesInRawPropsAndroid(jsi::Runtime& runtime);
 
-  bool enableAndroidAutoOffscreenCompositingForElevation(jsi::Runtime& runtime);
-
   bool enableAndroidTextMeasurementOptimizations(jsi::Runtime& runtime);
 
   bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid(jsi::Runtime& runtime);
@@ -98,8 +96,6 @@ class NativeReactNativeFeatureFlags
 
   bool enableFollowUpMountItemDispatchAndroid(jsi::Runtime& runtime);
 
-  bool enableFontScaleChangesUpdatingLayout(jsi::Runtime& runtime);
-
   bool enableIOSCompressedTextFrameAdjustment(jsi::Runtime& runtime);
 
   bool enableIOSTextBaselineOffsetPerLine(jsi::Runtime& runtime);
@@ -112,9 +108,13 @@ class NativeReactNativeFeatureFlags
 
   bool enableImmediateUpdateModeForContentOffsetChanges(jsi::Runtime& runtime);
 
+  bool enableImmediateUpdateModeForScrollContentView(jsi::Runtime& runtime);
+
   bool enableImperativeEvents(jsi::Runtime& runtime);
 
   bool enableImperativeFocus(jsi::Runtime& runtime);
+
+  bool enableInteractableResponderViews(jsi::Runtime& runtime);
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS(jsi::Runtime& runtime);
 
@@ -161,6 +161,10 @@ class NativeReactNativeFeatureFlags
   bool fixBorderlessRippleAndroid(jsi::Runtime& runtime);
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact(jsi::Runtime& runtime);
+
+  bool fixProgrammaticScrollMomentumEventsIOS(jsi::Runtime& runtime);
+
+  bool fixTextInlineViewLineHeight(jsi::Runtime& runtime);
 
   bool fixTextLayoutOnPixelDensityChange(jsi::Runtime& runtime);
 

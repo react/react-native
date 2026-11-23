@@ -48,7 +48,9 @@ import kotlin.math.roundToInt
 @DoNotStrip
 internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), ReactCompoundView {
 
-  private var clickableSpans: List<ClickableSpan> = emptyList()
+  // Whether the text has a ClickableSpan. Only touch handling needs it, so it is found on first use
+  // rather than on every text update; null until then.
+  private var hasClickableSpansCache: Boolean? = null
   private var selection: TextSelection? = null
   private var lastFrameTimeNanos: Long = 0L
 
@@ -72,8 +74,7 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
           }
         }
 
-        clickableSpans =
-            effectiveValue?.layout?.text?.let { filterClickableSpans(it) } ?: emptyList()
+        hasClickableSpansCache = null
 
         field = effectiveValue
         invalidate()
@@ -105,11 +106,11 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
   fun recycleView() {
     BackgroundStyleApplicator.reset(this)
     overflow = Overflow.VISIBLE
-    clickableSpans = emptyList()
     selection = null
     selectionColor = null
     lastFrameTimeNanos = 0L
     preparedLayout = null
+    hasClickableSpansCache = null
   }
 
   override fun onVisibilityChanged(changedView: View, visibility: Int) {
@@ -277,7 +278,7 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     }
 
     // Existing ClickableSpan handling
-    if (clickableSpans.isEmpty()) {
+    if (!hasClickableSpans()) {
       return super.onTouchEvent(event)
     }
 
@@ -300,6 +301,10 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
 
     return true
   }
+
+  private fun hasClickableSpans(): Boolean =
+      hasClickableSpansCache
+          ?: hasClickableSpan(preparedLayout?.layout?.text).also { hasClickableSpansCache = it }
 
   private fun findRootView(): RootView? {
     var p: ViewParent? = parent
@@ -413,7 +418,7 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
       direction: Int,
       previouslyFocusedRect: Rect?,
   ) {
-    if (clickableSpans.isNotEmpty() && !gainFocus) {
+    if (!gainFocus && selection != null) {
       clearSelection()
     }
     super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
@@ -475,21 +480,10 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
   private companion object {
     private val selectionPaint = Paint()
 
-    private fun filterClickableSpans(text: CharSequence): List<ClickableSpan> {
-      if (text !is Spanned) {
-        return emptyList()
-      }
-
-      val spans = ArrayList<ClickableSpan>()
-      var i = 0
-      while (i < text.length) {
-        val next = text.nextSpanTransition(i, text.length, ClickableSpan::class.java)
-        spans.addAll(text.getSpans(i, next, ClickableSpan::class.java))
-        i = next
-      }
-
-      return spans
-    }
+    private fun hasClickableSpan(text: CharSequence?): Boolean =
+        text is Spanned &&
+            text.isNotEmpty() &&
+            text.getSpans(0, text.length, ClickableSpan::class.java).isNotEmpty()
 
     /**
      * If the layout contains [StatefulSpan]s, returns a new [PreparedLayout] whose spannable has

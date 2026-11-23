@@ -22,7 +22,6 @@
 #import "RCTLayoutAnimation.h"
 #import "RCTLayoutAnimationGroup.h"
 #import "RCTLog.h"
-#import "RCTModuleData.h"
 #import "RCTModuleMethod.h"
 #import "RCTScrollableProtocol.h"
 #import "RCTShadowView.h"
@@ -217,15 +216,6 @@ NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
 
 - (void)invalidate
 {
-}
-
-@end
-
-@implementation RCTBridge (RCTUIManager)
-
-- (RCTUIManager *)uiManager
-{
-  return [self moduleForClass:[RCTUIManager class]];
 }
 
 @end

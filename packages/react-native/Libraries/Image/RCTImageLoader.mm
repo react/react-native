@@ -32,7 +32,7 @@ static NSInteger RCTImageBytesForImage(UIImage *image)
   return image.images ? image.images.count * singleImageBytes : singleImageBytes;
 }
 
-static auto currentRequestCount = std::atomic<uint64_t>(0);
+static constinit auto currentRequestCount = std::atomic<uint64_t>(0);
 
 static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLResponse *response)
 {

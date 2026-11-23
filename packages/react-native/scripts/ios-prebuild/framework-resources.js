@@ -75,7 +75,7 @@ function canonicalize(value /*: unknown */) /*: unknown */ {
     return value.map(canonicalize);
   }
   if (value != null && typeof value === 'object') {
-    const out /*: {[string]: unknown} */ = {};
+    const out /*: {[key: string]: unknown} */ = {};
     for (const k of Object.keys(value).sort()) {
       out[k] = canonicalize(value[k]);
     }
@@ -171,7 +171,6 @@ function mergePrivacyManifests(
 
 /** Parses a single `PrivacyInfo.xcprivacy` (plist) file into an object. */
 function readPrivacyManifest(filePath /*: string */) /*: PrivacyManifest */ {
-  // $FlowFixMe[incompatible-return] plist.parse returns a loose PlistValue.
   return plist.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
@@ -239,7 +238,7 @@ function serializePrivacyManifest(
 // ---------------------------------------------------------------------------
 
 /** The Info.plist contents that make the copied .lproj dirs load as an NSBundle. */
-function i18nBundleInfoPlist() /*: {[string]: string} */ {
+function i18nBundleInfoPlist() /*: {[key: string]: string} */ {
   return {
     CFBundleDevelopmentRegion: 'en',
     CFBundleIdentifier: 'org.reactnative.RCTI18nStrings',

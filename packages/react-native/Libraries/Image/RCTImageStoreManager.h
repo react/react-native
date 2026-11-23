@@ -40,12 +40,6 @@
 
 @end
 
-@interface RCTBridge (RCTImageStoreManager)
-
-@property (nonatomic, readonly) RCTImageStoreManager *imageStoreManager;
-
-@end
-
 @interface RCTBridgeProxy (RCTImageStoreManager)
 
 @property (nonatomic, readonly) RCTImageStoreManager *imageStoreManager;

@@ -89,11 +89,6 @@ static NSString *const kBundlePath = @"js/RNTesterApp.ios";
   [RCTLinkingManager scene:scene continueUserActivity:userActivity];
 }
 
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-{
-  return [self bundleURL];
-}
-
 - (NSURL *)bundleURL
 {
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:kBundlePath];

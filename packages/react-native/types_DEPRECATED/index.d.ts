@@ -81,7 +81,6 @@ export * from './Libraries/AppState/AppState';
 export * from './Libraries/BatchedBridge/NativeModules';
 export * from './Libraries/Components/AccessibilityInfo/AccessibilityInfo';
 export * from './Libraries/Components/ActivityIndicator/ActivityIndicator';
-export * from './Libraries/Components/Clipboard/Clipboard';
 export * from './Libraries/Components/DrawerAndroid/DrawerLayoutAndroid';
 export * from './Libraries/Components/Keyboard/Keyboard';
 export * from './Libraries/Components/Keyboard/KeyboardAvoidingView';

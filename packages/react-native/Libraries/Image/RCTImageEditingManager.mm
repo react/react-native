@@ -31,7 +31,7 @@ RCT_EXPORT_MODULE()
 /**
  * Crops an image and adds the result to the image store.
  *
- * @param imageRequest An image URL
+ * @param imageRequestString An image URL
  * @param cropData Dictionary with `offset`, `size` and `displaySize`.
  *        `offset` and `size` are relative to the full-resolution image size.
  *        `displaySize` is an optimization - if specified, the image will

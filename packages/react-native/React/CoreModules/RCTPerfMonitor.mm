@@ -22,7 +22,6 @@
 #import <React/RCTFPSGraph.h>
 #import <React/RCTInitializing.h>
 #import <React/RCTInvalidating.h>
-#import <React/RCTJavaScriptExecutor.h>
 #import <React/RCTPerformanceLogger.h>
 #import <React/RCTPerformanceLoggerLabels.h>
 #import <React/RCTRootView.h>

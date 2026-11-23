@@ -101,7 +101,7 @@ class KeyboardImpl {
    */
   addListener<K extends keyof KeyboardEventDefinitions>(
     eventType: K,
-    listener: (...KeyboardEventDefinitions[K]) => unknown,
+    listener: (...rest: KeyboardEventDefinitions[K]) => unknown,
     context?: unknown,
   ): EventSubscription {
     return this._emitter.addListener(eventType, listener);

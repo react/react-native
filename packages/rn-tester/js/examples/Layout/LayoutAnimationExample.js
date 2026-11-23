@@ -64,6 +64,7 @@ class AddRemoveExample extends React.Component<{...}, AddRemoveExampleState> {
         update: {type: 'easeInEaseOut', property: 'opacity'},
         delete: {type: 'easeInEaseOut', property: 'opacity'},
       },
+      // $FlowFixMe[missing-local-annot]
       args => console.log('AddRemoveExample completed', args),
     );
   }
@@ -171,6 +172,7 @@ class ReparentingExample extends React.Component<
         update: {type: 'easeInEaseOut', property: 'opacity'},
         delete: {type: 'easeInEaseOut', property: 'opacity', duration: 1000},
       },
+      // $FlowFixMe[missing-local-annot]
       args => console.log('ReparentingExample completed', args),
     );
     this._onPressToggle();
@@ -229,6 +231,7 @@ class CrossFadeExample extends React.Component<{...}, CrossFadeExampleState> {
   };
 
   _onPressToggle = () => {
+    // $FlowFixMe[missing-local-annot]
     LayoutAnimation.easeInEaseOut(args =>
       console.log('CrossFadeExample completed', args),
     );
@@ -289,6 +292,7 @@ class LayoutUpdateExample extends React.Component<
           type: LayoutAnimation.Types.linear,
         },
       },
+      // $FlowFixMe[missing-local-annot]
       args => console.log('LayoutUpdateExample completed', args),
     );
 

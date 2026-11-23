@@ -28,8 +28,10 @@
 #include <glog/logging.h>
 
 #include <algorithm>
+#include <array>
 #include <cfenv>
 #include <cmath>
+#include <string_view>
 #include <vector>
 
 namespace facebook::react {
@@ -81,7 +83,7 @@ namespace {
 // List of layout-only props extracted from ViewProps.kt used to filter out
 // component props from Props 1.5 to validate the Props 2.0 output
 inline bool isLayoutOnlyProp(const std::string& propName) {
-  static const std::vector<std::string> layoutOnlyProps = {
+  static constexpr std::array<std::string_view, 46> layoutOnlyProps = {
       // Flexbox Alignment
       "alignItems",
       "alignSelf",
@@ -146,8 +148,10 @@ inline bool isLayoutOnlyProp(const std::string& propName) {
       // Other
       "collapsable",
   };
-  return std::find(layoutOnlyProps.begin(), layoutOnlyProps.end(), propName) !=
-      layoutOnlyProps.end();
+  return std::find(
+             layoutOnlyProps.begin(),
+             layoutOnlyProps.end(),
+             std::string_view{propName}) != layoutOnlyProps.end();
 }
 #endif
 
@@ -435,9 +439,8 @@ inline void writeCreateMountItem(
   // lifetime of the Java object
   jni::local_ref<StateWrapperImpl::JavaPart> javaStateWrapper = nullptr;
   if (mountItem.newChildShadowView.state != nullptr) {
-    javaStateWrapper = StateWrapperImpl::newObjectJavaArgs();
-    StateWrapperImpl* cStateWrapper = cthis(javaStateWrapper);
-    cStateWrapper->setState(mountItem.newChildShadowView.state);
+    javaStateWrapper =
+        StateWrapperImpl::newObjectCxxArgs(mountItem.newChildShadowView.state);
   }
 
   // Do not hold a reference to javaEventEmitter from the C++ side.
@@ -498,9 +501,7 @@ inline void writeUpdateStateMountItem(
   // lifetime of the Java object
   jni::local_ref<StateWrapperImpl::JavaPart> javaStateWrapper = nullptr;
   if (state != nullptr) {
-    javaStateWrapper = StateWrapperImpl::newObjectJavaArgs();
-    StateWrapperImpl* cStateWrapper = cthis(javaStateWrapper);
-    cStateWrapper->setState(state);
+    javaStateWrapper = StateWrapperImpl::newObjectCxxArgs(state);
   }
 
   buffer.writeObject(
@@ -617,6 +618,22 @@ void FabricMountingManager::executeMount(
   std::vector<CppMountItem> cppUpdateOverflowInsetMountItems;
   std::vector<CppMountItem> cppUpdateEventEmitterMountItems;
 
+  // Views created by this transaction, with the state and event emitter their
+  // Create item already passes to Java. Their Insert skips its UpdateState and
+  // UpdateEventEmitter items when they would carry the same objects. The
+  // pointers are compared rather than assumed equal because the mutation list
+  // is not always a single diff: schedulerDidFinishTransaction concatenates
+  // pending transactions (MountingTransaction::mergeWith), so one tag can
+  // appear with more than one revision.
+  // TODO: Simplify this to a plain set of tags once transactions are pulled
+  // in schedulerShouldRenderTransactions, i.e. when
+  // enableAccumulatedUpdatesInRawPropsAndroid is rolled out.
+  struct CreatedView {
+    const State* state;
+    const EventEmitter* eventEmitter;
+  };
+  std::unordered_map<Tag, CreatedView> createdViews;
+
   {
     std::lock_guard allocatedViewsLock(allocatedViewsMutex_);
 
@@ -656,6 +673,9 @@ void FabricMountingManager::executeMount(
           if (shouldCreateView) {
             cppCommonMountItems.push_back(
                 CppMountItem::CreateMountItem(newChildShadowView));
+            createdViews[newChildShadowView.tag] = CreatedView{
+                .state = newChildShadowView.state.get(),
+                .eventEmitter = newChildShadowView.eventEmitter.get()};
           } else {
             allocatedView->second.state = AllocatedViewState::Mounted;
           }
@@ -755,6 +775,13 @@ void FabricMountingManager::executeMount(
           break;
         }
         case ShadowViewMutation::Insert: {
+          auto createdView = createdViews.find(newChildShadowView.tag);
+          bool createdWithSameState = createdView != createdViews.end() &&
+              createdView->second.state == newChildShadowView.state.get();
+          bool createdWithSameEventEmitter =
+              createdView != createdViews.end() &&
+              createdView->second.eventEmitter ==
+                  newChildShadowView.eventEmitter.get();
           if (!isVirtual) {
             // Insert item
             cppCommonMountItems.push_back(
@@ -803,7 +830,7 @@ void FabricMountingManager::executeMount(
             }
 
             // State
-            if (newChildShadowView.state) {
+            if (newChildShadowView.state && !createdWithSameState) {
               (maintainMutationOrder ? cppCommonMountItems
                                      : cppUpdateStateMountItems)
                   .push_back(
@@ -844,13 +871,16 @@ void FabricMountingManager::executeMount(
           }
 
           // EventEmitter
-          // On insert we always update the event emitter, as we do not pass
-          // it in when preallocating views
-          (maintainMutationOrder ? cppCommonMountItems
-                                 : cppUpdateEventEmitterMountItems)
-              .push_back(
-                  CppMountItem::UpdateEventEmitterMountItem(
-                      mutation.newChildShadowView));
+          // On insert we update the event emitter, as we do not pass it in
+          // when preallocating views. A view created by this transaction got
+          // it with its Create item, so skip it unless the emitter changed.
+          if (!createdWithSameEventEmitter) {
+            (maintainMutationOrder ? cppCommonMountItems
+                                   : cppUpdateEventEmitterMountItems)
+                .push_back(
+                    CppMountItem::UpdateEventEmitterMountItem(
+                        mutation.newChildShadowView));
+          }
 
           break;
         }
@@ -1091,7 +1121,17 @@ void FabricMountingManager::drainPreallocateViewsQueue() {
   {
     std::lock_guard allocatedViewsLock(allocatedViewsMutex_);
     for (auto& [shadowView, family] : queuedViews) {
-      if (pullModel && family.expired()) {
+      auto queuedFamily = family.lock();
+      if (pullModel && queuedFamily == nullptr) {
+        continue;
+      }
+      // Once a family is part of a committed tree, its view is executeMount's
+      // to create. The commit can run before this drain and both create and
+      // delete the view, e.g. when it is flattened again by the next commit;
+      // registering the tag now would leave it allocated with no view behind
+      // it, and its next Create would be skipped. executeMount takes
+      // allocatedViewsMutex_ after the commit has marked the family mounted.
+      if (queuedFamily != nullptr && queuedFamily->hasBeenMounted()) {
         continue;
       }
       auto allocatedViewsIterator =
@@ -1209,9 +1249,7 @@ void FabricMountingManager::preallocateRegisteredView(
   bool preventPassingStateWrapperForText =
       strcmp(shadowView.componentName, "Paragraph") == 0;
   if (shadowView.state != nullptr && !preventPassingStateWrapperForText) {
-    javaStateWrapper = StateWrapperImpl::newObjectJavaArgs();
-    StateWrapperImpl* cStateWrapper = cthis(javaStateWrapper);
-    cStateWrapper->setState(shadowView.state);
+    javaStateWrapper = StateWrapperImpl::newObjectCxxArgs(shadowView.state);
   }
 
   jni::local_ref<jobject> props = getProps({}, shadowView);
@@ -1318,9 +1356,10 @@ void FabricMountingManager::synchronouslyUpdateViewOnUIThread(
       JFabricUIManager::javaClassStatic()
           ->getMethod<void(jint, ReadableMap::javaobject)>(
               "synchronouslyUpdateViewOnUIThread");
-  auto propsMap = reinterpret_cast<ReadableMap::javaobject>(
-      ReadableNativeMap::newObjectCxxArgs(props).release());
-  synchronouslyUpdateViewOnUIThreadJNI(javaUIManager_, viewTag, propsMap);
+  auto propsMap = jni::adopt_local(
+      reinterpret_cast<ReadableMap::javaobject>(
+          ReadableNativeMap::newObjectCxxArgs(props).release()));
+  synchronouslyUpdateViewOnUIThreadJNI(javaUIManager_, viewTag, propsMap.get());
 }
 
 void FabricMountingManager::synchronouslyUpdateAnimatedProps(

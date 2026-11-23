@@ -609,7 +609,12 @@ void FabricUIManagerBinding::installFabricUIManager(
         globalJavaUiManager);
   };
 
-  contextContainer->insert("FabricUIManager", globalJavaUiManager);
+  auto fabricUIManagerOwner =
+      std::make_shared<jni::global_ref<jobject>>(globalJavaUiManager);
+  // The alias and its owner must stay registered for the container's lifetime.
+  contextContainer->insert("FabricUIManagerOwner", fabricUIManagerOwner);
+  contextContainer->insert(
+      "FabricUIManager", jni::alias_ref<jobject>(*fabricUIManagerOwner));
 
   animationChoreographer_ = std::make_shared<AndroidAnimationChoreographer>();
 

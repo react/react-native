@@ -12,8 +12,6 @@
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/NSDataBigString.h>
 #import <React/RCTAssert.h>
-#import <React/RCTBridge+Inspector.h>
-#import <React/RCTBridge+Private.h>
 #import <React/RCTBridge.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTBridgeModuleDecorator.h>
@@ -29,9 +27,9 @@
 #import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTLog.h>
 #import <React/RCTLogBox.h>
-#import <React/RCTModuleData.h>
 #import <React/RCTPerformanceLogger.h>
 #import <React/RCTRedBox.h>
+#import <React/RCTScheduler.h>
 #import <React/RCTSurfacePresenter.h>
 #import <ReactCommon/RCTTurboModule.h>
 #import <ReactCommon/RCTTurboModuleManager.h>
@@ -42,12 +40,13 @@
 #import <jsinspector-modern/ReactCdp.h>
 #import <jsireact/JSIExecutor.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
+#import <react/renderer/core/EventEmitterListener.h>
 #import <react/runtime/ReactInstance.h>
 #import <react/utils/ContextContainer.h>
-#import <react/utils/FollyConvert.h>
 #import <react/utils/ManagedObjectWrapper.h>
 
 #import "ObjCTimerRegistry.h"
+#import "RCTEventDispatcherEventPayload.h"
 #import "RCTJSThreadManager.h"
 #ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
 #import "RCTLegacyUIManagerConstantsProvider.h"
@@ -61,7 +60,7 @@
 using namespace facebook;
 using namespace facebook::react;
 
-@interface RCTInstance () <RCTTurboModuleManagerDelegate>
+@interface RCTInstance () <RCTTurboModuleManagerDelegate, RCTEventDispatcherObserver>
 @end
 
 @implementation RCTInstance {
@@ -86,6 +85,8 @@ using namespace facebook::react;
   RCTDevMenuConfigurationDecorator *_devMenuConfigurationDecorator;
 
   jsinspector_modern::HostTarget *_parentInspectorTarget;
+
+  std::shared_ptr<EventEmitterListenerContainer> _eventDispatcherListeners;
 }
 
 #pragma mark - Public
@@ -173,6 +174,13 @@ using namespace facebook::react;
 
 - (void)callFunctionOnJSModule:(NSString *)moduleName method:(NSString *)method args:(NSArray *)args
 {
+  const char *moduleNameStr = [moduleName UTF8String];
+  const char *methodNameStr = [method UTF8String];
+  if (moduleNameStr == nullptr || methodNameStr == nullptr) {
+    return;
+  }
+  // The arguments are converted on the JS thread, like the values of codegen's AsyncEventEmitter.
+  NSArray *callArgs = [args copy];
   // This is called from arbitrary threads, while -invalidate destroys _reactInstance on
   // the JS thread, so checking _valid and dereferencing have to happen as one step.
   std::lock_guard<std::mutex> lock(_invalidationMutex);
@@ -180,7 +188,12 @@ using namespace facebook::react;
     return;
   }
   _reactInstance->callFunctionOnModule(
-      [moduleName UTF8String] ?: "", [method UTF8String] ?: "", convertIdToFollyDynamic(args ? args : @[]));
+      moduleNameStr, methodNameStr, [callArgs](jsi::Runtime &runtime, std::vector<jsi::Value> &jsArgs) {
+        jsArgs.reserve(callArgs.count);
+        for (id arg in callArgs) {
+          jsArgs.push_back(TurboModuleConvertUtils::convertObjCObjectToJSIValue(runtime, arg));
+        }
+      });
 }
 
 - (void)invalidate
@@ -194,28 +207,36 @@ using namespace facebook::react;
   }
   // suspend shouldn't be called under _invalidationMutex: it notifies surface observers,
   // which can call callFunctionOnJSModule and deadlock on the same mutex.
+  // Queued rendering updates capture the scheduler's delegate by raw pointer.
+  // Stop its run-loop observer on main, but keep it alive until queued JS work
+  // has drained. Release it before the runtime so its queued JSI handles remain valid.
+  __block RCTScheduler *scheduler = _surfacePresenter.scheduler;
   [_surfacePresenter suspend];
-  [_jsThreadManager dispatchToJSThread:^{
-    /**
-     * Every TurboModule is invalidated on its own method queue.
-     * TurboModuleManager invalidate blocks the calling thread until all TurboModules are invalidated.
-     */
-    [self->_turboModuleManager invalidate];
+  RCTExecuteOnMainQueue(^{
+    [scheduler stopObservingLayoutAnimations];
+    [self->_jsThreadManager dispatchToJSThread:^{
+      /**
+       * Every TurboModule is invalidated on its own method queue.
+       * TurboModuleManager invalidate blocks the calling thread until all TurboModules are invalidated.
+       */
+      [self->_turboModuleManager invalidate];
 
-    // Clean up all the Resources
-    self->_reactInstance = nullptr;
-    self->_jsRuntimeFactory = nullptr;
-    self->_appTMMDelegate = nil;
-    self->_delegate = nil;
-    [self->_displayLink invalidate];
-    self->_displayLink = nil;
+      // Clean up all the Resources
+      scheduler = nil;
+      self->_reactInstance = nullptr;
+      self->_jsRuntimeFactory = nullptr;
+      self->_appTMMDelegate = nil;
+      self->_delegate = nil;
+      [self->_displayLink invalidate];
+      self->_displayLink = nil;
 
-    self->_turboModuleManager = nil;
-    self->_performanceLogger = nil;
+      self->_turboModuleManager = nil;
+      self->_performanceLogger = nil;
 
-    // Terminate the JavaScript thread, so that no other work executes after this block.
-    self->_jsThreadManager = nil;
-  }];
+      // Terminate the JavaScript thread, so that no other work executes after this block.
+      self->_jsThreadManager = nil;
+    }];
+  });
 }
 
 - (std::shared_ptr<CallInvoker>)jsCallInvoker
@@ -228,6 +249,24 @@ using namespace facebook::react;
   if (_valid) {
     _reactInstance->registerSegment(static_cast<uint32_t>([segmentId unsignedIntValue]), path.UTF8String);
   }
+}
+
+#pragma mark - RCTEventDispatcherObserver
+
+- (void)eventDispatcherWillDispatchEvent:(id<RCTEvent>)event
+{
+  // Only component events carry `@[viewTag, eventName, body]` as their arguments.
+  Class<RCTEvent> eventClass = [event class];
+  if (![[eventClass moduleDotMethod] isEqualToString:@"RCTEventEmitter.receiveEvent"]) {
+    return;
+  }
+  auto listeners = _eventDispatcherListeners;
+  auto tag = static_cast<Tag>(event.viewTag.integerValue);
+  auto eventName = std::string(event.eventName.UTF8String ?: "");
+  // Listeners run on the main thread, where C++ Native Animated handles events.
+  RCTExecuteOnMainQueue(^{
+    listeners->willDispatchEvent(tag, eventName, RCTEventDispatcherEventPayload(event));
+  });
 }
 
 #pragma mark - RCTTurboModuleManagerDelegate
@@ -329,7 +368,6 @@ using namespace facebook::react;
   bridgeProxy.jsCallInvoker = jsCallInvoker;
   bridgeProxy.performanceLogger = _performanceLogger;
   _bridgeProxy = bridgeProxy;
-  [RCTBridge setCurrentBridge:(RCTBridge *)bridgeProxy];
 
   // Set up TurboModules
   _turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridgeProxy:bridgeProxy
@@ -388,6 +426,13 @@ using namespace facebook::react;
   contextContainer->insert(
       "RCTEventDispatcher",
       facebook::react::wrapManagedObject([_turboModuleManager moduleForName:"RCTEventDispatcher"]));
+  if (ReactNativeFeatureFlags::cxxNativeAnimatedEnabled()) {
+    // Lets C++ Native Animated receive events that native code delivers only to RCTEventDispatcher
+    // observers, outside Fabric event emitters.
+    _eventDispatcherListeners = std::make_shared<EventEmitterListenerContainer>();
+    contextContainer->insert("RCTEventDispatcherListeners", _eventDispatcherListeners);
+    [[_turboModuleManager moduleForName:"RCTEventDispatcher"] addDispatchObserver:self];
+  }
   contextContainer->insert("RCTBridgeModuleDecorator", facebook::react::wrapManagedObject(_bridgeModuleDecorator));
   contextContainer->insert(RuntimeSchedulerKey, std::weak_ptr<RuntimeScheduler>(_reactInstance->getRuntimeScheduler()));
   contextContainer->insert("RCTBridgeProxy", facebook::react::wrapManagedObject(bridgeProxy));
@@ -556,7 +601,10 @@ using namespace facebook::react;
     return;
   }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   NSArray<NSString *> *modulesInOldArchMode = [getModulesLoadedWithOldArch() copy];
+#pragma clang diagnostic pop
   if (modulesInOldArchMode.count > 0) {
     NSMutableString *moduleList = [NSMutableString new];
     for (NSString *moduleName in modulesInOldArchMode) {

@@ -15,8 +15,10 @@ import useMergeRefs from '../Utilities/useMergeRefs';
 import * as React from 'react';
 import {useCallback} from 'react';
 
-type ImageComponentDecorator = (AbstractImageAndroid => AbstractImageAndroid) &
-  (AbstractImageIOS => AbstractImageIOS);
+type ImageComponentDecorator = ((
+  v: AbstractImageAndroid,
+) => AbstractImageAndroid) &
+  ((v: AbstractImageIOS) => AbstractImageIOS);
 
 let injectedImageComponentDecorator: ?ImageComponentDecorator;
 

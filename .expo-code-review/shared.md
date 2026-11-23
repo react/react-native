@@ -32,8 +32,9 @@ and native-component specifications generate native counterparts. Treat the
 specification or configuration as the source of truth. Do not ask an author to
 hand-edit generated output, and do not report a filtered generated file as missing.
 
-Use the repository's test topology to validate a suspected defect. Jest covers
-local JavaScript behavior. Fantom covers integrated runtime behavior. Android and
+Use the repository's test topology to validate a suspected defect. Fantom covers
+runtime logic, the JavaScript that runs in apps. Jest covers iOS-specific logic
+and code that runs in Node.js, such as build tools and scripts. Android and
 Apple have native build and test lanes. A missing test alone is not a warning;
 report the concrete behavior that fails.
 

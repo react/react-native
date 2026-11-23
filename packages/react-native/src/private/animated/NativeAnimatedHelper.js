@@ -60,10 +60,10 @@ const isSingleOpBatching =
 let flushQueueImmediate = null;
 
 const eventListenerGetValueCallbacks: {
-  [number]: (value: number) => void,
+  [key: number]: (value: number) => void,
 } = {};
 const eventListenerAnimationFinishedCallbacks: {
-  [number]: EndCallback,
+  [key: number]: EndCallback,
 } = {};
 let globalEventEmitterGetValueListener: ?EventSubscription = null;
 let globalEventEmitterAnimationFinishedListener: ?EventSubscription = null;
@@ -119,7 +119,9 @@ function createNativeOperations(): NonNullable<typeof NativeAnimatedModule> {
     methodNames.push('connectAnimatedNodeToShadowNodeFamily');
   }
   const nativeOperations: {
-    [Values<typeof methodNames>]: (...ReadonlyArray<unknown>) => void,
+    [key: Values<typeof methodNames>]: (
+      ...rest: ReadonlyArray<unknown>
+    ) => void,
   } = {};
   if (isSingleOpBatching) {
     for (let ii = 0, length = methodNames.length; ii < length; ii++) {
@@ -146,14 +148,11 @@ function createNativeOperations(): NonNullable<typeof NativeAnimatedModule> {
         // been flushed, use the queue. This is to prevent operations
         // from being executed out of order.
         if (queueOperations || queue.length !== 0) {
-          // $FlowExpectedError[incompatible-call] - Dynamism.
           queue.push(() => method(...args));
         } else if (shouldSignalBatch) {
-          // $FlowExpectedError[incompatible-call] - Dynamism.
           queue.push(() => method(...args));
           scheduleQueueFlush();
         } else {
-          // $FlowExpectedError[incompatible-call] - Dynamism.
           method(...args);
         }
       };
@@ -482,10 +481,8 @@ export default {
   generateNewNodeTag,
   isNativeDriverForced,
   // $FlowExpectedError[unsafe-getters-setters] - unsafe getter lint suppression
-  // $FlowExpectedError[missing-type-arg] - unsafe getter lint suppression
   get nativeEventEmitter(): NativeEventEmitter {
     if (!nativeEventEmitter) {
-      // $FlowFixMe[underconstrained-implicit-instantiation]
       nativeEventEmitter = new NativeEventEmitter(
         // T88715063: NativeEventEmitter only used this parameter on iOS. Now it uses it on all platforms, so this code was modified automatically to preserve its behavior
         // If you want to use the native module on other platforms, please remove this condition and test its behavior

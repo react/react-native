@@ -6,11 +6,32 @@
  */
 
 #include <react/renderer/components/AppSpecs/Props.h>
+#include <react/renderer/components/FBReactNativeSpec/Props.h>
 
 #include <gtest/gtest.h>
 
 namespace facebook::react {
 
 TEST(GeneratedPropsStrictApiTest, generatedHeaderCompiles) {}
+
+TEST(GeneratedPropsStrictApiTest, unknownPointerEventsUsesDeclaredDefault) {
+  ContextContainer contextContainer;
+  PropsParserContext context{-1, contextContainer};
+  auto pointerEvents = SafeAreaViewPointerEvents::BoxNone;
+
+  fromRawValue(context, RawValue{folly::dynamic("invalid")}, pointerEvents);
+
+  EXPECT_EQ(pointerEvents, SafeAreaViewPointerEvents::Auto);
+}
+
+TEST(GeneratedPropsStrictApiTest, knownPointerEventsPreservesRequestedValue) {
+  ContextContainer contextContainer;
+  PropsParserContext context{-1, contextContainer};
+  auto pointerEvents = SafeAreaViewPointerEvents::Auto;
+
+  fromRawValue(context, RawValue{folly::dynamic("box-none")}, pointerEvents);
+
+  EXPECT_EQ(pointerEvents, SafeAreaViewPointerEvents::BoxNone);
+}
 
 } // namespace facebook::react

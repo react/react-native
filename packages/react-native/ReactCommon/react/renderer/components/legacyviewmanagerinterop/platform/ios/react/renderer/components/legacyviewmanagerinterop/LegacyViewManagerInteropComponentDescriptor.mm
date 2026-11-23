@@ -15,7 +15,6 @@
 #include <React/RCTBridgeProxy.h>
 #include <React/RCTComponentData.h>
 #include <React/RCTEventDispatcher.h>
-#include <React/RCTModuleData.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/legacyviewmanagerinterop/LegacyViewManagerInteropState.h>
 #include <react/utils/ContextContainer.h>
@@ -106,7 +105,7 @@ static std::shared_ptr<void> constructCoordinator(
   RCTBridgeProxy *bridgeProxy;
   auto optionalBridgeProxy = contextContainer->find<std::shared_ptr<void>>("RCTBridgeProxy");
   if (optionalBridgeProxy) {
-    bridgeProxy = unwrapManagedObjectWeakly(optionalBridgeProxy.value());
+    bridgeProxy = unwrapManagedObject(optionalBridgeProxy.value());
   }
 
   auto componentName = *std::static_pointer_cast<const std::string>(flavor);

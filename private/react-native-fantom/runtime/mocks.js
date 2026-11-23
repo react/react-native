@@ -13,7 +13,7 @@ export const MOCK_FN_TAG: symbol = Symbol('mock function');
 // The type is defined this way because if we get a mixed value, we return
 // a generic mock function, and if we get a typed function, we get a typed mock.
 export const ensureMockFunction: (<TArgs extends Array<unknown>, TReturn>(
-  fn: (...TArgs) => TReturn,
+  fn: (...rest: TArgs) => TReturn,
 ) => JestMockFn<TArgs, TReturn>) &
   ((fn: unknown) => JestMockFn<Array<unknown>, unknown>) = fn => {
   // $FlowExpectedError[invalid-computed-prop]
@@ -25,14 +25,13 @@ export const ensureMockFunction: (<TArgs extends Array<unknown>, TReturn>(
   }
 
   // $FlowExpectedError[incompatible-type]
-  // $FlowExpectedError[prop-missing]
   return fn;
 };
 
 export function createMockFunction<TArgs extends Array<unknown>, TReturn>(
-  initialImplementation?: (...TArgs) => TReturn,
+  initialImplementation?: (...rest: TArgs) => TReturn,
 ): JestMockFn<TArgs, TReturn> {
-  let implementation: ?(...TArgs) => TReturn = initialImplementation;
+  let implementation: ?(...rest: TArgs) => TReturn = initialImplementation;
 
   const mock: JestMockFn<TArgs, TReturn>['mock'] = {
     calls: [],

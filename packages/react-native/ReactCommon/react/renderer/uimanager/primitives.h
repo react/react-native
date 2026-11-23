@@ -43,7 +43,7 @@ struct ShadowNodeListWrapper : public jsi::NativeState {
   std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>> shadowNodeList;
 };
 
-inline static jsi::Value valueFromShadowNode(
+inline static jsi::Object objectFromShadowNode(
     jsi::Runtime &runtime,
     std::shared_ptr<const ShadowNode> shadowNode,
     bool assignRuntimeShadowNodeReference = false)

@@ -23,7 +23,7 @@ const TRACE_TAG_REACT = 1 << 13; // eslint-disable-line no-bitwise
 let _asyncCookie = 0;
 
 type EventName = string | (() => string);
-type EventArgs = ?{[string]: string};
+type EventArgs = ?{[key: string]: string};
 
 /**
  * Indicates if the application is currently being traced.

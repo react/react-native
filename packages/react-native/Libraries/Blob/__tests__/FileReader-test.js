@@ -277,7 +277,7 @@ describe('FileReader', function () {
   });
 
   it('should retain the blob until the read resolves', async () => {
-    let resolveRead: string => void = () => {};
+    let resolveRead: (v: string) => void = () => {};
     const spy = jest
       .spyOn(FileReaderModuleMock, 'readAsText')
       .mockImplementation(
@@ -305,7 +305,7 @@ describe('FileReader', function () {
   });
 
   it('should release the blob when the read rejects', async () => {
-    let rejectRead: Error => void = () => {};
+    let rejectRead: (v: Error) => void = () => {};
     const spy = jest
       .spyOn(FileReaderModuleMock, 'readAsText')
       .mockImplementation(
@@ -351,7 +351,7 @@ describe('FileReader', function () {
   });
 
   it('should keep retaining the new blob when a stale read settles after abort', async () => {
-    const resolvers: Array<(string) => void> = [];
+    const resolvers: Array<(v: string) => void> = [];
     const spy = jest
       .spyOn(FileReaderModuleMock, 'readAsText')
       .mockImplementation(

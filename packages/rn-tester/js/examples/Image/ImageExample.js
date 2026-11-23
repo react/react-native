@@ -119,7 +119,7 @@ const BlobImage = ({url}: BlobImageProps): React.Node => {
   return objectURL !== null ? (
     <Image source={{uri: objectURL}} style={styles.base} />
   ) : (
-    <Text>Object URL not created yet</Text>
+    <RNTesterText>Object URL not created yet</RNTesterText>
   );
 };
 
@@ -284,6 +284,7 @@ class NetworkImageExample extends React.Component<
         <Image
           {...this.props}
           style={[styles.base, styles.visibleOverflow]}
+          // $FlowFixMe[missing-local-annot]
           onLoadStart={e => this.setState({loading: true})}
           onError={e =>
             this.setState({error: e.nativeEvent.error, loading: false})

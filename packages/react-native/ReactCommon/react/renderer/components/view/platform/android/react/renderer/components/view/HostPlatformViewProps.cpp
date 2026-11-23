@@ -185,6 +185,16 @@ static void updateBorderWidthProps(
       "borderBottomWidth",
       newBorderWidths.bottom,
       oldBorderWidths.bottom);
+  updateBorderWidthPropValue(
+      result,
+      "borderBlockWidth",
+      newBorderWidths.vertical,
+      oldBorderWidths.vertical);
+  updateBorderWidthPropValue(
+      result,
+      "borderInlineWidth",
+      newBorderWidths.horizontal,
+      oldBorderWidths.horizontal);
 }
 
 static void updateBorderRadiusPropValue(
@@ -340,6 +350,21 @@ static void updateBorderColorsProps(
       "borderBlockStartColor",
       newBorderColor.blockStart,
       oldBorderColor.blockStart);
+  updateBorderColorPropValue(
+      result,
+      "borderInlineColor",
+      newBorderColor.inline_,
+      oldBorderColor.inline_);
+  updateBorderColorPropValue(
+      result,
+      "borderInlineEndColor",
+      newBorderColor.inlineEnd,
+      oldBorderColor.inlineEnd);
+  updateBorderColorPropValue(
+      result,
+      "borderInlineStartColor",
+      newBorderColor.inlineStart,
+      oldBorderColor.inlineStart);
 }
 
 inline static void updateNativeDrawableProp(
@@ -395,58 +420,39 @@ inline static void updateNativeDrawableProp(
   result[propName] = nativeDrawableResult;
 }
 
-inline static void updateAccessibilityStateProp(
-    folly::dynamic& result,
-    const std::optional<AccessibilityState>& newState,
-    const std::optional<AccessibilityState>& oldState) {
-  folly::dynamic resultState = folly::dynamic::object();
+static folly::dynamic toDynamic(const AccessibilityState& state) {
+  folly::dynamic result = folly::dynamic::object();
+  result["disabled"] = state.disabled;
 
-  if (!newState.has_value() && oldState.has_value()) {
-    result["accessibilityState"] = resultState;
-    return;
+  // Omitting the key when `selected` is unset is what tells the platform the
+  // component is not selectable. BaseViewManager#setViewState falls back to
+  // `setSelected(false)` for an absent key, so the rendered result is
+  // unchanged from when this was a plain `bool`.
+  if (state.selected.has_value()) {
+    result["selected"] = state.selected.value();
   }
 
-  if (!oldState.has_value() || newState->disabled != oldState->disabled) {
-    resultState["disabled"] = newState->disabled;
+  result["busy"] = state.busy;
+
+  if (state.expanded.has_value()) {
+    result["expanded"] = state.expanded.value();
   }
 
-  if (!oldState.has_value() || newState->selected != oldState->selected) {
-    // Omitting the key when `selected` is unset is what tells the platform the
-    // component is not selectable. BaseViewManager#setViewState falls back to
-    // `setSelected(false)` for an absent key, so the rendered result is
-    // unchanged from when this was a plain `bool`.
-    if (newState->selected.has_value()) {
-      resultState["selected"] = newState->selected.value();
-    }
+  switch (state.checked) {
+    case AccessibilityState::Unchecked:
+      result["checked"] = false;
+      break;
+    case AccessibilityState::Checked:
+      result["checked"] = true;
+      break;
+    case AccessibilityState::Mixed:
+      result["checked"] = "mixed";
+      break;
+    case AccessibilityState::None:
+      result["checked"] = "none";
+      break;
   }
-
-  if (!oldState.has_value() || newState->busy != oldState->busy) {
-    resultState["busy"] = newState->busy;
-  }
-
-  if (!oldState.has_value() || newState->expanded != oldState->expanded) {
-    if (newState->expanded.has_value()) {
-      resultState["expanded"] = newState->expanded.value();
-    }
-  }
-
-  if (!oldState.has_value() || newState->checked != oldState->checked) {
-    switch (newState->checked) {
-      case AccessibilityState::Unchecked:
-        resultState["checked"] = false;
-        break;
-      case AccessibilityState::Checked:
-        resultState["checked"] = true;
-        break;
-      case AccessibilityState::Mixed:
-        resultState["checked"] = "mixed";
-        break;
-      case AccessibilityState::None:
-        resultState["checked"] = "none";
-        break;
-    }
-  }
-  result["accessibilityState"] = resultState;
+  return result;
 }
 
 static folly::dynamic toDynamic(
@@ -540,7 +546,8 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   }
 
   if (role != oldProps->role) {
-    result["role"] = toString(role);
+    result["role"] =
+        role.has_value() ? toString(*role) : folly::dynamic(nullptr);
   }
 
   if (opacity != oldProps->opacity) {
@@ -907,8 +914,9 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   // Accessibility
 
   if (accessibilityState != oldProps->accessibilityState) {
-    updateAccessibilityStateProp(
-        result, accessibilityState, oldProps->accessibilityState);
+    result["accessibilityState"] = accessibilityState.has_value()
+        ? toDynamic(*accessibilityState)
+        : folly::dynamic::object();
   }
 
   if (accessibilityLabel != oldProps->accessibilityLabel) {
@@ -941,7 +949,9 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   }
 
   if (accessibilityRole != oldProps->accessibilityRole) {
-    result["accessibilityRole"] = accessibilityRole;
+    result["accessibilityRole"] = accessibilityRole.empty()
+        ? folly::dynamic(nullptr)
+        : folly::dynamic(accessibilityRole);
   }
 
   if (accessibilityLanguage != oldProps->accessibilityLanguage) {
@@ -962,7 +972,9 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
     if (accessibilityValue.text.has_value()) {
       accessibilityValueObject["text"] = accessibilityValue.text.value();
     }
-    result["accessibilityValue"] = accessibilityValueObject;
+    result["accessibilityValue"] = accessibilityValueObject.empty()
+        ? folly::dynamic(nullptr)
+        : accessibilityValueObject;
   }
 
   if (accessibilityActions != oldProps->accessibilityActions) {

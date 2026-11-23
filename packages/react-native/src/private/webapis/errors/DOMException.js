@@ -13,11 +13,9 @@
  * See https://webidl.spec.whatwg.org/#idl-DOMException.
  */
 
-// flowlint unsafe-getters-setters:off
-
 import {setPlatformObject} from '../webidl/PlatformObjects';
 
-const ERROR_NAME_TO_ERROR_CODE_MAP: {[string]: number} = {
+const ERROR_NAME_TO_ERROR_CODE_MAP: {[key: string]: number} = {
   IndexSizeError: 1,
   HierarchyRequestError: 3,
   WrongDocumentError: 4,
@@ -42,7 +40,7 @@ const ERROR_NAME_TO_ERROR_CODE_MAP: {[string]: number} = {
   DataCloneError: 25,
 };
 
-const ERROR_CODES: {[string]: number} = {
+const ERROR_CODES: {[key: string]: number} = {
   INDEX_SIZE_ERR: 1,
   DOMSTRING_SIZE_ERR: 2,
   HIERARCHY_REQUEST_ERR: 3,
@@ -140,10 +138,12 @@ export default class DOMException extends Error {
     }
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get name(): string {
     return this.#name;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get code(): number {
     return this.#code;
   }

@@ -40,6 +40,7 @@ public object ReactScrollViewHelper {
   private val TAG = ReactScrollView::class.java.simpleName
   private val DEBUG_MODE = false // ReactBuildConfig.DEBUG
 
+  private const val UNSET_SCROLL_POSITION = -1
   private const val CONTENT_OFFSET_LEFT = "contentOffsetLeft"
   private const val CONTENT_OFFSET_TOP = "contentOffsetTop"
   private const val SCROLL_AWAY_PADDING_TOP = "scrollAwayPaddingTop"
@@ -373,6 +374,17 @@ public object ReactScrollViewHelper {
     // User driven scrolling should disable scroll state updates coming from Fabric
     scrollState.isUpdatedByScroll = true
 
+    // Until a view sends its first update it doesn't know the offset in its state. On mount that
+    // offset is usually already correct, and sending it again would only commit an unchanged tree.
+    if (scrollState.lastStateUpdateScroll.equals(UNSET_SCROLL_POSITION, UNSET_SCROLL_POSITION)) {
+      scrollView.stateWrapper?.stateData?.let { stateData ->
+        scrollState.setLastStateUpdateScroll(
+            toPixelFromDIP(stateData.getDouble(CONTENT_OFFSET_LEFT)).toInt(),
+            toPixelFromDIP(stateData.getDouble(CONTENT_OFFSET_TOP)).toInt(),
+        )
+      }
+    }
+
     // Dedupe events to reduce JNI traffic
     if (scrollState.lastStateUpdateScroll.equals(scrollX, scrollY)) {
       return
@@ -660,7 +672,7 @@ public object ReactScrollViewHelper {
       /** Get the padding on the bottom for tab bar */
       var scrollAwayPaddingBottom: Int = 0,
       /** Get the Fabric state of last scroll position */
-      val lastStateUpdateScroll: Point = Point(-1, -1),
+      val lastStateUpdateScroll: Point = Point(UNSET_SCROLL_POSITION, UNSET_SCROLL_POSITION),
       /** Get true if the previous animation was canceled */
       var isCanceled: Boolean = false,
       /** Get true if previous animation was finished */

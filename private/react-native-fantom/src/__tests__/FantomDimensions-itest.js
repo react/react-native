@@ -116,12 +116,15 @@ for (const [name, config] of conflictingConfigs) {
   });
 }
 
-it('checks all active roots, including one that differs from the latest root', () => {
+it('compares new metrics only with the current global dimensions', () => {
   createRoot();
   createRoot({viewportWidth: 640});
   createRoot({viewportWidth: 640});
-  expect(warn).toHaveBeenCalledTimes(2);
+  expect(warn).toHaveBeenCalledTimes(1);
   expect(Dimensions.get('window').width).toBe(640);
+  createRoot();
+  expect(warn).toHaveBeenCalledTimes(2);
+  expect(Dimensions.get('window').width).toBe(390);
 });
 
 it('does not warn for a destroyed root', () => {

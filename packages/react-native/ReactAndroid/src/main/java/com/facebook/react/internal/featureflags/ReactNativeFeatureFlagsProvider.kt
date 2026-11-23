@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0a088b4c798dd44274c63a4aa6cba312>>
+ * @generated SignedSource<<8e0059eadd2b19c49b64bb57121ba723>>
  */
 
 /**
@@ -53,8 +53,6 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean
 
-  @DoNotStrip public fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean
-
   @DoNotStrip public fun enableAndroidTextMeasurementOptimizations(): Boolean
 
   @DoNotStrip public fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean
@@ -83,8 +81,6 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableFollowUpMountItemDispatchAndroid(): Boolean
 
-  @DoNotStrip public fun enableFontScaleChangesUpdatingLayout(): Boolean
-
   @DoNotStrip public fun enableIOSCompressedTextFrameAdjustment(): Boolean
 
   @DoNotStrip public fun enableIOSTextBaselineOffsetPerLine(): Boolean
@@ -97,9 +93,13 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
 
+  @DoNotStrip public fun enableImmediateUpdateModeForScrollContentView(): Boolean
+
   @DoNotStrip public fun enableImperativeEvents(): Boolean
 
   @DoNotStrip public fun enableImperativeFocus(): Boolean
+
+  @DoNotStrip public fun enableInteractableResponderViews(): Boolean
 
   @DoNotStrip public fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 
@@ -146,6 +146,10 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun fixBorderlessRippleAndroid(): Boolean
 
   @DoNotStrip public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
+
+  @DoNotStrip public fun fixProgrammaticScrollMomentumEventsIOS(): Boolean
+
+  @DoNotStrip public fun fixTextInlineViewLineHeight(): Boolean
 
   @DoNotStrip public fun fixTextLayoutOnPixelDensityChange(): Boolean
 

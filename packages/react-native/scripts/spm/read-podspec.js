@@ -32,7 +32,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 /*::
-type RawSpec = {[string]: unknown};
+type RawSpec = {[key: string]: unknown};
 */
 
 // ---------------------------------------------------------------------------
@@ -138,6 +138,7 @@ function runPodIpcSpec(podspecPath /*: string */) /*: RawSpec | null */ {
   const lastLineBrace = stdout.lastIndexOf('\n}');
   const end =
     lastLineBrace >= 0 ? lastLineBrace + 2 : stdout.lastIndexOf('}') + 1;
+  // $FlowFixMe[invalid-compare]
   if (start < 0 || end <= start) {
     console.warn(
       '[read-podspec] pod ipc spec produced no line-anchored JSON object; ' +
@@ -441,7 +442,6 @@ function shellTokenize(value /*: string */) /*: Array<string> */ {
  */
 function flattenSubspecs(rawSpec /*: RawSpec */) /*: PodspecModel */ {
   const warnings /*: Array<string> */ = [];
-  // $FlowFixMe[prop-missing] dynamic shape
   const partial /*: boolean */ = rawSpec.__regex_partial__ === true;
   if (Array.isArray(rawSpec.__warnings__)) {
     // $FlowFixMe[incompatible-type] runtime-validated dynamic shape
@@ -459,7 +459,6 @@ function flattenSubspecs(rawSpec /*: RawSpec */) /*: PodspecModel */ {
   if (Array.isArray(rawSpec.default_subspecs)) {
     const wanted = new Set(rawSpec.default_subspecs);
     selected = subspecs.filter(s => {
-      // $FlowFixMe[prop-missing] dynamic shape
       const name = s != null && typeof s.name === 'string' ? s.name : null;
       return name != null && wanted.has(name);
     });
@@ -485,7 +484,6 @@ function flattenSubspecs(rawSpec /*: RawSpec */) /*: PodspecModel */ {
   // Only the spec's own value: a subspec's `header_dir` names that subspec's
   // headers, and several subspecs can disagree.
   function specStringField(key /*: string */) /*: string | null */ {
-    // $FlowFixMe[incompatible-use] dynamic shape
     const value = rawSpec[key];
     return typeof value === 'string' && value.length > 0 ? value : null;
   }
@@ -516,7 +514,6 @@ function flattenSubspecs(rawSpec /*: RawSpec */) /*: PodspecModel */ {
     for (const layer of layers) {
       if (layer == null || typeof layer !== 'object') continue;
       for (const xcKey of XCCONFIG_KEYS) {
-        // $FlowFixMe[incompatible-use] layer narrowed from `mixed`
         const xc = layer[xcKey];
         if (xc == null || typeof xc !== 'object') continue;
         const hsp = xc.HEADER_SEARCH_PATHS;
@@ -574,7 +571,6 @@ function flattenSubspecs(rawSpec /*: RawSpec */) /*: PodspecModel */ {
     for (const layer of layers) {
       if (layer == null || typeof layer !== 'object') continue;
       for (const xcKey of XCCONFIG_KEYS) {
-        // $FlowFixMe[incompatible-use] layer narrowed from `mixed`
         const xc = layer[xcKey];
         if (xc == null || typeof xc !== 'object') continue;
         for (const rawKey of Object.keys(xc)) {
@@ -595,7 +591,6 @@ function flattenSubspecs(rawSpec /*: RawSpec */) /*: PodspecModel */ {
               : cfgRaw === 'release'
                 ? 'release'
                 : null;
-          // $FlowFixMe[incompatible-use] xc value access is intentional
           const val = xc[rawKey];
           const strs =
             typeof val === 'string'
@@ -670,7 +665,6 @@ function flattenSubspecs(rawSpec /*: RawSpec */) /*: PodspecModel */ {
     return out;
   }
 
-  // $FlowFixMe[prop-missing] dynamic shape
   const reqArc /*: unknown */ = rawSpec.requires_arc;
   const requiresArc =
     reqArc === false || (Array.isArray(reqArc) && reqArc.length === 0)
@@ -782,7 +776,6 @@ function readPodspecNames(
 ) /*: ?{name: ?string, moduleName: ?string, headerDir: ?string} */ {
   const raw = regexPodspec(podspecPath);
   const field = (key /*: string */) /*: ?string */ => {
-    // $FlowFixMe[prop-missing] RawSpec is dynamically shaped
     const value = raw[key];
     return typeof value === 'string' &&
       value.length > 0 &&

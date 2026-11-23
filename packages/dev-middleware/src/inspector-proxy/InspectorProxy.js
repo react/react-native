@@ -205,7 +205,7 @@ export default class InspectorProxy implements InspectorProxyQueries {
   processRequest(
     request: IncomingMessage,
     response: ServerResponse,
-    next: (?Error) => unknown,
+    next: (v: ?Error) => unknown,
   ) {
     const pathname = new URL(request.url, 'http://example.com').pathname;
     if (
@@ -333,7 +333,6 @@ export default class InspectorProxy implements InspectorProxyQueries {
       // well-behaved and the debugger is prepared to handle large messages.
       maxPayload: 0,
     });
-    // $FlowFixMe[value-as-type]
     wss.on('connection', async (socket: WS, req) => {
       const wssTimestamp = Date.now();
 
@@ -492,7 +491,6 @@ export default class InspectorProxy implements InspectorProxyQueries {
       // well-behaved and the device is prepared to handle large messages.
       maxPayload: 0,
       // Verify the client is from an allowed origin.
-      // $FlowFixMe[incompatible-type] - `ws` definition is incomplete.
       verifyClient: (
         info: Readonly<{
           origin: string,
@@ -522,7 +520,6 @@ export default class InspectorProxy implements InspectorProxyQueries {
       },
     });
 
-    // $FlowFixMe[value-as-type]
     wss.on('connection', async (socket: WS, req) => {
       const wssTimestamp = Date.now();
 

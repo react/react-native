@@ -76,10 +76,6 @@ class StyleValueHandle {
   // Intentionally leaving out auto as a fast path
   enum class Keyword : uint8_t { MaxContent, FitContent, Stretch };
 
-  constexpr bool isKeyword(Keyword keyword) const {
-    return type() == Type::Keyword && value() == static_cast<uint16_t>(keyword);
-  }
-
   constexpr Type type() const {
     return static_cast<Type>(repr_ & kHandleTypeMask);
   }

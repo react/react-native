@@ -25,10 +25,11 @@ import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toDrawable
-import com.facebook.react.bridge.ReactTestHelper.createCatalystContextForTest
+import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -37,8 +38,10 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowSoLoader::class])
 @RequiresApi(Build.VERSION_CODES.N)
 class ReactEditTextOutlineTest {
 
@@ -47,7 +50,7 @@ class ReactEditTextOutlineTest {
   @Before
   fun setup() {
     ReactNativeFeatureFlagsForTests.setUp()
-    val context = createCatalystContextForTest()
+    val context = createTestReactApplicationContext()
     DisplayMetricsHolder.setScreenDisplayMetrics(DisplayMetrics())
     view =
         ReactTextInputManager().createViewInstance(ThemedReactContext(context, context, null, -1))

@@ -143,6 +143,17 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
   addEventEmitterListener(
       nativeAnimatedNodesManager_->getEventEmitterListener());
 
+#if defined(__APPLE__)
+  // Events delivered to RCTEventDispatcher observers rather than through Fabric
+  // event emitters.
+  if (auto eventDispatcherListeners =
+          uiManager->getContextContainer()
+              ->find<std::shared_ptr<EventEmitterListenerContainer>>(
+                  "RCTEventDispatcherListeners")) {
+    (*eventDispatcherListeners)->addListener(getEventEmitterListener());
+  }
+#endif
+
   uiManager->addEventListener(
       std::make_shared<EventListener>(
           [eventEmitterListenerContainerWeak =

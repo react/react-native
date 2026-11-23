@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<43f74d6da837bdcab1da5faf8cc78291>>
+ * @generated SignedSource<<8669d5fd41e7808f6344dd9bba1c09a7>>
  */
 
 /**
@@ -119,11 +119,6 @@ bool NativeReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid(
   return ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid();
 }
 
-bool NativeReactNativeFeatureFlags::enableAndroidAutoOffscreenCompositingForElevation(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableAndroidAutoOffscreenCompositingForElevation();
-}
-
 bool NativeReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations();
@@ -194,11 +189,6 @@ bool NativeReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid(
   return ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid();
 }
 
-bool NativeReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout();
-}
-
 bool NativeReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment();
@@ -229,6 +219,11 @@ bool NativeReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetCha
   return ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges();
 }
 
+bool NativeReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView();
+}
+
 bool NativeReactNativeFeatureFlags::enableImperativeEvents(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImperativeEvents();
@@ -237,6 +232,11 @@ bool NativeReactNativeFeatureFlags::enableImperativeEvents(
 bool NativeReactNativeFeatureFlags::enableImperativeFocus(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImperativeFocus();
+}
+
+bool NativeReactNativeFeatureFlags::enableInteractableResponderViews(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableInteractableResponderViews();
 }
 
 bool NativeReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS(
@@ -352,6 +352,16 @@ bool NativeReactNativeFeatureFlags::fixBorderlessRippleAndroid(
 bool NativeReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact();
+}
+
+bool NativeReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS();
+}
+
+bool NativeReactNativeFeatureFlags::fixTextInlineViewLineHeight(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::fixTextInlineViewLineHeight();
 }
 
 bool NativeReactNativeFeatureFlags::fixTextLayoutOnPixelDensityChange(

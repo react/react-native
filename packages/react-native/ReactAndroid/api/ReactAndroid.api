@@ -4127,6 +4127,9 @@ public final class com/facebook/react/uimanager/Spacing {
 	public static final field Companion Lcom/facebook/react/uimanager/Spacing$Companion;
 	public static final field END I
 	public static final field HORIZONTAL I
+	public static final field INLINE I
+	public static final field INLINE_END I
+	public static final field INLINE_START I
 	public static final field LEFT I
 	public static final field RIGHT I
 	public static final field START I
@@ -4476,7 +4479,10 @@ public final class com/facebook/react/uimanager/ViewProps {
 	public static final field BACKGROUND_SIZE Ljava/lang/String;
 	public static final field BORDER_BLOCK_COLOR Ljava/lang/String;
 	public static final field BORDER_BLOCK_END_COLOR Ljava/lang/String;
+	public static final field BORDER_BLOCK_END_WIDTH Ljava/lang/String;
 	public static final field BORDER_BLOCK_START_COLOR Ljava/lang/String;
+	public static final field BORDER_BLOCK_START_WIDTH Ljava/lang/String;
+	public static final field BORDER_BLOCK_WIDTH Ljava/lang/String;
 	public static final field BORDER_BOTTOM_COLOR Ljava/lang/String;
 	public static final field BORDER_BOTTOM_END_RADIUS Ljava/lang/String;
 	public static final field BORDER_BOTTOM_LEFT_RADIUS Ljava/lang/String;
@@ -4488,6 +4494,12 @@ public final class com/facebook/react/uimanager/ViewProps {
 	public static final field BORDER_END_END_RADIUS Ljava/lang/String;
 	public static final field BORDER_END_START_RADIUS Ljava/lang/String;
 	public static final field BORDER_END_WIDTH Ljava/lang/String;
+	public static final field BORDER_INLINE_COLOR Ljava/lang/String;
+	public static final field BORDER_INLINE_END_COLOR Ljava/lang/String;
+	public static final field BORDER_INLINE_END_WIDTH Ljava/lang/String;
+	public static final field BORDER_INLINE_START_COLOR Ljava/lang/String;
+	public static final field BORDER_INLINE_START_WIDTH Ljava/lang/String;
+	public static final field BORDER_INLINE_WIDTH Ljava/lang/String;
 	public static final field BORDER_LEFT_COLOR Ljava/lang/String;
 	public static final field BORDER_LEFT_WIDTH Ljava/lang/String;
 	public static final field BORDER_RADIUS Ljava/lang/String;
@@ -4934,6 +4946,9 @@ public abstract class com/facebook/react/uimanager/style/LogicalEdge : java/lang
 	public static final field Companion Lcom/facebook/react/uimanager/style/LogicalEdge$Companion;
 	public static final field END Lcom/facebook/react/uimanager/style/LogicalEdge;
 	public static final field HORIZONTAL Lcom/facebook/react/uimanager/style/LogicalEdge;
+	public static final field INLINE Lcom/facebook/react/uimanager/style/LogicalEdge;
+	public static final field INLINE_END Lcom/facebook/react/uimanager/style/LogicalEdge;
+	public static final field INLINE_START Lcom/facebook/react/uimanager/style/LogicalEdge;
 	public static final field LEFT Lcom/facebook/react/uimanager/style/LogicalEdge;
 	public static final field RIGHT Lcom/facebook/react/uimanager/style/LogicalEdge;
 	public static final field START Lcom/facebook/react/uimanager/style/LogicalEdge;
@@ -5126,6 +5141,7 @@ public class com/facebook/react/viewmanagers/SafeAreaViewManagerDelegate : com/f
 }
 
 public abstract interface class com/facebook/react/viewmanagers/SafeAreaViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
+	public abstract fun setPointerEvents (Landroid/view/View;Ljava/lang/String;)V
 }
 
 public class com/facebook/react/viewmanagers/UnimplementedNativeViewManagerDelegate : com/facebook/react/uimanager/BaseViewManagerDelegate {
@@ -5478,6 +5494,7 @@ public class com/facebook/react/views/scroll/ReactHorizontalScrollView : android
 	public fun arrowScroll (I)Z
 	public fun canScrollHorizontally (I)Z
 	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
+	public fun dispatchTouchEvent (Landroid/view/MotionEvent;)Z
 	public fun draw (Landroid/graphics/Canvas;)V
 	public fun executeKeyEvent (Landroid/view/KeyEvent;)Z
 	public fun flashScrollIndicators ()V
@@ -5626,6 +5643,7 @@ public class com/facebook/react/views/scroll/ReactScrollView : android/widget/Sc
 	public synthetic fun <init> (Landroid/content/Context;Lcom/facebook/react/views/scroll/FpsListener;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun abortAnimation ()V
 	public fun dispatchGenericMotionEvent (Landroid/view/MotionEvent;)Z
+	public fun dispatchTouchEvent (Landroid/view/MotionEvent;)Z
 	public fun draw (Landroid/graphics/Canvas;)V
 	public fun executeKeyEvent (Landroid/view/KeyEvent;)Z
 	public fun flashScrollIndicators ()V
@@ -6362,7 +6380,7 @@ public class com/facebook/react/views/textinput/ReactTextInputManager : com/face
 	public final fun setFontStyle (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setFontVariant (Lcom/facebook/react/views/textinput/ReactEditText;Lcom/facebook/react/bridge/ReadableArray;)V
 	public final fun setFontVariationSettings (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
-	public final fun setFontWeight (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
+	public final fun setFontWeight (Lcom/facebook/react/views/textinput/ReactEditText;Lcom/facebook/react/bridge/Dynamic;)V
 	public final fun setImportantForAutofill (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
 	public final fun setIncludeFontPadding (Lcom/facebook/react/views/textinput/ReactEditText;Z)V
 	public final fun setInlineImageLeft (Lcom/facebook/react/views/textinput/ReactEditText;Ljava/lang/String;)V
@@ -6464,6 +6482,7 @@ public class com/facebook/react/views/view/ReactViewGroup : android/view/ViewGro
 	public fun invalidateElevatedDescendantCache ()Z
 	protected fun onAttachedToWindow ()V
 	protected fun onConfigurationChanged (Landroid/content/res/Configuration;)V
+	protected fun onDetachedFromWindow ()V
 	public fun onHoverEvent (Landroid/view/MotionEvent;)Z
 	public fun onInterceptTouchEvent (Landroid/view/MotionEvent;)Z
 	protected fun onLayout (ZIIII)V

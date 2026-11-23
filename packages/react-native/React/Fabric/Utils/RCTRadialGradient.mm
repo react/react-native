@@ -175,8 +175,15 @@ RadiusVector GetRadialGradientRadius(
   auto [radiusX, radiusY] =
       GetRadialGradientRadius(isCircle, gradient.size, centerPoint.x, centerPoint.y, size.width, size.height);
   const auto gradientLineLength = std::max(radiusX, radiusY);
-  const auto colorStops = [RCTGradientUtils getFixedColorStops:gradient.colorStops
-                                            gradientLineLength:gradientLineLength];
+  auto colorStops = [RCTGradientUtils getFixedColorStops:gradient.colorStops gradientLineLength:gradientLineLength];
+  // Unlike negative stops, stops past the ending shape stay visible outside it, so the radius grows to fit them.
+  const Float radiusScale = colorStops.empty() ? 1 : std::max<Float>(colorStops.back().position.value_or(1), 1);
+  colorStops = [RCTGradientUtils clipColorStops:colorStops end:radiusScale];
+  for (auto &colorStop : colorStops) {
+    colorStop.position = colorStop.position.value_or(0) / radiusScale;
+  }
+  radiusX *= radiusScale;
+  radiusY *= radiusScale;
   gradientLayer.startPoint = CGPointMake(centerPoint.x / size.width, centerPoint.y / size.height);
   // endpoint.x is horizontal length and endpoint.y is vertical length
   gradientLayer.endPoint = CGPointMake(

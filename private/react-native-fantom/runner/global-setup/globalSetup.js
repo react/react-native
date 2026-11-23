@@ -10,10 +10,17 @@
 
 import type {DevToolLauncher} from '@react-native/dev-middleware';
 
-import {isOSS, validateEnvironmentVariables} from '../EnvironmentOptions';
+import {
+  debugJS,
+  isOSS,
+  validateEnvironmentVariables,
+} from '../EnvironmentOptions';
 import {getTestBuildOutputPath} from '../paths';
 import build from './build';
-import {createDevMiddleware} from '@react-native/dev-middleware';
+import {
+  createDevMiddleware,
+  unstable_DefaultToolLauncher as DefaultToolLauncher,
+} from '@react-native/dev-middleware';
 import * as Metro from 'metro';
 import {Server} from 'node:net';
 import path from 'node:path';
@@ -55,19 +62,26 @@ async function startMetroServer() {
   // $FlowExpectedError[cannot-write]
   metroConfig.server.port = Number(process.env.__FANTOM_METRO_PORT__);
 
-  // No-op app launcher to prevent debugger-shell launches during tests
+  const serverBaseUrl = `http://localhost:${metroConfig.server.port}`;
   const devToolLauncher: DevToolLauncher = {
-    launchDebuggerAppWindow: async (_url: string) => {},
-    launchDebuggerShell: async () => {},
-    prepareDebuggerShell: async () => ({code: 'not_implemented'}),
+    launchDebuggerAppWindow: async (url: string) => {
+      if (debugJS) {
+        await DefaultToolLauncher.launchDebuggerAppWindow(url, {
+          allowInTests: true,
+        });
+      }
+    },
   };
 
   const {
     middleware: devMiddleware,
     websocketEndpoints: debuggerWebsocketEndpoints,
   } = createDevMiddleware({
-    serverBaseUrl: `http://localhost:${metroConfig.server.port}`,
+    serverBaseUrl,
     unstable_toolLauncher: devToolLauncher,
+    unstable_experiments: {
+      enableStandaloneFuseboxShell: false,
+    },
   });
 
   const server = await Metro.runServer(metroConfig, {

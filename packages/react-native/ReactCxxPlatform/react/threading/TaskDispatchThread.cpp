@@ -96,6 +96,11 @@ void TaskDispatchThread::runSync(TaskFn&& task) noexcept {
 }
 
 void TaskDispatchThread::cancelPendingTasks() noexcept {
+#ifdef ANDROID
+  assert(
+      jni::detail::currentOrNull() != nullptr &&
+      "Pending tasks must be cancelled on a JVM-attached thread");
+#endif
   std::priority_queue<Task> discarded;
   {
     std::lock_guard<std::mutex> lock(mutex_);

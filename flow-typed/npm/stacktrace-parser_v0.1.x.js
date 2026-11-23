@@ -12,6 +12,6 @@ type StackFrame = {
 
 declare module 'stacktrace-parser' {
   declare module.exports: {
-    parse: string => Array<StackFrame>,
+    parse: (v: string) => Array<StackFrame>,
   };
 }

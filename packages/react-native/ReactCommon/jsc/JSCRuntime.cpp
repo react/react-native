@@ -181,6 +181,10 @@ class JSCRuntime : public jsi::Runtime {
   jsi::String createStringFromUtf16(const char16_t* utf16, size_t length)
       override;
   std::string utf8(const jsi::String& /*str*/) override;
+  void getStringData(
+      const jsi::String& str,
+      void* ctx,
+      void (*cb)(void* ctx, bool ascii, const void* data, size_t num)) override;
   size_t length(const jsi::String& /*str*/) override;
 
   jsi::Object createObject() override;
@@ -758,6 +762,15 @@ jsi::String JSCRuntime::createStringFromUtf16(
 
 std::string JSCRuntime::utf8(const jsi::String& str) {
   return JSStringToSTLString(stringRef(str));
+}
+
+void JSCRuntime::getStringData(
+    const jsi::String& str,
+    void* ctx,
+    void (*cb)(void* ctx, bool ascii, const void* data, size_t num)) {
+  // A JSString holds UTF-16, so pass its characters without converting them.
+  JSStringRef ref = stringRef(str);
+  cb(ctx, false, JSStringGetCharactersPtr(ref), JSStringGetLength(ref));
 }
 
 size_t JSCRuntime::length(const jsi::String& str) {

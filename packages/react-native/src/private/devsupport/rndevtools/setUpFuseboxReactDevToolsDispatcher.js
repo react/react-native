@@ -18,13 +18,13 @@ export type JSONValue =
 type DomainName = 'react-devtools';
 
 class EventScope<T> {
-  #listeners: Set<(T) => void> = new Set();
+  #listeners: Set<(v: T) => void> = new Set();
 
-  addEventListener(listener: T => void): void {
+  addEventListener(listener: (v: T) => void): void {
     this.#listeners.add(listener);
   }
 
-  removeEventListener(listener: T => void): void {
+  removeEventListener(listener: (v: T) => void): void {
     this.#listeners.delete(listener);
   }
 

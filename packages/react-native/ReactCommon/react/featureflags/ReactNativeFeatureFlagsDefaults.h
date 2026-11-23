@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4f15eee24d8380b5d0cc9f726ad3a371>>
+ * @generated SignedSource<<e1814fcdfbfd497e4432e267e5a9eb91>>
  */
 
 /**
@@ -38,7 +38,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool cxxNativeAnimatedEnabled() override {
-    return false;
+    return true;
   }
 
   bool defaultTextToOverflowHidden() override {
@@ -86,10 +86,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableAccumulatedUpdatesInRawPropsAndroid() override {
-    return false;
-  }
-
-  bool enableAndroidAutoOffscreenCompositingForElevation() override {
     return false;
   }
 
@@ -149,10 +145,6 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    return true;
-  }
-
   bool enableIOSCompressedTextFrameAdjustment() override {
     return false;
   }
@@ -177,11 +169,19 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool enableImmediateUpdateModeForScrollContentView() override {
+    return false;
+  }
+
   bool enableImperativeEvents() override {
     return false;
   }
 
   bool enableImperativeFocus() override {
+    return false;
+  }
+
+  bool enableInteractableResponderViews() override {
     return false;
   }
 
@@ -277,6 +277,14 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool fixProgrammaticScrollMomentumEventsIOS() override {
+    return false;
+  }
+
+  bool fixTextInlineViewLineHeight() override {
+    return false;
+  }
+
   bool fixTextLayoutOnPixelDensityChange() override {
     return false;
   }
@@ -294,7 +302,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fuseboxFrameRecordingEnabled() override {
-    return false;
+    return true;
   }
 
   bool fuseboxScreenshotCaptureEnabled() override {
@@ -302,7 +310,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fuseboxWebSocketEventsEnabled() override {
-    return false;
+    return true;
   }
 
   bool keepTimersRunningWhileHostPausedAndroid() override {

@@ -16,8 +16,6 @@
 
 import {setPlatformObject} from '../webidl/PlatformObjects';
 
-// flowlint sketchy-null:off, unsafe-getters-setters:off
-
 export interface DOMRectInit {
   x?: ?number;
   y?: ?number;
@@ -50,6 +48,7 @@ export default class DOMRectReadOnly {
   /**
    * The x coordinate of the `DOMRectReadOnly`'s origin.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get x(): number {
     return this.#x;
   }
@@ -57,6 +56,7 @@ export default class DOMRectReadOnly {
   /**
    * The y coordinate of the `DOMRectReadOnly`'s origin.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get y(): number {
     return this.#y;
   }
@@ -64,6 +64,7 @@ export default class DOMRectReadOnly {
   /**
    * The width of the `DOMRectReadOnly`.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get width(): number {
     return this.#width;
   }
@@ -71,6 +72,7 @@ export default class DOMRectReadOnly {
   /**
    * The height of the `DOMRectReadOnly`.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get height(): number {
     return this.#height;
   }
@@ -78,6 +80,7 @@ export default class DOMRectReadOnly {
   /**
    * Returns the top coordinate value of the `DOMRect` (has the same value as `y`, or `y + height` if `height` is negative).
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get top(): number {
     const height = this.#height;
     const y = this.#y;
@@ -92,6 +95,7 @@ export default class DOMRectReadOnly {
   /**
    * Returns the right coordinate value of the `DOMRect` (has the same value as ``x + width`, or `x` if `width` is negative).
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get right(): number {
     const width = this.#width;
     const x = this.#x;
@@ -106,6 +110,7 @@ export default class DOMRectReadOnly {
   /**
    * Returns the bottom coordinate value of the `DOMRect` (has the same value as `y + height`, or `y` if `height` is negative).
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get bottom(): number {
     const height = this.#height;
     const y = this.#y;
@@ -120,6 +125,7 @@ export default class DOMRectReadOnly {
   /**
    * Returns the left coordinate value of the `DOMRect` (has the same value as `x`, or `x + width` if `width` is negative).
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get left(): number {
     const width = this.#width;
     const x = this.#x;

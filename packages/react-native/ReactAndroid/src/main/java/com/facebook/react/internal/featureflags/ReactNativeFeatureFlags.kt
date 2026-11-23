@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f308cce94b6675fb99b66792ba49347a>>
+ * @generated SignedSource<<99c0c14cf6e3eca24e7bf1c7eaf64d07>>
  */
 
 /**
@@ -121,12 +121,6 @@ public object ReactNativeFeatureFlags {
   public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = accessor.enableAccumulatedUpdatesInRawPropsAndroid()
 
   /**
-   * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
-   */
-  @JvmStatic
-  public fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean = accessor.enableAndroidAutoOffscreenCompositingForElevation()
-
-  /**
    * Enables various optimizations throughout the path of measuring text on Android.
    */
   @JvmStatic
@@ -211,12 +205,6 @@ public object ReactNativeFeatureFlags {
   public fun enableFollowUpMountItemDispatchAndroid(): Boolean = accessor.enableFollowUpMountItemDispatchAndroid()
 
   /**
-   * Enables font scale changes updating layout for measurable nodes.
-   */
-  @JvmStatic
-  public fun enableFontScaleChangesUpdatingLayout(): Boolean = accessor.enableFontScaleChangesUpdatingLayout()
-
-  /**
    * Adjusts iOS Text drawing frames for compressed explicit line heights.
    */
   @JvmStatic
@@ -253,6 +241,12 @@ public object ReactNativeFeatureFlags {
   public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = accessor.enableImmediateUpdateModeForContentOffsetChanges()
 
   /**
+   * Apply ScrollContentView state updates synchronously on the main thread.
+   */
+  @JvmStatic
+  public fun enableImmediateUpdateModeForScrollContentView(): Boolean = accessor.enableImmediateUpdateModeForScrollContentView()
+
+  /**
    * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
    */
   @JvmStatic
@@ -263,6 +257,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableImperativeFocus(): Boolean = accessor.enableImperativeFocus()
+
+  /**
+   * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
+   */
+  @JvmStatic
+  public fun enableInteractableResponderViews(): Boolean = accessor.enableInteractableResponderViews()
 
   /**
    * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
@@ -401,6 +401,18 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = accessor.fixMappingOfEventPrioritiesBetweenFabricAndReact()
+
+  /**
+   * Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.
+   */
+  @JvmStatic
+  public fun fixProgrammaticScrollMomentumEventsIOS(): Boolean = accessor.fixProgrammaticScrollMomentumEventsIOS()
+
+  /**
+   * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.
+   */
+  @JvmStatic
+  public fun fixTextInlineViewLineHeight(): Boolean = accessor.fixTextInlineViewLineHeight()
 
   /**
    * Re-measures text and re-sends padding and overflow insets to mounted views when the pixel density changes, so text and padded views do not keep sizes from the old density.

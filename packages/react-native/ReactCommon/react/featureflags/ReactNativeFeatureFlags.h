@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b830327c98c52cf294d5a881ef4733a7>>
+ * @generated SignedSource<<f20f175d0628995e9659684d0803f997>>
  */
 
 /**
@@ -117,11 +117,6 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
 
   /**
-   * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
-   */
-  RN_EXPORT static bool enableAndroidAutoOffscreenCompositingForElevation();
-
-  /**
    * Enables various optimizations throughout the path of measuring text on Android.
    */
   RN_EXPORT static bool enableAndroidTextMeasurementOptimizations();
@@ -192,11 +187,6 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableFollowUpMountItemDispatchAndroid();
 
   /**
-   * Enables font scale changes updating layout for measurable nodes.
-   */
-  RN_EXPORT static bool enableFontScaleChangesUpdatingLayout();
-
-  /**
    * Adjusts iOS Text drawing frames for compressed explicit line heights.
    */
   RN_EXPORT static bool enableIOSCompressedTextFrameAdjustment();
@@ -227,6 +217,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableImmediateUpdateModeForContentOffsetChanges();
 
   /**
+   * Apply ScrollContentView state updates synchronously on the main thread.
+   */
+  RN_EXPORT static bool enableImmediateUpdateModeForScrollContentView();
+
+  /**
    * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
    */
   RN_EXPORT static bool enableImperativeEvents();
@@ -235,6 +230,11 @@ class ReactNativeFeatureFlags {
    * Enable ref.focus() and ref.blur() for all views, not just TextInput.
    */
   RN_EXPORT static bool enableImperativeFocus();
+
+  /**
+   * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
+   */
+  RN_EXPORT static bool enableInteractableResponderViews();
 
   /**
    * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
@@ -350,6 +350,16 @@ class ReactNativeFeatureFlags {
    * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
    */
   RN_EXPORT static bool fixMappingOfEventPrioritiesBetweenFabricAndReact();
+
+  /**
+   * Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.
+   */
+  RN_EXPORT static bool fixProgrammaticScrollMomentumEventsIOS();
+
+  /**
+   * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.
+   */
+  RN_EXPORT static bool fixTextInlineViewLineHeight();
 
   /**
    * Re-measures text and re-sends padding and overflow insets to mounted views when the pixel density changes, so text and padded views do not keep sizes from the old density.
