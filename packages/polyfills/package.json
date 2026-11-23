@@ -1,6 +1,6 @@
 {
   "name": "@react-native/js-polyfills",
-  "version": "0.89.0-rc.2",
+  "version": "0.89.0-rc.3",
   "description": "Polyfills for React Native.",
   "license": "MIT",
   "repository": {
