@@ -156,7 +156,7 @@ type RTLSwitcherComponentState = {
 };
 
 function withRTLState(
-  Component: ({
+  Component: (v: {
     isRTL: boolean,
     setRTL: (isRTL: boolean) => void,
     style?: any,

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ec3e384af62c0e672da53b57354bca62>>
+ * @generated SignedSource<<592cd695f98eb82a6d8098926af1be8a>>
  */
 
 /**
@@ -58,8 +58,6 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean
-
   @DoNotStrip @JvmStatic public external fun enableAndroidTextMeasurementOptimizations(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean
@@ -86,7 +84,7 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableFlexboxAutoMinSizeInStrictMode(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun enableFontScaleChangesUpdatingLayout(): Boolean
+  @DoNotStrip @JvmStatic public external fun enableFollowUpMountItemDispatchAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableIOSCompressedTextFrameAdjustment(): Boolean
 
@@ -100,9 +98,13 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
 
+  @DoNotStrip @JvmStatic public external fun enableImmediateUpdateModeForScrollContentView(): Boolean
+
   @DoNotStrip @JvmStatic public external fun enableImperativeEvents(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableImperativeFocus(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableInteractableResponderViews(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 
@@ -123,6 +125,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableNativeCSSParsing(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enablePredictiveBackAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enablePreparedTextLayout(): Boolean
 
@@ -150,6 +154,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
 
+  @DoNotStrip @JvmStatic public external fun fixTextInlineViewLineHeight(): Boolean
+
   @DoNotStrip @JvmStatic public external fun fixTextLayoutOnPixelDensityChange(): Boolean
 
   @DoNotStrip @JvmStatic public external fun fixYogaFlexBasisFitContentInMainAxis(): Boolean
@@ -163,6 +169,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun fuseboxScreenshotCaptureEnabled(): Boolean
 
   @DoNotStrip @JvmStatic public external fun fuseboxWebSocketEventsEnabled(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun keepTimersRunningWhileHostPausedAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun optimizedAnimatedPropUpdates(): Boolean
 

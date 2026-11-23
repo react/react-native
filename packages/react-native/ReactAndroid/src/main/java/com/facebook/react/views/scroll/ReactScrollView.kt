@@ -557,6 +557,14 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   override fun shouldDelayChildPressedState(): Boolean =
       hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
 
+  override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+    if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
+      // Defensive cleanup for new gesture
+      stopNestedScroll()
+    }
+    return super.dispatchTouchEvent(ev)
+  }
+
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     if (!scrollEnabled) return false
     if (!PointerEvents.canChildrenBeTouchTarget(pointerEvents)) return true

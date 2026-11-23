@@ -10,7 +10,6 @@
 #import <UIKit/UIGestureRecognizerSubclass.h>
 
 #import "RCTAssert.h"
-#import "RCTBridge.h"
 #import "RCTEventDispatcherProtocol.h"
 #import "RCTLog.h"
 #import "RCTSurfaceView.h"

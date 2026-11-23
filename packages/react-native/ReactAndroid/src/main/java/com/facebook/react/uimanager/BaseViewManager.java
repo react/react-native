@@ -7,6 +7,8 @@
 
 package com.facebook.react.uimanager;
 
+import static com.facebook.react.uimanager.internal.FloatPropertySanitizer.sanitizeFloatPropertyValue;
+
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -31,6 +33,7 @@ import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.common.ReactConstants;
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags;
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.AccessibilityRole;
 import com.facebook.react.uimanager.ReactAccessibilityDelegate.Role;
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -67,6 +70,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   private static final String STATE_BUSY = "busy";
   private static final String STATE_EXPANDED = "expanded";
   private static final String STATE_MIXED = "mixed";
+
+  private static final View.OnTouchListener NOOP_LISTENER = (v, event) -> false;
 
   public BaseViewManager() {
     super(null);
@@ -163,6 +168,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     // NOTE: setClickable MUST be called AFTER setOnClickListener because
     // the latter has the side effect of setting isClickable=true on some views!
     view.setOnClickListener(null);
+    setInteractable(view, false);
     view.setClickable(false);
     view.setFocusable(false);
     view.setFocusableInTouchMode(false);
@@ -298,7 +304,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.ELEVATION)
   public void setElevation(@NonNull T view, float elevation) {
-    float px = PixelUtil.toPixelFromDIP(elevation);
+    float px = sanitizeFloatPropertyValue(PixelUtil.toPixelFromDIP(elevation));
     boolean wasElevated = view.getElevation() > 0f;
     ViewCompat.setElevation(view, px);
     if (wasElevated != (px > 0f)) {
@@ -487,9 +493,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
         contentDescription.add(text.asString());
       }
     }
-    if (!contentDescription.isEmpty()) {
-      view.setContentDescription(TextUtils.join(", ", contentDescription));
-    }
+    view.setContentDescription(
+        contentDescription.isEmpty() ? null : TextUtils.join(", ", contentDescription));
   }
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_ACTIONS)
@@ -503,15 +508,8 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_VALUE)
   public void setAccessibilityValue(T view, ReadableMap accessibilityValue) {
-    if (accessibilityValue == null) {
-      view.setTag(R.id.accessibility_value, null);
-      view.setContentDescription(null);
-    } else {
-      view.setTag(R.id.accessibility_value, accessibilityValue);
-      if (accessibilityValue.hasKey("text")) {
-        updateViewContentDescription(view);
-      }
-    }
+    view.setTag(R.id.accessibility_value, accessibilityValue);
+    updateViewContentDescription(view);
   }
 
   @ReactProp(name = ViewProps.IMPORTANT_FOR_ACCESSIBILITY)
@@ -553,13 +551,13 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
   @Deprecated
   @ReactProp(name = ViewProps.SCALE_X, defaultFloat = 1f)
   public void setScaleX(@NonNull T view, float scaleX) {
-    view.setScaleX(scaleX);
+    view.setScaleX(sanitizeFloatPropertyValue(scaleX));
   }
 
   @Deprecated
   @ReactProp(name = ViewProps.SCALE_Y, defaultFloat = 1f)
   public void setScaleY(@NonNull T view, float scaleY) {
-    view.setScaleY(scaleY);
+    view.setScaleY(sanitizeFloatPropertyValue(scaleY));
   }
 
   @Deprecated
@@ -717,29 +715,6 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     }
     view.setAnimationMatrix(null);
     view.setTag(R.id.skew_animation_matrix, null);
-  }
-
-  /**
-   * Prior to Android P things like setScaleX() allowed passing float values that were bogus such as
-   * Float.NaN. If the app is targeting Android P or later then passing these values will result in
-   * an exception being thrown. Since JS might still send Float.NaN, we want to keep the code
-   * backward compatible and continue using the fallback value if an invalid float is passed.
-   */
-  private static float sanitizeFloatPropertyValue(float value) {
-    if (value >= -Float.MAX_VALUE && value <= Float.MAX_VALUE) {
-      return value;
-    }
-    if (value < -Float.MAX_VALUE || value == Float.NEGATIVE_INFINITY) {
-      return -Float.MAX_VALUE;
-    }
-    if (value > Float.MAX_VALUE || value == Float.POSITIVE_INFINITY) {
-      return Float.MAX_VALUE;
-    }
-    if (Float.isNaN(value)) {
-      return 0;
-    }
-    // Shouldn't be possible to reach this point.
-    throw new IllegalStateException("Invalid float property value: " + value);
   }
 
   protected void updateViewAccessibility(@NonNull T view) {
@@ -1009,7 +984,24 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   @ReactProp(name = "onStartShouldSetResponder")
   public void setStartShouldSetResponder(@NonNull T view, boolean value) {
-    // no-op, handled by JSResponder
+    // Touch handled by the JSResponder system, but listener is needed to indicate interactability.
+    setInteractable(view, value);
+  }
+
+  private static void setInteractable(@NonNull View view, boolean interactable) {
+    if (!ReactNativeFeatureFlags.enableInteractableResponderViews()) {
+      return;
+    }
+    boolean noopListener = view.getTag(R.id.noop_touch_listener) != null;
+    if (interactable) {
+      if (!noopListener) {
+        view.setOnTouchListener(NOOP_LISTENER);
+        view.setTag(R.id.noop_touch_listener, Boolean.TRUE);
+      }
+    } else if (noopListener) {
+      view.setOnTouchListener(null);
+      view.setTag(R.id.noop_touch_listener, null);
+    }
   }
 
   @ReactProp(name = "onStartShouldSetResponderCapture")

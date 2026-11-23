@@ -32,7 +32,7 @@ export type LogData = Readonly<{
 }>;
 
 export type Observer = (
-  Readonly<{
+  v: Readonly<{
     logs: LogBoxLogs,
     isDisabled: boolean,
     selectedLogIndex: number,

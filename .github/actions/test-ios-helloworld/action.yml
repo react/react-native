@@ -1,15 +1,12 @@
 name: test-ios-helloworld
 description: Test iOS Hello World
 inputs:
-  use-frameworks:
-    description: Whether to build with dynamic frameworks.
-    default: false
-  ruby-version:
-    description: The version of ruby that must be used
-    default: 2.6.10
   flavor:
     description: The flavor of the build. Must be one of "Debug", "Release".
     default: Debug
+  dependency-manager:
+    description: 'How the app gets its native dependencies: swiftpm or cocoapods'
+    default: swiftpm
 runs:
   using: composite
   steps:
@@ -19,46 +16,64 @@ runs:
       uses: ./.github/actions/setup-node
     - name: Run yarn install
       uses: ./.github/actions/yarn-install
-    - name: Setup ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ inputs.ruby-version }}
     - name: Set Hermes prebuilt version
       shell: bash
       run: |
         node ./scripts/releases/use-hermes-prebuilt.js
     - name: Run yarn install again, with the correct hermes version
       uses: ./.github/actions/yarn-install
+    - name: Setup ruby
+      if: ${{ inputs.dependency-manager == 'cocoapods' }}
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6.10
     - name: Download ReactNativeDependencies
-      uses: actions/download-artifact@v7
+      if: ${{ inputs.dependency-manager == 'cocoapods' }}
+      uses: ./.github/actions/download-artifact
       with:
         name: ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz
         path: /tmp/third-party
-    - name: Print third-party folder
-      shell: bash
-      run: ls -lR /tmp/third-party
     - name: Download React Native Prebuilds
-      uses: actions/download-artifact@v7
+      if: ${{ inputs.dependency-manager == 'cocoapods' }}
+      uses: ./.github/actions/download-artifact
       with:
         name: ReactCore${{ inputs.flavor }}.xcframework.tar.gz
         path: /tmp/ReactCore
-    - name: Print ReactCore folder
-      shell: bash
-      run: ls -lR /tmp/ReactCore
-    - name: Install iOS dependencies - Configuration ${{ inputs.flavor }};
+    - name: Install iOS dependencies - Configuration ${{ inputs.flavor }}
+      if: ${{ inputs.dependency-manager == 'cocoapods' }}
       shell: bash
       run: |
         cd private/helloworld
-        args=()
-
-        if [[ "${{ inputs.use-frameworks }}" == "true" ]]; then
-          args+=(--frameworks dynamic)
-        fi
 
         export RCT_USE_LOCAL_RN_DEP="/tmp/third-party/ReactNativeDependencies${{ inputs.flavor }}.xcframework.tar.gz"
         export RCT_TESTONLY_RNCORE_TARBALL_PATH="/tmp/ReactCore/ReactCore${{ inputs.flavor }}.xcframework.tar.gz"
 
-        yarn bootstrap ios "${args[@]}" | cat
+        yarn bootstrap ios | cat
+    - name: Download the XCFrameworks built in this run
+      if: ${{ inputs.dependency-manager == 'swiftpm' }}
+      uses: ./.github/actions/setup-spm-artifacts
+      with:
+        working-directory: private/helloworld/ios
+    # HelloWorld is a CocoaPods project in git. CI converts it to SwiftPM on every run.
+    - name: Convert HelloWorld to SwiftPM
+      if: ${{ inputs.dependency-manager == 'swiftpm' }}
+      shell: bash
+      working-directory: private/helloworld/ios
+      run: RN_STRICT_API=1 npx react-native spm add --deintegrate --artifacts /tmp/spm-artifacts --download skip
+    - name: Assert HelloWorld is on SwiftPM
+      if: ${{ inputs.dependency-manager == 'swiftpm' }}
+      shell: bash
+      working-directory: private/helloworld/ios
+      run: |
+        if [[ ! -f HelloWorld.xcodeproj/.spm-injected.json ]]; then
+          echo "::error::spm add did not inject SwiftPM: HelloWorld.xcodeproj/.spm-injected.json is missing"
+          exit 1
+        fi
+        if grep -q 'Pods-' HelloWorld.xcodeproj/project.pbxproj; then
+          echo "::error::spm add --deintegrate left CocoaPods references in HelloWorld.xcodeproj"
+          exit 1
+        fi
+        echo "SwiftPM injected in place; CocoaPods de-integrated."
 
     - name: Run Helloworld tests
       shell: bash

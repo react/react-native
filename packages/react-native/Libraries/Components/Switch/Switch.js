@@ -177,6 +177,7 @@ const Switch: component(
   ...SwitchProps,
 }): React.Node {
   const {
+    accessibilityState,
     disabled,
     ios_backgroundColor,
     onChange,
@@ -227,69 +228,61 @@ const Switch: component(
     }
   }, [value, native]);
 
+  const _disabled = disabled != null ? disabled : accessibilityState?.disabled;
+
+  const _accessibilityState: ?AccessibilityState =
+    _disabled !== accessibilityState?.disabled
+      ? {...accessibilityState, disabled: _disabled}
+      : accessibilityState;
+
   if (Platform.OS === 'android') {
     const {onTintColor, tintColor, ...androidProps} = restProps;
-    const {accessibilityState} = androidProps;
-    const _disabled =
-      disabled != null ? disabled : accessibilityState?.disabled;
-
-    const _accessibilityState: ?AccessibilityState =
-      _disabled !== accessibilityState?.disabled
-        ? {...accessibilityState, disabled: _disabled}
-        : accessibilityState;
-
-    const platformProps = {
-      accessibilityState: _accessibilityState,
-      enabled: _disabled !== true,
-      on: value === true,
-      style,
-      thumbTintColor: thumbColor,
-      trackColorForFalse: trackColorForFalse,
-      trackColorForTrue: trackColorForTrue,
-      trackTintColor: value === true ? trackColorForTrue : trackColorForFalse,
-    };
 
     return (
       <AndroidSwitchNativeComponent
         {...androidProps}
-        {...platformProps}
         accessibilityRole={props.accessibilityRole ?? 'switch'}
+        accessibilityState={_accessibilityState}
+        enabled={_disabled !== true}
+        on={value === true}
         onChange={handleChange}
         onResponderTerminationRequest={returnsFalse}
         onStartShouldSetResponder={returnsTrue}
         ref={ref}
+        style={style}
+        thumbTintColor={thumbColor}
+        trackColorForFalse={trackColorForFalse}
+        trackColorForTrue={trackColorForTrue}
+        trackTintColor={value === true ? trackColorForTrue : trackColorForFalse}
       />
     );
   } else {
-    const platformProps = {
-      disabled,
-      onTintColor: trackColorForTrue,
-      style: StyleSheet.compose(
-        {alignSelf: 'flex-start' as const},
-        StyleSheet.compose(
-          style,
-          ios_backgroundColor == null
-            ? null
-            : {
-                backgroundColor: ios_backgroundColor,
-                borderRadius: 16,
-              },
-        ),
-      ),
-      thumbTintColor: thumbColor,
-      tintColor: trackColorForFalse,
-      value: value === true,
-    };
-
     return (
       <SwitchNativeComponent
         {...restProps}
-        {...platformProps}
         accessibilityRole={props.accessibilityRole ?? 'switch'}
+        accessibilityState={_accessibilityState}
+        disabled={disabled}
         onChange={handleChange}
         onResponderTerminationRequest={returnsFalse}
         onStartShouldSetResponder={returnsTrue}
+        onTintColor={trackColorForTrue}
         ref={ref}
+        style={StyleSheet.compose(
+          {alignSelf: 'flex-start' as const},
+          StyleSheet.compose(
+            style,
+            ios_backgroundColor == null
+              ? null
+              : {
+                  backgroundColor: ios_backgroundColor,
+                  borderRadius: 16,
+                },
+          ),
+        )}
+        thumbTintColor={thumbColor}
+        tintColor={trackColorForFalse}
+        value={value === true}
       />
     );
   }

@@ -22,12 +22,11 @@ import {setPlatformObject} from '../../webidl/PlatformObjects';
 // IMPORTANT: The Flow type definition for this module is defined in `NodeList.js.flow`
 // because Flow only supports indexers in classes in declaration files.
 
-const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor<unknown>, ...} = {
+const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor, ...} = {
   value: {},
   writable: false,
 };
 
-// $FlowFixMe[incompatible-type] Flow doesn't understand [Symbol.iterator]() {} and thinks this class doesn't implement the Iterable<T> interface.
 export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
   _length: number;
 
@@ -61,7 +60,7 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
     return arrayLike[index];
   }
 
-  entries(): Iterator<[number, T]> {
+  entries(): IteratorObject<[number, T]> {
     return createEntriesIterator(this);
   }
 
@@ -83,16 +82,15 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
     }
   }
 
-  keys(): Iterator<number> {
+  keys(): IteratorObject<number> {
     return createKeyIterator(this);
   }
 
-  values(): Iterator<T> {
+  values(): IteratorObject<T> {
     return createValueIterator(this);
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow does not support computed properties in classes.
-  [Symbol.iterator](): Iterator<T> {
+  [Symbol.iterator](): IteratorObject<T> {
     return createValueIterator(this);
   }
 }

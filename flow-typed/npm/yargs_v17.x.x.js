@@ -46,29 +46,29 @@ declare module 'yargs' {
     ...
   }>;
 
-  declare type CommonCommandModule = {|
+  declare type CommonCommandModule = {
     command?: string | Array<string>,
     aliases?: Array<string> | string,
     builder?:
       | {[key: string]: Options, ...}
       | ((yargsInstance: Yargs) => unknown),
     handler?: ((argv: Argv) => void) | ((argv: Argv) => Promise<void>),
-  |};
+  };
 
-  declare type CommandModuleDesc = {|
+  declare type CommandModuleDesc = {
     ...CommonCommandModule,
     desc?: string | false,
-  |};
+  };
 
-  declare type CommandModuleDescribe = {|
+  declare type CommandModuleDescribe = {
     ...CommonCommandModule,
     describe?: string | false,
-  |};
+  };
 
-  declare type CommandModuleDescription = {|
+  declare type CommandModuleDescription = {
     ...CommonCommandModule,
     description?: string | false,
-  |};
+  };
 
   declare type CommandModule =
     | CommandModuleDesc

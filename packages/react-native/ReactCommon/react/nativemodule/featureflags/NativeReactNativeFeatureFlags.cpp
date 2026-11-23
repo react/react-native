@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ca361bb00c0b31657c5a1559a12d5f5a>>
+ * @generated SignedSource<<cdd94025c8f0cff7feab12c6e0c422ca>>
  */
 
 /**
@@ -119,11 +119,6 @@ bool NativeReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid(
   return ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid();
 }
 
-bool NativeReactNativeFeatureFlags::enableAndroidAutoOffscreenCompositingForElevation(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableAndroidAutoOffscreenCompositingForElevation();
-}
-
 bool NativeReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations();
@@ -189,9 +184,9 @@ bool NativeReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode(
   return ReactNativeFeatureFlags::enableFlexboxAutoMinSizeInStrictMode();
 }
 
-bool NativeReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout(
+bool NativeReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid(
     jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::enableFontScaleChangesUpdatingLayout();
+  return ReactNativeFeatureFlags::enableFollowUpMountItemDispatchAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::enableIOSCompressedTextFrameAdjustment(
@@ -224,6 +219,11 @@ bool NativeReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetCha
   return ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges();
 }
 
+bool NativeReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableImmediateUpdateModeForScrollContentView();
+}
+
 bool NativeReactNativeFeatureFlags::enableImperativeEvents(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImperativeEvents();
@@ -232,6 +232,11 @@ bool NativeReactNativeFeatureFlags::enableImperativeEvents(
 bool NativeReactNativeFeatureFlags::enableImperativeFocus(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableImperativeFocus();
+}
+
+bool NativeReactNativeFeatureFlags::enableInteractableResponderViews(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableInteractableResponderViews();
 }
 
 bool NativeReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS(
@@ -282,6 +287,11 @@ bool NativeReactNativeFeatureFlags::enableNativeCSSParsing(
 bool NativeReactNativeFeatureFlags::enablePreallocatedPropsDiffOnInsertAndroid(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enablePreallocatedPropsDiffOnInsertAndroid();
+}
+
+bool NativeReactNativeFeatureFlags::enablePredictiveBackAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enablePredictiveBackAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::enablePreparedTextLayout(
@@ -349,6 +359,11 @@ bool NativeReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndR
   return ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact();
 }
 
+bool NativeReactNativeFeatureFlags::fixTextInlineViewLineHeight(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::fixTextInlineViewLineHeight();
+}
+
 bool NativeReactNativeFeatureFlags::fixTextLayoutOnPixelDensityChange(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fixTextLayoutOnPixelDensityChange();
@@ -382,6 +397,11 @@ bool NativeReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled(
 bool NativeReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::fuseboxWebSocketEventsEnabled();
+}
+
+bool NativeReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::keepTimersRunningWhileHostPausedAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::optimizedAnimatedPropUpdates(

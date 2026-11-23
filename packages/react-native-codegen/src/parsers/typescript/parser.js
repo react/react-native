@@ -372,7 +372,7 @@ class TypeScriptParser implements Parser {
   getNativeComponentType(
     typeArgumentParams: $FlowFixMe,
     funcArgumentParams: $FlowFixMe,
-  ): {[string]: string} {
+  ): {[key: string]: string} {
     return {
       propsTypeName: typeArgumentParams[0].typeName.name,
       componentName: funcArgumentParams[0].value,

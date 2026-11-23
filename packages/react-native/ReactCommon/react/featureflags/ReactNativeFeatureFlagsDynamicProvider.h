@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ec15d61f2d6f06c6ec5998f8524de016>>
+ * @generated SignedSource<<ae5c7644d3983e65c38b8151b904b92b>>
  */
 
 /**
@@ -182,15 +182,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableAccumulatedUpdatesInRawPropsAndroid();
   }
 
-  bool enableAndroidAutoOffscreenCompositingForElevation() override {
-    auto value = values_["enableAndroidAutoOffscreenCompositingForElevation"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableAndroidAutoOffscreenCompositingForElevation();
-  }
-
   bool enableAndroidTextMeasurementOptimizations() override {
     auto value = values_["enableAndroidTextMeasurementOptimizations"];
     if (!value.isNull()) {
@@ -308,13 +299,13 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableFlexboxAutoMinSizeInStrictMode();
   }
 
-  bool enableFontScaleChangesUpdatingLayout() override {
-    auto value = values_["enableFontScaleChangesUpdatingLayout"];
+  bool enableFollowUpMountItemDispatchAndroid() override {
+    auto value = values_["enableFollowUpMountItemDispatchAndroid"];
     if (!value.isNull()) {
       return value.getBool();
     }
 
-    return ReactNativeFeatureFlagsDefaults::enableFontScaleChangesUpdatingLayout();
+    return ReactNativeFeatureFlagsDefaults::enableFollowUpMountItemDispatchAndroid();
   }
 
   bool enableIOSCompressedTextFrameAdjustment() override {
@@ -371,6 +362,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::enableImmediateUpdateModeForContentOffsetChanges();
   }
 
+  bool enableImmediateUpdateModeForScrollContentView() override {
+    auto value = values_["enableImmediateUpdateModeForScrollContentView"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableImmediateUpdateModeForScrollContentView();
+  }
+
   bool enableImperativeEvents() override {
     auto value = values_["enableImperativeEvents"];
     if (!value.isNull()) {
@@ -387,6 +387,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableImperativeFocus();
+  }
+
+  bool enableInteractableResponderViews() override {
+    auto value = values_["enableInteractableResponderViews"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableInteractableResponderViews();
   }
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS() override {
@@ -477,6 +486,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enablePreallocatedPropsDiffOnInsertAndroid();
+  }
+
+  bool enablePredictiveBackAndroid() override {
+    auto value = values_["enablePredictiveBackAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enablePredictiveBackAndroid();
   }
 
   bool enablePreparedTextLayout() override {
@@ -596,6 +614,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::fixMappingOfEventPrioritiesBetweenFabricAndReact();
   }
 
+  bool fixTextInlineViewLineHeight() override {
+    auto value = values_["fixTextInlineViewLineHeight"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::fixTextInlineViewLineHeight();
+  }
+
   bool fixTextLayoutOnPixelDensityChange() override {
     auto value = values_["fixTextLayoutOnPixelDensityChange"];
     if (!value.isNull()) {
@@ -657,6 +684,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::fuseboxWebSocketEventsEnabled();
+  }
+
+  bool keepTimersRunningWhileHostPausedAndroid() override {
+    auto value = values_["keepTimersRunningWhileHostPausedAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::keepTimersRunningWhileHostPausedAndroid();
   }
 
   bool optimizedAnimatedPropUpdates() override {

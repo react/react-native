@@ -17,12 +17,11 @@
 
 #import <React/RCTDevSettings.h>
 
-#import <React/RCTBridge+Private.h>
-#import <React/RCTBridge.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTFPSGraph.h>
 #import <React/RCTInitializing.h>
 #import <React/RCTInvalidating.h>
-#import <React/RCTJavaScriptExecutor.h>
 #import <React/RCTPerformanceLogger.h>
 #import <React/RCTPerformanceLoggerLabels.h>
 #import <React/RCTRootView.h>
@@ -58,8 +57,13 @@ static vm_size_t RCTGetResidentMemorySize(void)
   return memoryUsageInByte;
 }
 
-@interface RCTPerfMonitor
-    : NSObject <RCTBridgeModule, RCTTurboModule, RCTInvalidating, UITableViewDataSource, UITableViewDelegate>
+@interface RCTPerfMonitor : NSObject <
+                                RCTBridgeModule,
+                                RCTTurboModule,
+                                RCTInvalidating,
+                                RCTJSDispatcherModule,
+                                UITableViewDataSource,
+                                UITableViewDelegate>
 
 #if __has_include(<React/RCTDevMenu.h>)
 @property (nonatomic, strong, readonly) RCTDevMenuItem *devMenuItem;
@@ -68,7 +72,6 @@ static vm_size_t RCTGetResidentMemorySize(void)
 @property (nonatomic, strong, readonly) UIView *container;
 @property (nonatomic, strong, readonly) UILabel *memory;
 @property (nonatomic, strong, readonly) UILabel *heap;
-@property (nonatomic, strong, readonly) UILabel *views;
 @property (nonatomic, strong, readonly) UITableView *metrics;
 @property (nonatomic, strong, readonly) RCTFPSGraph *jsGraph;
 @property (nonatomic, strong, readonly) RCTFPSGraph *uiGraph;
@@ -85,7 +88,6 @@ static vm_size_t RCTGetResidentMemorySize(void)
   UIView *_container;
   UILabel *_memory;
   UILabel *_heap;
-  UILabel *_views;
   UILabel *_uiGraphLabel;
   UILabel *_jsGraphLabel;
   UITableView *_metrics;
@@ -109,8 +111,9 @@ static vm_size_t RCTGetResidentMemorySize(void)
   NSArray *_perfLoggerMarks;
 }
 
-@synthesize bridge = _bridge;
+@synthesize dispatchToJSThread = _dispatchToJSThread;
 @synthesize moduleRegistry = _moduleRegistry;
+@synthesize performanceLogger = _performanceLogger;
 
 RCT_EXPORT_MODULE()
 
@@ -172,7 +175,7 @@ RCT_EXPORT_MODULE()
     UIEdgeInsets safeInsets = RCTKeyWindow().safeAreaInsets;
 
     _container =
-        [[UIView alloc] initWithFrame:CGRectMake(safeInsets.left, safeInsets.top, 180, RCTPerfMonitorBarHeight)];
+        [[UIView alloc] initWithFrame:CGRectMake(safeInsets.left, safeInsets.top, 136, RCTPerfMonitorBarHeight)];
     _container.layer.borderWidth = 2;
     _container.layer.borderColor = [UIColor lightGrayColor].CGColor;
     [_container addGestureRecognizer:self.gestureRecognizer];
@@ -212,22 +215,10 @@ RCT_EXPORT_MODULE()
   return _heap;
 }
 
-- (UILabel *)views
-{
-  if (_views == nullptr) {
-    _views = [[UILabel alloc] initWithFrame:CGRectMake(88, 0, 44, RCTPerfMonitorBarHeight)];
-    _views.font = [UIFont systemFontOfSize:12];
-    _views.numberOfLines = 3;
-    _views.textAlignment = NSTextAlignmentCenter;
-  }
-
-  return _views;
-}
-
 - (RCTFPSGraph *)uiGraph
 {
   if (_uiGraph == nullptr) {
-    _uiGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(134, 14, 40, 30) color:[UIColor lightGrayColor]];
+    _uiGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(90, 14, 40, 30) color:[UIColor lightGrayColor]];
   }
   return _uiGraph;
 }
@@ -235,7 +226,7 @@ RCT_EXPORT_MODULE()
 - (RCTFPSGraph *)jsGraph
 {
   if (_jsGraph == nullptr) {
-    _jsGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(178, 14, 40, 30) color:[UIColor lightGrayColor]];
+    _jsGraph = [[RCTFPSGraph alloc] initWithFrame:CGRectMake(134, 14, 40, 30) color:[UIColor lightGrayColor]];
   }
   return _jsGraph;
 }
@@ -243,7 +234,7 @@ RCT_EXPORT_MODULE()
 - (UILabel *)uiGraphLabel
 {
   if (_uiGraphLabel == nullptr) {
-    _uiGraphLabel = [[UILabel alloc] initWithFrame:CGRectMake(134, 3, 40, 10)];
+    _uiGraphLabel = [[UILabel alloc] initWithFrame:CGRectMake(90, 3, 40, 10)];
     _uiGraphLabel.font = [UIFont systemFontOfSize:11];
     _uiGraphLabel.textAlignment = NSTextAlignmentCenter;
     _uiGraphLabel.text = @"UI";
@@ -255,7 +246,7 @@ RCT_EXPORT_MODULE()
 - (UILabel *)jsGraphLabel
 {
   if (_jsGraphLabel == nullptr) {
-    _jsGraphLabel = [[UILabel alloc] initWithFrame:CGRectMake(178, 3, 38, 10)];
+    _jsGraphLabel = [[UILabel alloc] initWithFrame:CGRectMake(134, 3, 38, 10)];
     _jsGraphLabel.font = [UIFont systemFontOfSize:11];
     _jsGraphLabel.textAlignment = NSTextAlignmentCenter;
     _jsGraphLabel.text = @"JS";
@@ -289,7 +280,6 @@ RCT_EXPORT_MODULE()
 
   [self.container addSubview:self.memory];
   [self.container addSubview:self.heap];
-  [self.container addSubview:self.views];
   [self.container addSubview:self.uiGraph];
   [self.container addSubview:self.uiGraphLabel];
 
@@ -309,12 +299,12 @@ RCT_EXPORT_MODULE()
   [self.container addSubview:self.jsGraph];
   [self.container addSubview:self.jsGraphLabel];
 
-  [_bridge
-      dispatchBlock:^{
-        self->_jsDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(threadUpdate:)];
-        [self->_jsDisplayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-      }
-              queue:RCTJSThread];
+  if (_dispatchToJSThread != nullptr) {
+    _dispatchToJSThread(^{
+      self->_jsDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(threadUpdate:)];
+      [self->_jsDisplayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    });
+  }
 }
 
 - (void)hide
@@ -415,15 +405,6 @@ RCT_EXPORT_MODULE()
 
 - (void)updateStats
 {
-  NSDictionary<NSNumber *, UIView *> *views = [_bridge.uiManager valueForKey:@"viewRegistry"];
-  NSUInteger viewCount = views.count;
-  NSUInteger visibleViewCount = 0;
-  for (UIView *view in views.allValues) {
-    if ((view.window != nullptr) || (view.superview.window != nullptr)) {
-      visibleViewCount++;
-    }
-  }
-
   // Ensure the container always stays on top of newly added views
   if ([_container.superview.subviews lastObject] != _container) {
     [_container.superview bringSubviewToFront:_container];
@@ -432,8 +413,6 @@ RCT_EXPORT_MODULE()
   double mem = (double)RCTGetResidentMemorySize() / 1024 / 1024;
   self.memory.text = [NSString stringWithFormat:@"RAM\n%.2lf\nMB", mem];
   self.heap.text = [NSString stringWithFormat:@"JSC\n%.2lf\nMB", (double)_heapSize / 1024];
-  self.views.text =
-      [NSString stringWithFormat:@"Views\n%lu\n%lu", (unsigned long)visibleViewCount, (unsigned long)viewCount];
 
   __weak __typeof__(self) weakSelf = self;
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -481,7 +460,7 @@ RCT_EXPORT_MODULE()
 {
   NSUInteger i = 0;
   NSMutableArray<NSString *> *data = [NSMutableArray new];
-  RCTPerformanceLogger *performanceLogger = [_bridge performanceLogger];
+  RCTPerformanceLogger *performanceLogger = _performanceLogger;
   NSArray<NSNumber *> *values = [performanceLogger valuesForTags];
   for (NSString *label in LabelsForRCTPerformanceLoggerTags()) {
     long long value = values[i + 1].longLongValue - values[i].longLongValue;

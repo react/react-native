@@ -31,7 +31,7 @@
 
 import type {AbortSignal} from './AbortSignal';
 
-const SIGNAL_KEY: symbol = Symbol('aborted');
+const SIGNAL_KEY = Symbol('aborted');
 
 /**
  * The AbortController.
@@ -41,12 +41,9 @@ export class AbortController {
   /**
    * Initialize this controller.
    */
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [SIGNAL_KEY]: AbortSignal;
 
   constructor() {
-    // $FlowExpectedError[prop-missing]
     this[SIGNAL_KEY] = require('./AbortSignal').createAbortSignal();
   }
 
@@ -61,7 +58,7 @@ export class AbortController {
    * Abort and signal to any observers that the associated activity is to be aborted.
    */
   abort(reason: unknown): void {
-    require('./AbortSignal').abortSignal(reason, getSignal(this));
+    require('./AbortSignal').abortSignal(getSignal(this), reason);
   }
 }
 
@@ -69,7 +66,6 @@ export class AbortController {
  * Get the associated signal of a given controller.
  */
 function getSignal(controller: AbortController): AbortSignal {
-  // $FlowExpectedError[prop-missing]
   const signal = controller[SIGNAL_KEY];
   if (signal == null) {
     throw new TypeError(

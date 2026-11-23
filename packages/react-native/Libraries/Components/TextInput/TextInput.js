@@ -183,8 +183,8 @@ function useTextInputStateSynchronization({
   text?: string,
   viewCommands: ViewCommands,
 }): {
-  setLastNativeText: string => void,
-  setLastNativeSelection: LastNativeSelection => void,
+  setLastNativeText: (v: string) => void,
+  setLastNativeSelection: (v: LastNativeSelection) => void,
 } {
   const [lastNativeText, setLastNativeText] = useState<?Stringish>(props.value);
   const [lastNativeSelectionState, setLastNativeSelection] =

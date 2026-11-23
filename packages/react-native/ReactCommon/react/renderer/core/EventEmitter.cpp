@@ -38,15 +38,22 @@ static bool hasPrefix(const std::string& str, const std::string& prefix) {
   return "top" + prefixedType;
 }
 
+#if defined(__clang__)
+#define NO_DESTROY [[clang::no_destroy]]
+#else
+#define NO_DESTROY
+#endif
+
 std::mutex& EventEmitter::DispatchMutex() {
-  static std::mutex mutex;
+  // Never destroyed: host platform callbacks can still dispatch events while
+  // `exit()` runs static destructors, and locking a destroyed mutex throws
+  // `std::system_error`.
+  NO_DESTROY static std::mutex mutex;
   return mutex;
 }
 
 ValueFactory EventEmitter::defaultPayloadFactory() {
-  static auto payloadFactory =
-      ValueFactory{[](jsi::Runtime& runtime) { return jsi::Object(runtime); }};
-  return payloadFactory;
+  return [](jsi::Runtime& runtime) { return jsi::Object(runtime); };
 }
 
 EventEmitter::EventEmitter(

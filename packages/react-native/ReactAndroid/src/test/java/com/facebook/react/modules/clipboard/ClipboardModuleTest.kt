@@ -31,8 +31,7 @@ class ClipboardModuleTest {
   @Before
   fun setUp() {
     ReactNativeFeatureFlagsForTests.setUp()
-    clipboardModule =
-        ClipboardModule(createTestReactApplicationContext(RuntimeEnvironment.getApplication()))
+    clipboardModule = ClipboardModule(createTestReactApplicationContext())
     clipboardManager =
         RuntimeEnvironment.getApplication().getSystemService(Context.CLIPBOARD_SERVICE)
             as ClipboardManager

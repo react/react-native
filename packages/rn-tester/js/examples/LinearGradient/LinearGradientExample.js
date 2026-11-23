@@ -302,4 +302,19 @@ exports.examples = [
       );
     },
   },
+  {
+    title: 'Color stops outside 0–100%',
+    name: 'out-of-range-color-stops',
+    render(): React.Node {
+      return (
+        <GradientBox
+          testID="linear-gradient-out-of-range-color-stops"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, red -50%, yellow 25%, blue 150%)',
+          }}
+        />
+      );
+    },
+  },
 ] as Array<RNTesterModuleExample>;

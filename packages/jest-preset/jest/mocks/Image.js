@@ -14,6 +14,7 @@ import typeof {Image as TImage} from 'react-native';
 const mockComponent =
   jest.requireActual<TmockComponent>('../mockComponent').default;
 
+// $FlowFixMe[incompatible-type]
 const Image = mockComponent(
   'react-native/Libraries/Image/Image',
   null, // instanceMethods

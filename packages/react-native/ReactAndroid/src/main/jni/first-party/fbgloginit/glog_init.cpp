@@ -112,7 +112,7 @@ lastResort(const char* tag, const char* msg, const char* arg = nullptr) {
 namespace facebook::gloginit {
 
 void initialize(const char* tag) {
-  static std::once_flag flag{};
+  static constinit std::once_flag flag{};
   static auto failed = false;
 
   std::call_once(flag, [tag] {

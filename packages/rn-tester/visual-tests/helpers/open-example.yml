@@ -1,0 +1,20 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- launchApp:
+    stopApp: true
+# RNTester ignores links until its JS has rendered, which waiting for
+# animations to end doesn't guarantee. Its tab bar shows "Components" on every
+# screen, including a restored example. Optional, so that a missed link fails
+# at the flow's own check for its example instead.
+- extendedWaitUntil:
+    visible: 'Components'
+    timeout: 30000
+    optional: true
+- openLink: ${EXAMPLE_URL}
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          text: 'Open'
+          optional: true

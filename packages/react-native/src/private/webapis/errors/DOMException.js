@@ -17,7 +17,7 @@
 
 import {setPlatformObject} from '../webidl/PlatformObjects';
 
-const ERROR_NAME_TO_ERROR_CODE_MAP: {[string]: number} = {
+const ERROR_NAME_TO_ERROR_CODE_MAP: {[key: string]: number} = {
   IndexSizeError: 1,
   HierarchyRequestError: 3,
   WrongDocumentError: 4,
@@ -42,7 +42,7 @@ const ERROR_NAME_TO_ERROR_CODE_MAP: {[string]: number} = {
   DataCloneError: 25,
 };
 
-const ERROR_CODES: {[string]: number} = {
+const ERROR_CODES: {[key: string]: number} = {
   INDEX_SIZE_ERR: 1,
   DOMSTRING_SIZE_ERR: 2,
   HIERARCHY_REQUEST_ERR: 3,

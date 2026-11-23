@@ -234,6 +234,7 @@ class ReactRevisionMergeRunLoopObserverDelegate final : public RunLoopObserver::
   }
 
   [self _stopAllSurfacesWithScheduler:scheduler];
+  scheduler.delegate = nil;
 
   return YES;
 }

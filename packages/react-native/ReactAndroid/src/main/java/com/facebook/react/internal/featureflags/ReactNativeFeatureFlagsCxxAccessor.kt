@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<d2d170d333194ce2f2a4f1d93321ac6d>>
+ * @generated SignedSource<<65a338adec02f003c8942f6c4112b7f9>>
  */
 
 /**
@@ -35,7 +35,6 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var disableViewPreallocationAndroidCache: Boolean? = null
   private var enableAccessibilityOrderCache: Boolean? = null
   private var enableAccumulatedUpdatesInRawPropsAndroidCache: Boolean? = null
-  private var enableAndroidAutoOffscreenCompositingForElevationCache: Boolean? = null
   private var enableAndroidTextMeasurementOptimizationsCache: Boolean? = null
   private var enableAsyncDiskCacheCheckInMultiSourceImageAndroidCache: Boolean? = null
   private var enableBridgelessArchitectureCache: Boolean? = null
@@ -49,15 +48,17 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableFabricCommitBranchingMergeOnMainThreadCache: Boolean? = null
   private var enableFabricLogsCache: Boolean? = null
   private var enableFlexboxAutoMinSizeInStrictModeCache: Boolean? = null
-  private var enableFontScaleChangesUpdatingLayoutCache: Boolean? = null
+  private var enableFollowUpMountItemDispatchAndroidCache: Boolean? = null
   private var enableIOSCompressedTextFrameAdjustmentCache: Boolean? = null
   private var enableIOSTextBaselineOffsetPerLineCache: Boolean? = null
   private var enableIOSViewClipToPaddingBoxCache: Boolean? = null
   private var enableImagePrefetchingAndroidCache: Boolean? = null
   private var enableImageTransparentTintColorCache: Boolean? = null
   private var enableImmediateUpdateModeForContentOffsetChangesCache: Boolean? = null
+  private var enableImmediateUpdateModeForScrollContentViewCache: Boolean? = null
   private var enableImperativeEventsCache: Boolean? = null
   private var enableImperativeFocusCache: Boolean? = null
+  private var enableInteractableResponderViewsCache: Boolean? = null
   private var enableInteropViewManagerClassLookUpOptimizationIOSCache: Boolean? = null
   private var enableIntersectionObserverByDefaultCache: Boolean? = null
   private var enableKeyEventsCache: Boolean? = null
@@ -68,6 +69,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableMutationObserverByDefaultCache: Boolean? = null
   private var enableNativeCSSParsingCache: Boolean? = null
   private var enablePreallocatedPropsDiffOnInsertAndroidCache: Boolean? = null
+  private var enablePredictiveBackAndroidCache: Boolean? = null
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
   private var enableResizeObserverByDefaultCache: Boolean? = null
@@ -81,6 +83,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableVirtualViewContainerStateExperimentalCache: Boolean? = null
   private var fixBorderlessRippleAndroidCache: Boolean? = null
   private var fixMappingOfEventPrioritiesBetweenFabricAndReactCache: Boolean? = null
+  private var fixTextInlineViewLineHeightCache: Boolean? = null
   private var fixTextLayoutOnPixelDensityChangeCache: Boolean? = null
   private var fixYogaFlexBasisFitContentInMainAxisCache: Boolean? = null
   private var fuseboxAssertSingleHostStateCache: Boolean? = null
@@ -88,6 +91,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var fuseboxFrameRecordingEnabledCache: Boolean? = null
   private var fuseboxScreenshotCaptureEnabledCache: Boolean? = null
   private var fuseboxWebSocketEventsEnabledCache: Boolean? = null
+  private var keepTimersRunningWhileHostPausedAndroidCache: Boolean? = null
   private var optimizedAnimatedPropUpdatesCache: Boolean? = null
   private var overrideBySynchronousMountPropsAtMountingAndroidCache: Boolean? = null
   private var perfIssuesEnabledCache: Boolean? = null
@@ -252,15 +256,6 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
-  override fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean {
-    var cached = enableAndroidAutoOffscreenCompositingForElevationCache
-    if (cached == null) {
-      cached = ReactNativeFeatureFlagsCxxInterop.enableAndroidAutoOffscreenCompositingForElevation()
-      enableAndroidAutoOffscreenCompositingForElevationCache = cached
-    }
-    return cached
-  }
-
   override fun enableAndroidTextMeasurementOptimizations(): Boolean {
     var cached = enableAndroidTextMeasurementOptimizationsCache
     if (cached == null) {
@@ -378,11 +373,11 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
-  override fun enableFontScaleChangesUpdatingLayout(): Boolean {
-    var cached = enableFontScaleChangesUpdatingLayoutCache
+  override fun enableFollowUpMountItemDispatchAndroid(): Boolean {
+    var cached = enableFollowUpMountItemDispatchAndroidCache
     if (cached == null) {
-      cached = ReactNativeFeatureFlagsCxxInterop.enableFontScaleChangesUpdatingLayout()
-      enableFontScaleChangesUpdatingLayoutCache = cached
+      cached = ReactNativeFeatureFlagsCxxInterop.enableFollowUpMountItemDispatchAndroid()
+      enableFollowUpMountItemDispatchAndroidCache = cached
     }
     return cached
   }
@@ -441,6 +436,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
+  override fun enableImmediateUpdateModeForScrollContentView(): Boolean {
+    var cached = enableImmediateUpdateModeForScrollContentViewCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableImmediateUpdateModeForScrollContentView()
+      enableImmediateUpdateModeForScrollContentViewCache = cached
+    }
+    return cached
+  }
+
   override fun enableImperativeEvents(): Boolean {
     var cached = enableImperativeEventsCache
     if (cached == null) {
@@ -455,6 +459,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enableImperativeFocus()
       enableImperativeFocusCache = cached
+    }
+    return cached
+  }
+
+  override fun enableInteractableResponderViews(): Boolean {
+    var cached = enableInteractableResponderViewsCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableInteractableResponderViews()
+      enableInteractableResponderViewsCache = cached
     }
     return cached
   }
@@ -545,6 +558,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enablePreallocatedPropsDiffOnInsertAndroid()
       enablePreallocatedPropsDiffOnInsertAndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun enablePredictiveBackAndroid(): Boolean {
+    var cached = enablePredictiveBackAndroidCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enablePredictiveBackAndroid()
+      enablePredictiveBackAndroidCache = cached
     }
     return cached
   }
@@ -666,6 +688,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
+  override fun fixTextInlineViewLineHeight(): Boolean {
+    var cached = fixTextInlineViewLineHeightCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.fixTextInlineViewLineHeight()
+      fixTextInlineViewLineHeightCache = cached
+    }
+    return cached
+  }
+
   override fun fixTextLayoutOnPixelDensityChange(): Boolean {
     var cached = fixTextLayoutOnPixelDensityChangeCache
     if (cached == null) {
@@ -725,6 +756,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.fuseboxWebSocketEventsEnabled()
       fuseboxWebSocketEventsEnabledCache = cached
+    }
+    return cached
+  }
+
+  override fun keepTimersRunningWhileHostPausedAndroid(): Boolean {
+    var cached = keepTimersRunningWhileHostPausedAndroidCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.keepTimersRunningWhileHostPausedAndroid()
+      keepTimersRunningWhileHostPausedAndroidCache = cached
     }
     return cached
   }

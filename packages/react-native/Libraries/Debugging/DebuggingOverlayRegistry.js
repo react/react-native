@@ -216,7 +216,7 @@ class DebuggingOverlayRegistry {
   }
 
   #onDrawTraceUpdates: (
-    ...ReactDevToolsAgentEvents['drawTraceUpdates']
+    ...rest: ReactDevToolsAgentEvents['drawTraceUpdates']
   ) => void = traceUpdates => {
     const modernNodesUpdates: Array<ModernNodeUpdate> = [];
     const legacyNodesUpdates: Array<LegacyNodeUpdate> = [];
@@ -368,7 +368,7 @@ class DebuggingOverlayRegistry {
   }
 
   #onHighlightElements: (
-    ...ReactDevToolsAgentEvents['showNativeHighlight']
+    ...rest: ReactDevToolsAgentEvents['showNativeHighlight']
   ) => void = nodes => {
     // First clear highlights for every container
     for (const subscriber of this.#registry) {
@@ -510,7 +510,7 @@ class DebuggingOverlayRegistry {
   }
 
   #onClearElementsHighlights: (
-    ...ReactDevToolsAgentEvents['hideNativeHighlight']
+    ...rest: ReactDevToolsAgentEvents['hideNativeHighlight']
   ) => void = () => {
     for (const subscriber of this.#registry) {
       subscriber.debuggingOverlayRef.current?.clearElementsHighlight();

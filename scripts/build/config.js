@@ -87,7 +87,7 @@ function getBabelConfig(
 
 function getTypeScriptCompilerOptions(
   packageName: keyof BuildConfig['packages'],
-): Object {
+): {...} {
   const {target} = getBuildOptions(packageName);
 
   switch (target) {

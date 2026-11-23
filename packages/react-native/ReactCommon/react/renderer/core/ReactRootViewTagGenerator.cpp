@@ -15,7 +15,7 @@ constexpr SurfaceId ROOT_VIEW_TAG_INCREMENT = 10;
 
 SurfaceId getNextRootViewTag() noexcept {
   // Numbering of these tags goes from 11, 21, 31, ..., 100501, ...
-  static std::atomic<SurfaceId> nextRootViewTag = 1;
+  static constinit std::atomic<SurfaceId> nextRootViewTag = 1;
   return nextRootViewTag += ROOT_VIEW_TAG_INCREMENT;
 }
 

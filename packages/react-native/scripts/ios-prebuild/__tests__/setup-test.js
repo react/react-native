@@ -282,6 +282,18 @@ describe('createHeaderLinker', () => {
     ]);
   });
 
+  it('warns and skips a source folder that no longer exists', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    expect(() => stage('React/Profiler', 'React')).not.toThrow();
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('React/Profiler'),
+    );
+    expect(log).not.toHaveBeenCalled();
+    expect(fs.existsSync(staged('React'))).toBe(false);
+  });
+
   it.each(['__tests__', 'tests', 'platform'])(
     'does not stage headers from a %s subfolder',
     folder => {

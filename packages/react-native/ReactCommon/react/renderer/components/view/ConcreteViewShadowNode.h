@@ -67,7 +67,7 @@ class ConcreteViewShadowNode : public ConcreteShadowNode<
 
   using BaseShadowNode::BaseShadowNode;
 
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     auto traits = BaseShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::ViewKind);

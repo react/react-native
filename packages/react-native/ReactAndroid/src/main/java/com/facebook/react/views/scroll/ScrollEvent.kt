@@ -10,10 +10,8 @@ package com.facebook.react.views.scroll
 import android.os.SystemClock
 import androidx.core.util.Pools.SynchronizedPool
 import com.facebook.infer.annotation.Assertions
-import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactSoftExceptionLogger
 import com.facebook.react.bridge.WritableMap
-import com.facebook.react.bridge.buildReadableMap
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.uimanager.PixelUtil.toDIPFromPixel
 import com.facebook.react.uimanager.common.ViewUtil
@@ -76,46 +74,24 @@ public class ScrollEvent private constructor() : Event<ScrollEvent>() {
   override fun canCoalesce(): Boolean = scrollEventType == ScrollEventType.SCROLL
 
   override fun getEventData(): WritableMap {
-    val contentInset = buildReadableMap {
-      put("top", 0.0)
-      put("bottom", 0.0)
-      put("left", 0.0)
-      put("right", 0.0)
-    }
-
-    val contentOffset = buildReadableMap {
-      put("x", toDIPFromPixel(scrollX).toDouble())
-      put("y", toDIPFromPixel(scrollY).toDouble())
-    }
-
-    val contentSize = buildReadableMap {
-      put("width", toDIPFromPixel(contentWidth.toFloat()).toDouble())
-      put("height", toDIPFromPixel(contentHeight.toFloat()).toDouble())
-    }
-
-    val layoutMeasurement = buildReadableMap {
-      put("width", toDIPFromPixel(scrollViewWidth.toFloat()).toDouble())
-      put("height", toDIPFromPixel(scrollViewHeight.toFloat()).toDouble())
-    }
-
-    val velocity = buildReadableMap {
-      put("x", toDIPFromPixel(xVelocity).toDouble())
-      put("y", toDIPFromPixel(yVelocity).toDouble())
-    }
-
-    val event = Arguments.createMap()
-    event.putMap("contentInset", contentInset)
-    event.putMap("contentOffset", contentOffset)
-    event.putMap("contentSize", contentSize)
-    event.putMap("layoutMeasurement", layoutMeasurement)
-    event.putMap("velocity", velocity)
-    event.putInt("target", viewTag)
-    event.putDouble("timestamp", timestamp.toDouble())
-    event.putBoolean(
-        "responderIgnoreScroll",
+    val data = DoubleArray(ScrollEventHelper.FIELDS)
+    data[ScrollEventHelper.CONTENT_OFFSET_X_INDEX] = toDIPFromPixel(scrollX).toDouble()
+    data[ScrollEventHelper.CONTENT_OFFSET_Y_INDEX] = toDIPFromPixel(scrollY).toDouble()
+    data[ScrollEventHelper.CONTENT_WIDTH_INDEX] = toDIPFromPixel(contentWidth.toFloat()).toDouble()
+    data[ScrollEventHelper.CONTENT_HEIGHT_INDEX] =
+        toDIPFromPixel(contentHeight.toFloat()).toDouble()
+    data[ScrollEventHelper.LAYOUT_WIDTH_INDEX] =
+        toDIPFromPixel(scrollViewWidth.toFloat()).toDouble()
+    data[ScrollEventHelper.LAYOUT_HEIGHT_INDEX] =
+        toDIPFromPixel(scrollViewHeight.toFloat()).toDouble()
+    data[ScrollEventHelper.VELOCITY_X_INDEX] = toDIPFromPixel(xVelocity).toDouble()
+    data[ScrollEventHelper.VELOCITY_Y_INDEX] = toDIPFromPixel(yVelocity).toDouble()
+    data[ScrollEventHelper.TIMESTAMP_INDEX] = timestamp.toDouble()
+    return ScrollEventHelper.nativeCreateScrollPayload(
+        data,
+        viewTag,
         !ReactNativeFeatureFlags.shouldTriggerResponderTransferOnScrollAndroid(),
     )
-    return event
   }
 
   public companion object {

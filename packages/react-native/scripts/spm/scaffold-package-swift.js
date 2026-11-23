@@ -15,6 +15,7 @@ import type {
   AutolinkedDep,
   AutolinkingIosPlatform,
   PodspecModel,
+  PreprocessorDefine,
   ScaffoldResult,
   SpmScaffoldSpec,
 } from './spm-types';
@@ -43,7 +44,11 @@ const {
   expandSpmDependencies,
   resolveSwiftName,
 } = require('./expand-spm-dependencies');
-const {expandSpmSourceGlobs} = require('./generate-spm-autolinking');
+const {
+  expandSpmSourceGlobs,
+  isMixedLanguageSourceList,
+  podspecSourceFiles,
+} = require('./generate-spm-autolinking');
 const {MIN_IOS_VERSION_SUPPORTED} = require('./ios-deployment-target');
 const {findPodspecs, readPodspecCached} = require('./read-podspec');
 const {
@@ -110,7 +115,11 @@ const {log, warn} = makeLogger('scaffold-package-swift');
 // under NDEBUG). Bumped so existing scaffolds regenerate with the defines.
 // v20: the platform floor is the app's iOS deployment target in string form
 // (the `.v15` enum cannot express a dependency minimum like 16.4).
-const SCAFFOLDER_VERSION = 20;
+// v21: `resources:` is emitted before `publicHeadersPath:`, the argument order
+// `.target(...)` requires (the reverse order fails to resolve).
+// v22: podspecs that call `install_modules_dependencies(s)` get
+// `.define("RCT_NEW_ARCH_ENABLED", to: "1")`, as CocoaPods adds it.
+const SCAFFOLDER_VERSION = 22;
 const SCAFFOLDER_VERSION_LINE_RE = /^\/\/ AUTO-SCAFFOLDED-VERSION: (\d+)$/m;
 
 const AUTOGEN_MARKER =
@@ -391,32 +400,9 @@ function translatePodspecToSpmTarget(
     coreReactNative = true;
   }
 
-  // SPM's `sources:` field does NOT accept CocoaPods-style globs — it wants
-  // a list of explicit file paths (relative to the target's `path:`).
-  // Expand the podspec globs against the actual filesystem so the emitted
-  // Package.swift parses cleanly.
-  let expandedSources /*: Array<string> */ = [];
-  try {
-    expandedSources = expandSpmSourceGlobs(dep.root, model.sourceFiles);
-  } catch (e) {
-    warnings.push(
-      `Source glob expansion failed (${e.message}); emitting raw globs — SPM will likely reject them.`,
-    );
-    expandedSources = model.sourceFiles;
-  }
-  // Strip files matching exclude_files (podspec's negation list).
-  if (model.excludeFiles.length > 0) {
-    try {
-      // $FlowFixMe[untyped-import] micromatch has no types
-      const micromatch = require('micromatch');
-      const isExcluded = micromatch.matcher(model.excludeFiles);
-      expandedSources = expandedSources.filter(f => !isExcluded(f));
-    } catch (e) {
-      warnings.push(
-        `exclude_files filtering failed (${e.message}); keeping all sources.`,
-      );
-    }
-  }
+  const sources = podspecSourceFiles(dep.root, model);
+  warnings.push(...sources.warnings);
+  let expandedSources = sources.files;
   // Never self-ingest scaffold artifacts: a re-scaffold runs with the
   // previous run's output on disk, and root-level podspec globs sweep it
   // into sources — `*.{h,...,swift}` matches Package.swift itself, whose
@@ -526,11 +512,23 @@ function translatePodspecToSpmTarget(
     }
   }
 
+  // CocoaPods' `install_modules_dependencies(s)` adds -DRCT_NEW_ARCH_ENABLED=1
+  // to the pod (scripts/cocoapods/new_architecture.rb), and libraries gate
+  // their TurboModule/Fabric code on it. The helper is stripped before the
+  // podspec is read, so restore the define here.
+  const preprocessorDefines /*: Array<PreprocessorDefine> */ =
+    model.usesInstallModulesDependencies === true
+      ? [
+          ...model.preprocessorDefines,
+          {name: 'RCT_NEW_ARCH_ENABLED', value: '1', config: null},
+        ]
+      : model.preprocessorDefines;
+
   return {
     swiftName,
     sources: expandedSources,
     headerSearchPaths,
-    preprocessorDefines: model.preprocessorDefines,
+    preprocessorDefines,
     needsObjCPrefix,
     coreReactNative,
     siblingNames,
@@ -778,7 +776,7 @@ let package = Package(
 ${packageDepsBlock}    targets: [
         .target(
             name: "${spec.swiftName}",${targetDepsLine}
-            path: ".",${sourcesLine}${publicHeadersLine}${resourcesLine}
+            path: ".",${sourcesLine}${resourcesLine}${publicHeadersLine}
             cSettings: ${cSettings},
             cxxSettings: ${cxxSettings},
             linkerSettings: [${linkerEntries.join(', ')}]
@@ -1021,9 +1019,7 @@ function scaffoldPackageSwiftForDep(
   // language source files" resolve error — skip with a clear reason (and remove
   // any stale scaffolded manifest so the autolinker reports it distinctly and
   // points the user at opting it out / a binary distribution).
-  const hasSwift = spec.sources.some(f => /\.swift$/i.test(f));
-  const hasClang = spec.sources.some(f => /\.(mm?|c|cc|cpp|cxx)$/i.test(f));
-  if (hasSwift && hasClang) {
+  if (isMixedLanguageSourceList(spec.sources)) {
     if (!ctx.dryRun && fs.existsSync(pkgSwiftPath)) {
       const existing = fs.readFileSync(pkgSwiftPath, 'utf8');
       if (existing.includes(SCAFFOLDER_MARKER)) {
@@ -1145,7 +1141,7 @@ function collectAutolinkedDeps(
   } */,
 ) /*: ?Array<AutolinkedDep> */ {
   const {autolinkingJsonPath, remote, onSkipped} = opts;
-  /*:: type AutolinkingJson = {dependencies?: ?{[string]: {root?: string, platforms?: {ios?: ?{...}, ...}, ...}}, ...}; */
+  /*:: type AutolinkingJson = {dependencies?: ?{[key: string]: {root?: string, platforms?: {ios?: ?{...}, ...}, ...}}, ...}; */
   // $FlowFixMe[incompatible-type] JSON.parse returns any
   const data /*: AutolinkingJson */ = JSON.parse(
     fs.readFileSync(autolinkingJsonPath, 'utf8'),

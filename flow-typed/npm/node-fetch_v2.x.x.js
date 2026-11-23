@@ -52,7 +52,7 @@ declare module 'node-fetch' {
 
   declare type HeaderObject = {[index: string]: string | number, ...};
 
-  declare type RequestInit = {|
+  declare type RequestInit = {
     body?: BodyInit,
     headers?: HeaderObject | null,
     method?: string,
@@ -60,12 +60,13 @@ declare module 'node-fetch' {
     signal?: AbortSignal | null,
 
     // node-fetch extensions
-    agent?: (URL => http.Agent | https.Agent) | http.Agent | https.Agent | null,
+    agent?:
+      ((v: URL) => http.Agent | https.Agent) | http.Agent | https.Agent | null,
     compress?: boolean,
     follow?: number,
     size?: number,
     timeout?: number,
-  |};
+  };
 
   declare interface FetchError extends Error {
     // cannot set name due to incompatible extend error

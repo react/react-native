@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<dfa41f479803f71200142269d679b3a1>>
+ * @generated SignedSource<<5d7adbc00208fc9995b1c3e69c677a38>>
  */
 
 /**
@@ -564,6 +564,14 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
 
   override fun shouldDelayChildPressedState(): Boolean =
       hasChildPressedStateDelay ?: super.shouldDelayChildPressedState()
+
+  override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+    if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
+      // Defensive cleanup for new gesture
+      stopNestedScroll()
+    }
+    return super.dispatchTouchEvent(ev)
+  }
 
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
     if (!scrollEnabled) return false

@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #import "RCTComponentData.h"
 
 #import <objc/message.h>
@@ -44,7 +46,6 @@ static SEL selectorForType(NSString *type)
 }
 
 @synthesize manager = _manager;
-@synthesize bridgelessViewManager = _bridgelessViewManager;
 
 - (instancetype)initWithManagerClass:(Class)managerClass
                               bridge:(RCTBridge *)bridge
@@ -62,21 +63,12 @@ static SEL selectorForType(NSString *type)
   return self;
 }
 
-- (BOOL)isBridgeMode
-{
-  // If we are in bridge mode, the bridge is RCTBridge
-  // If we are bridgeless, the bridge is RCTBridgeProxy
-  return [_bridge isKindOfClass:[RCTBridge class]];
-}
-
 - (RCTViewManager *)manager
 {
-  if ((_manager == nullptr) && [self isBridgeMode]) {
+  if (_manager == nullptr) {
     _manager = [_bridge moduleForClass:_managerClass];
-  } else if ((_manager == nullptr) && (_bridgelessViewManager == nullptr)) {
-    _bridgelessViewManager = [_bridge moduleForClass:_managerClass];
   }
-  return (_manager != nullptr) ? _manager : _bridgelessViewManager;
+  return _manager;
 }
 
 RCT_NOT_IMPLEMENTED(-(instancetype)init)
@@ -272,8 +264,7 @@ static RCTPropBlock createNSInvocationSetter(NSMethodSignature *typeSignature, S
         type == NSSelectorFromString(@"RCTDirectEventBlock:") ||
         type == NSSelectorFromString(@"RCTCapturingEventBlock:")) {
       // Special case for event handlers
-      setterBlock = createEventSetter(
-          name, setter, self.eventInterceptor, [self isBridgeMode] ? _bridge.eventDispatcher : _eventDispatcher);
+      setterBlock = createEventSetter(name, setter, self.eventInterceptor, _eventDispatcher);
     } else {
       // Ordinary property handlers
       NSMethodSignature *typeSignature = [[RCTConvert class] methodSignatureForSelector:type];
@@ -561,3 +552,5 @@ NSString *RCTViewManagerModuleNameForClass(Class managerClass)
 }
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

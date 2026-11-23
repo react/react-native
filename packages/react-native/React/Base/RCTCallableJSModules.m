@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import "RCTBridge.h"
 #import "RCTBridgeModule.h"
 
 @implementation RCTCallableJSModules {

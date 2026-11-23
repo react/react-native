@@ -24,7 +24,7 @@ function __fetchSegment(
     requestedModuleName: string,
     segmentHash: string,
   }>,
-  callback: (?Error) => void,
+  callback: (v: ?Error) => void,
 ) {
   const SegmentFetcher =
     require('./SegmentFetcher/NativeSegmentFetcher').default;

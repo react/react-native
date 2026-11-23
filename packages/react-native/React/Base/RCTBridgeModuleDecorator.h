@@ -10,6 +10,7 @@
 @class RCTBundleManager;
 @class RCTCallableJSModules;
 @class RCTModuleRegistry;
+@class RCTPerformanceLogger;
 @class RCTViewRegistry;
 
 /**
@@ -24,11 +25,15 @@
 @property (nonatomic, strong, readonly) RCTModuleRegistry *moduleRegistry;
 @property (nonatomic, strong, readonly) RCTBundleManager *bundleManager;
 @property (nonatomic, strong, readonly) RCTCallableJSModules *callableJSModules;
+@property (nonatomic, copy, readonly) NSDictionary *launchOptions;
+@property (nonatomic, strong, readonly) RCTPerformanceLogger *performanceLogger;
 
 - (instancetype)initWithViewRegistry:(RCTViewRegistry *)viewRegistry
                       moduleRegistry:(RCTModuleRegistry *)moduleRegistry
                        bundleManager:(RCTBundleManager *)bundleManager
-                   callableJSModules:(RCTCallableJSModules *)callableJSModules;
+                   callableJSModules:(RCTCallableJSModules *)callableJSModules
+                       launchOptions:(NSDictionary *)launchOptions
+                   performanceLogger:(RCTPerformanceLogger *)performanceLogger;
 
 - (void)attachInteropAPIsToModule:(id<RCTBridgeModule>)bridgeModule;
 

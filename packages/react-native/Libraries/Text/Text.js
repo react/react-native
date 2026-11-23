@@ -60,6 +60,7 @@ const TextImpl: component(
   'aria-expanded': ariaExpanded,
   'aria-hidden': ariaHidden,
   'aria-label': ariaLabel,
+  'aria-live': ariaLive,
   'aria-selected': ariaSelected,
   children,
   ellipsizeMode,
@@ -138,6 +139,11 @@ const TextImpl: component(
     if (ariaHidden === true) {
       processedProps.importantForAccessibility = 'no-hide-descendants';
     }
+  }
+
+  if (ariaLive !== undefined) {
+    processedProps.accessibilityLiveRegion =
+      ariaLive === 'off' ? 'none' : ariaLive;
   }
 
   const _accessible = Platform.select({

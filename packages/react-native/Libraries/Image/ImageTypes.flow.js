@@ -12,7 +12,7 @@ import type {HostInstance} from '../..';
 import type {RootTag} from '../Types/RootTagTypes';
 import type {ResolvedAssetSource} from './AssetSourceResolver';
 import type {ImageProps as ImagePropsType} from './ImageProps';
-import type {ImageSource} from './ImageSource';
+import typeof resolveAssetSource from './resolveAssetSource';
 
 import * as React from 'react';
 
@@ -35,11 +35,11 @@ type ImageComponentStaticsIOS = Readonly<{
 
   getSizeWithHeaders(
     uri: string,
-    headers: {[string]: string, ...},
+    headers: {[key: string]: string, ...},
   ): Promise<ImageSize>,
   getSizeWithHeaders(
     uri: string,
-    headers: {[string]: string, ...},
+    headers: {[key: string]: string, ...},
     success: (width: number, height: number) => void,
     failure?: (error: unknown) => void,
   ): void,
@@ -59,7 +59,7 @@ type ImageComponentStaticsIOS = Readonly<{
   /**
    * @see https://reactnative.dev/docs/image#resolveassetsource
    */
-  resolveAssetSource(source: ImageSource): ?ImageResolvedAssetSource,
+  resolveAssetSource: resolveAssetSource,
 }>;
 
 type ImageComponentStaticsAndroid = Readonly<{

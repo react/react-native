@@ -55,6 +55,7 @@ const {
   CXX_API_DEFINES,
   REACT_CODEGEN_APP_PRODUCTS,
   REACT_CODEGEN_PACKAGE_NAME,
+  REACT_CODEGEN_PRODUCTS,
   REACT_NATIVE_PACKAGE_NAME,
   REACT_NATIVE_PRODUCTS,
   isValidScriptPhaseId,
@@ -72,11 +73,12 @@ const path = require('node:path');
 
 /*:: import type {
   FlavoredFrameworkManifestEntry,
+  GitignoreRecord,
   PluginScriptPhase,
   XcframeworkSlice,
 } from './spm-types'; */
 
-const {log} = makeLogger('generate-spm-xcodeproj');
+const {log, warn} = makeLogger('generate-spm-xcodeproj');
 
 // Sidecar inside a USER-OWNED xcodeproj that SPM packages were injected into in
 // place. Records the host project's root UUID + every edit so `spm deinit`
@@ -133,7 +135,7 @@ const SPM_GENERATED_SOURCES_GROUP_NAME = 'SPM Generated Sources';
 // pbxproj `lastKnownFileType` per source extension. v1 plugins emit Swift only;
 // .m/.mm are mapped as future-proofing (the plugin contract permits ObjC/ObjC++
 // sources). An unmapped extension is skipped with a loud log.
-const GENERATED_SOURCE_FILE_TYPES /*: {[string]: string} */ = {
+const GENERATED_SOURCE_FILE_TYPES /*: {[key: string]: string} */ = {
   '.swift': 'sourcecode.swift',
   '.m': 'sourcecode.c.objc',
   '.mm': 'sourcecode.cpp.objcpp',
@@ -170,17 +172,17 @@ type RemoteCfg = {url: string, version: string, identity: string};
 type BuildSettingChange = {
   configUuid: string,
   createdArrayKeys: Array<string>,
-  appendedArrayValues: {[string]: Array<string>},
+  appendedArrayValues: {[key: string]: Array<string>},
   createdScalars: Array<string>,
   // Scalars whose pre-injection value was replaced (key → original raw
   // value), e.g. a ${PODS_ROOT}-anchored REACT_NATIVE_PATH that dangles once
   // CocoaPods is deintegrated. Deinit restores the original.
-  replacedScalars?: {[string]: string},
+  replacedScalars?: {[key: string]: string},
   // Array settings that existed as a SCALAR and were promoted to a `( … )`
   // array (key → the pre-injection raw value text, quotes included). Deinit
   // restores that value verbatim; removing the injected members would leave
   // the promoted array and its `"$(inherited)"` seed behind.
-  promotedArrayScalars?: {[string]: string},
+  promotedArrayScalars?: {[key: string]: string},
 };
 // An array field injection CREATED (rather than appended to a pre-existing
 // one), so deinit removes the whole field and lands byte-identical.
@@ -279,7 +281,7 @@ function buildSpmDependencyGraph(
  * Render the SPM graph into pbxproj section entry objects the in-place injector
  * splices into an existing project.
  */
-/*:: type PbxEntryT = {uuid: string, comment: string, fields: {[string]: string}}; */
+/*:: type PbxEntryT = {uuid: string, comment: string, fields: {[key: string]: string}}; */
 
 function spmGraphToEntries(
   graph /*: SpmGraph */,
@@ -338,7 +340,7 @@ function shellScriptPhase(
   name /*: string */,
   script /*: string */,
   options /*: {inputPaths?: ?(string | ReadonlyArray<string>), outputPaths?: ?(string | ReadonlyArray<string>), alwaysOutOfDate?: ?boolean, comment?: string} */ = {},
-) /*: {uuid: string, comment: string, fields: {[string]: string}} */ {
+) /*: {uuid: string, comment: string, fields: {[key: string]: string}} */ {
   const empty = '(\n\t\t\t)';
   const pathList = (
     value /*: ?(string | ReadonlyArray<string>) */,
@@ -1137,6 +1139,18 @@ function ensureStubPackages(appRoot /*: string */) /*: void */ {
     }
   }
 
+  // Library manifests depend on these products, but the app must not link
+  // them, so they are stubbed here instead of listed in SPM_PRODUCT_PACKAGES.
+  for (const def of byPath.values()) {
+    if (def.packageName === REACT_CODEGEN_PACKAGE_NAME) {
+      for (const product of REACT_CODEGEN_PRODUCTS) {
+        if (!def.products.includes(product)) {
+          def.products.push(product);
+        }
+      }
+    }
+  }
+
   for (const [relPath, def] of byPath) {
     const pkgDir = path.join(appRoot, relPath);
     const pkgSwiftPath = path.join(pkgDir, 'Package.swift');
@@ -1599,7 +1613,7 @@ function injectSpmIntoPbxproj(
   flavoredFrameworks /*: ReadonlyArray<FlavoredFrameworkManifestEntry> */ = [],
   scriptPhases /*: ReadonlyArray<PluginScriptPhase> */ = [],
   cxxApiDefines /*: ReadonlyArray<string> */ = [],
-) /*: {text: string, injectedUuids: Array<string>, createdArrayFields: Array<CreatedArrayField>, xcconfig: XcconfigRecord, generatedFiles: {[string]: string}, generatedSourceUuids: {[string]: Array<string>}, scriptPhaseUuids: {[string]: string}} */ {
+) /*: {text: string, injectedUuids: Array<string>, createdArrayFields: Array<CreatedArrayField>, xcconfig: XcconfigRecord, generatedFiles: {[key: string]: string}, generatedSourceUuids: {[key: string]: Array<string>}, scriptPhaseUuids: {[key: string]: string}} */ {
   let text = input;
   const mkUuid = (section /*: string */, id /*: string */) =>
     namespacedUUID(plan.rootUuid, section, id);
@@ -1610,7 +1624,7 @@ function injectSpmIntoPbxproj(
   // 1. Insert the new objects (skip any UUID already present — idempotency).
   const insertObjects = (
     sectionName /*: string */,
-    objs /*: ReadonlyArray<{readonly uuid: string, readonly comment?: ?string, readonly fields: {readonly [string]: string}, ...}> */,
+    objs /*: ReadonlyArray<{readonly uuid: string, readonly comment?: ?string, readonly fields: {readonly [key: string]: string}, ...}> */,
   ) => {
     const fresh = objs.filter(o => !text.includes(o.uuid));
     for (const o of objs) {
@@ -1739,7 +1753,7 @@ function injectSpmIntoPbxproj(
       removedPodsRootReactNativePath = true;
     }
   }
-  const generatedFiles /*: {[string]: string} */ = {
+  const generatedFiles /*: {[key: string]: string} */ = {
     [GENERATED_XCCONFIG_PATH]: generateReactNativeXcconfig(
       plan.configUuids.map(uuid => buildConfigurationName(text, uuid)),
       reactNativePaths.fromSrcRoot,
@@ -1862,7 +1876,7 @@ function injectSpmIntoPbxproj(
   //    normalized path (deterministic → idempotent) and recorded so `deinit`
   //    reverts it and `update` reconciles it (removal is done by the caller,
   //    which owns the prior marker; emission here is purely additive).
-  const generatedSourceUuids /*: {[string]: Array<string>} */ = {};
+  const generatedSourceUuids /*: {[key: string]: Array<string>} */ = {};
   const sourcesPhaseUuid = plan.sourcesPhaseUuid;
   if (generatedSources.length > 0) {
     if (sourcesPhaseUuid == null) {
@@ -1959,7 +1973,7 @@ function injectSpmIntoPbxproj(
   // 9. Plugin-declared build phases (SwiftPM has no `script_phase`). Each
   //    phase's UUID is keyed on its plugin id, so re-runs refresh in place and
   //    `deinit` reverses it.
-  const scriptPhaseUuids /*: {[string]: string} */ = {};
+  const scriptPhaseUuids /*: {[key: string]: string} */ = {};
   if (scriptPhases.length > 0) {
     const seated /*: Array<SeatedPhase> */ = [];
     for (const scriptPhase of scriptPhases) {
@@ -2140,6 +2154,7 @@ function addPreActionToScheme(
     const stiMatch = openTag.match(/shellToInvoke\s*=\s*"/);
     if (stiMatch != null) {
       const stiValueStart =
+        // $FlowFixMe[unsafe-addition]
         contentOpenIdx + stiMatch.index + stiMatch[0].length;
       const stiValueEnd = xmlWithScript.indexOf('"', stiValueStart);
       xmlWithScript =
@@ -2454,7 +2469,7 @@ function readScriptPhasesManifest(
  */
 function readMarker(
   xcodeprojPath /*: string */,
-) /*: ?{targetUuid?: ?string, generatedSources?: {[string]: Array<string>}, scriptPhases?: {[string]: string}, linkedFrameworks?: Array<{id: string, frameworkName: string}>, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: unknown, buildSettingChanges?: Array<BuildSettingChange>, xcconfig?: XcconfigRecord, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, ...} */ {
+) /*: ?{targetUuid?: ?string, generatedSources?: {[key: string]: Array<string>}, scriptPhases?: {[key: string]: string}, linkedFrameworks?: Array<{id: string, frameworkName: string}>, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: unknown, buildSettingChanges?: Array<BuildSettingChange>, xcconfig?: XcconfigRecord, createdArrayFields?: Array<CreatedArrayField>, scheme?: {file?: ?string, created?: ?boolean}, gitignore?: GitignoreRecord, ...} */ {
   const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
   try {
     // $FlowFixMe[incompatible-return] JSON.parse returns any
@@ -2590,7 +2605,7 @@ function readLinkedFrameworks(
  */
 function assertPluginFrameworksLinked(
   appRoot /*: string */,
-  env /*: {readonly [string]: ?string} */ = process.env,
+  env /*: {readonly [key: string]: ?string} */ = process.env,
 ) /*: void */ {
   const builtProjectPath = env.PROJECT_FILE_PATH;
   const xcodeprojPath =
@@ -2790,7 +2805,7 @@ function linkedReactNativeRoot(
  * when the project can't be safely edited (caller surfaces it; fail-loud).
  */
 function injectSpmIntoExistingXcodeproj(
-  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: ReadonlyArray<string>} */,
+  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, cxxApiDefines?: ReadonlyArray<string>, gitignoreAppended?: ?GitignoreRecord} */,
 ) /*: {status: 'injected', target: string} | {status: 'refused', reason: string} */ {
   const {appRoot, reactNativeRoot, xcodeprojPath} = opts;
   const pbxprojPath = path.join(xcodeprojPath, 'project.pbxproj');
@@ -2836,7 +2851,7 @@ function injectSpmIntoExistingXcodeproj(
   // idempotently skips) everything that remains, so an unchanged run stays
   // byte-identical. deinit needs none of this: the removed objects live in
   // `injectedUuids`.
-  const prevGeneratedSources /*: {[string]: Array<string>} */ =
+  const prevGeneratedSources /*: {[key: string]: Array<string>} */ =
     prevMarker?.generatedSources ?? {};
   const currentPaths = new Set(generatedSources.map(s => s.path));
   const staleUuids /*: Array<string> */ = [];
@@ -2855,7 +2870,7 @@ function injectSpmIntoExistingXcodeproj(
     );
   }
   // Same reconciliation for script phases, keyed on the plugin-supplied id.
-  const prevScriptPhases /*: {[string]: string} */ =
+  const prevScriptPhases /*: {[key: string]: string} */ =
     prevMarker?.scriptPhases ?? {};
   const currentPhaseIds = new Set(scriptPhases.map(p => p.id));
   for (const id of Object.keys(prevScriptPhases)) {
@@ -2944,6 +2959,18 @@ function injectSpmIntoExistingXcodeproj(
   // the whole marker, this field with it.
   const configCommand = opts.configCommand ?? prevMarker?.configCommand ?? null;
 
+  // `add` passes the lines it appends to .gitignore; `update` passes none and
+  // keeps the record. Without one (an older marker), deinit leaves .gitignore
+  // untouched.
+  const appended = opts.gitignoreAppended;
+  const gitignore /*: ?GitignoreRecord */ =
+    appended == null
+      ? prevMarker?.gitignore
+      : {
+          created: prevMarker?.gitignore?.created === true || appended.created,
+          lines: [...(prevMarker?.gitignore?.lines ?? []), ...appended.lines],
+        };
+
   // Marker: idempotency signal + the exact, reversible record of every edit so
   // `deinit` (removeSpmInjection) can undo precisely what was added.
   writeIfChanged(
@@ -2991,6 +3018,7 @@ function injectSpmIntoExistingXcodeproj(
             schemeResult.status === 'created' ||
             prevMarker?.scheme?.created === true,
         },
+        gitignore,
       },
       null,
       2,
@@ -3090,7 +3118,7 @@ function removeRecordedBuildSettings(
         );
       }
     }
-    const promotedArrayScalars /*: {[string]: string} */ =
+    const promotedArrayScalars /*: {[key: string]: string} */ =
       change.promotedArrayScalars ?? {};
     for (const key of Object.keys(promotedArrayScalars)) {
       const current = dict();
@@ -3121,7 +3149,7 @@ function removeRecordedBuildSettings(
         text = removeField(text, current, key);
       }
     }
-    const replacedScalars /*: {[string]: string} */ =
+    const replacedScalars /*: {[key: string]: string} */ =
       change.replacedScalars ?? {};
     for (const key of Object.keys(replacedScalars)) {
       const current = dict();
@@ -3268,6 +3296,7 @@ function removeSpmInjection(
     EMBED_FRAMEWORKS_SCRIPT_PATH,
   ]) {
     fs.rmSync(path.join(appRoot, relPath), {force: true});
+    removeEmptyDirsUpTo(path.dirname(path.join(appRoot, relPath)), appRoot);
   }
 
   // 3. Scheme: delete it if injection created it AND still owns its contents,
@@ -3301,6 +3330,26 @@ function removeSpmInjection(
   // 4. Drop the marker — the project is no longer SPM-injected.
   fs.rmSync(markerPath, {force: true});
   return {status: 'removed', target: marker.target};
+}
+
+// Never follows a symlink, which could lead outside `stopAt`. A failure only
+// warns: deinit has more to undo after this.
+function removeEmptyDirsUpTo(dir /*: string */, stopAt /*: string */) {
+  let current = dir;
+  try {
+    const root = fs.realpathSync(stopAt);
+    while (
+      fs.existsSync(current) &&
+      fs.lstatSync(current).isDirectory() &&
+      fs.realpathSync(current).startsWith(root + path.sep) &&
+      fs.readdirSync(current).length === 0
+    ) {
+      fs.rmdirSync(current);
+      current = path.dirname(current);
+    }
+  } catch (e) {
+    warn(`Could not remove the empty directory ${current}: ${e.message}`);
+  }
 }
 
 module.exports = {

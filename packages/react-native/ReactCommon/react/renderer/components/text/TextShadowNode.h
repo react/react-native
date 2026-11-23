@@ -25,7 +25,7 @@ using TextEventEmitter = TouchEventEmitter;
 class TextShadowNode : public ConcreteShadowNode<TextComponentName, ShadowNode, TextProps, TextEventEmitter>,
                        public BaseTextShadowNode {
  public:
-  static ShadowNodeTraits BaseTraits()
+  static constexpr ShadowNodeTraits BaseTraits()
   {
     auto traits = ConcreteShadowNode::BaseTraits();
 #ifdef ANDROID

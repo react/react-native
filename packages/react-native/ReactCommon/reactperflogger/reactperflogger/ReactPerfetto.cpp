@@ -12,13 +12,17 @@
 #include <perfetto.h>
 #include <unordered_map>
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 #include "FuseboxPerfettoDataSource.h"
 #include "HermesPerfettoDataSource.h"
 #include "ReactPerfettoCategories.h"
 
 namespace facebook::react {
 
-std::once_flag perfettoInit;
+constinit std::once_flag perfettoInit;
 void initializePerfetto() {
   std::call_once(perfettoInit, []() {
     perfetto::TracingInitArgs args;
@@ -26,7 +30,13 @@ void initializePerfetto() {
     // is only used in tracing build, large buffers are okay
     // for now.
     args.shmem_size_hint_kb = 20 * 1024;
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+    // iOS and the other Apple device platforms have no system tracing
+    // service.
+    args.backends |= perfetto::kInProcessBackend;
+#else
     args.backends |= perfetto::kSystemBackend;
+#endif
     args.use_monotonic_clock = true;
     perfetto::Tracing::Initialize(args);
     TrackEvent::Register();

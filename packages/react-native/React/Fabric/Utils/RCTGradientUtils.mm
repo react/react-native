@@ -9,6 +9,9 @@
 #import <React/RCTAnimationUtils.h>
 #import <React/RCTConversions.h>
 #import <react/utils/FloatComparison.h>
+#include <algorithm>
+#include <iterator>
+#include <limits>
 #include <optional>
 #import <vector>
 
@@ -143,17 +146,46 @@ CGSize calculateMultipliers(CGSize bounds)
 
 } // namespace
 
+// Like Blink, clamp to finite values so that interpolation never divides infinity by infinity.
+static Float clampToFinite(Float position)
+{
+  return std::clamp<Float>(position, -std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+}
+
 static std::optional<Float> resolveColorStopPosition(ValueUnit position, CGFloat gradientLineLength)
 {
   if (position.unit == UnitType::Point) {
-    return position.resolve(0.0f) / gradientLineLength;
+    return clampToFinite(gradientLineLength > 0 ? position.resolve(0.0f) / gradientLineLength : 0);
   }
 
   if (position.unit == UnitType::Percent) {
-    return position.resolve(1.0f);
+    return clampToFinite(position.resolve(1.0f));
   }
 
   return std::nullopt;
+}
+
+// Interpolates with premultiplied alpha, as CSS does.
+// Spec: https://drafts.csswg.org/css-color-4/#interpolation-alpha
+static SharedColor interpolateColor(const SharedColor &from, const SharedColor &to, float weight)
+{
+  if (!from || !to) {
+    return from ? from : to;
+  }
+  auto start = colorComponentsFromColor(from);
+  auto end = colorComponentsFromColor(to);
+  auto alpha = start.alpha + (end.alpha - start.alpha) * weight;
+  if (alpha <= 0) {
+    return clearColor();
+  }
+  auto channel = [&](float startChannel, float endChannel) {
+    return (startChannel * start.alpha * (1 - weight) + endChannel * end.alpha * weight) / alpha;
+  };
+  return colorFromComponents(
+      {.red = channel(start.red, end.red),
+       .green = channel(start.green, end.green),
+       .blue = channel(start.blue, end.blue),
+       .alpha = alpha});
 }
 
 // Spec: https://drafts.csswg.org/css-images-4/#coloring-gradient-line (Refer transition hint section)
@@ -334,6 +366,50 @@ static std::vector<ProcessedColorStop> processColorTransitionHints(const std::ve
     }
   }
   return processColorTransitionHints(fixedColorStops);
+}
+
+// Spec: https://drafts.csswg.org/css-images-4/#conic-color-stops
+// Color stops outside [0, end] are "never directly consulted for rendering", but "can affect the color of
+// color-stops within the rendered region through interpolation". So they are replaced by stops at the range
+// boundaries, colored as the gradient would be at that point.
++ (std::vector<ProcessedColorStop>)clipColorStops:(const std::vector<ProcessedColorStop> &)colorStops end:(Float)end
+{
+  if (colorStops.empty() ||
+      (colorStops.front().position.value_or(0) >= 0 && colorStops.back().position.value_or(0) <= end)) {
+    return colorStops;
+  }
+
+  auto firstInside = std::find_if(
+      colorStops.begin(), colorStops.end(), [](const auto &stop) { return stop.position.value_or(0) >= 0; });
+  auto lastInside = std::find_if(
+      colorStops.rbegin(), colorStops.rend(), [end](const auto &stop) { return stop.position.value_or(0) <= end; });
+  if (firstInside == colorStops.end()) {
+    return {{.color = colorStops.back().color, .position = 0}, {.color = colorStops.back().color, .position = end}};
+  }
+  if (lastInside == colorStops.rend()) {
+    return {{.color = colorStops.front().color, .position = 0}, {.color = colorStops.front().color, .position = end}};
+  }
+
+  auto colorAt = [](const ProcessedColorStop &before, const ProcessedColorStop &after, Float position) {
+    auto weight = (position - before.position.value()) / (after.position.value() - before.position.value());
+    return interpolateColor(before.color, after.color, static_cast<float>(weight));
+  };
+
+  std::vector<ProcessedColorStop> clippedColorStops;
+  if (firstInside != colorStops.begin() && firstInside->position.value() > 0) {
+    clippedColorStops.push_back({.color = colorAt(*std::prev(firstInside), *firstInside, 0), .position = 0});
+  }
+  auto insideEnd = lastInside.base();
+  if (firstInside < insideEnd) {
+    clippedColorStops.insert(clippedColorStops.end(), firstInside, insideEnd);
+  }
+  if (insideEnd != colorStops.end() && std::prev(insideEnd)->position.value() < end) {
+    clippedColorStops.push_back({.color = colorAt(*std::prev(insideEnd), *insideEnd, end), .position = end});
+  }
+  if (clippedColorStops.size() == 1) {
+    clippedColorStops.push_back({.color = clippedColorStops.front().color, .position = end});
+  }
+  return clippedColorStops;
 }
 
 // CAGradientLayer linear gradient squishes the non-square gradient to square gradient.

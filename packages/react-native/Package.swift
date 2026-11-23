@@ -71,7 +71,9 @@ let yoga = RNTarget(
   name: .yoga,
   path: "ReactCommon/yoga",
   excludedPaths: ["test"],
-  publicHeadersPath: "yoga"
+  publicHeadersPath: "yoga",
+  // Android builds Yoga at -O2 in every build type, Debug included, so match it.
+  defines: [.unsafeFlags(["-O2"])]
 )
 
 // React-oscompat.podspec
@@ -452,7 +454,6 @@ let reactCore = RNTarget(
   path: "React",
   searchPaths: [
     "React/I18n",
-    "React/Profiler",
     "ReactCommon/react/runtime/platform/ios", // explicit header search path to break circular dependency. RCTHost imports `RCTDefines.h` in ReactCore, ReacCore needs to import RCTHost
   ],
   linkedFrameworks: ["CoreServices"],

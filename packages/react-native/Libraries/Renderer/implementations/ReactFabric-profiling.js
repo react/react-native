@@ -7,7 +7,7 @@
  * @noflow
  * @nolint
  * @preventMunge
- * @generated SignedSource<<c279b1ba2ec8b8df254cf8204b4d5b10>>
+ * @generated SignedSource<<9f9934c9c6457b3e7ada8ebf2d803424>>
  *
  * This file was sync'd from the facebook/react repository.
  */
@@ -1276,7 +1276,7 @@ eventPluginOrder = Array.prototype.slice.call([
   "ReactNativeBridgeEventPlugin"
 ]);
 recomputePluginOrdering();
-var injectedNamesToPlugins$jscomp$inline_336 = {
+var injectedNamesToPlugins$jscomp$inline_337 = {
     ResponderEventPlugin: ResponderEventPlugin,
     ReactNativeBridgeEventPlugin: {
       eventTypes: {},
@@ -1322,32 +1322,32 @@ var injectedNamesToPlugins$jscomp$inline_336 = {
       }
     }
   },
-  isOrderingDirty$jscomp$inline_337 = !1,
-  pluginName$jscomp$inline_338;
-for (pluginName$jscomp$inline_338 in injectedNamesToPlugins$jscomp$inline_336)
+  isOrderingDirty$jscomp$inline_338 = !1,
+  pluginName$jscomp$inline_339;
+for (pluginName$jscomp$inline_339 in injectedNamesToPlugins$jscomp$inline_337)
   if (
-    injectedNamesToPlugins$jscomp$inline_336.hasOwnProperty(
-      pluginName$jscomp$inline_338
+    injectedNamesToPlugins$jscomp$inline_337.hasOwnProperty(
+      pluginName$jscomp$inline_339
     )
   ) {
-    var pluginModule$jscomp$inline_339 =
-      injectedNamesToPlugins$jscomp$inline_336[pluginName$jscomp$inline_338];
+    var pluginModule$jscomp$inline_340 =
+      injectedNamesToPlugins$jscomp$inline_337[pluginName$jscomp$inline_339];
     if (
-      !namesToPlugins.hasOwnProperty(pluginName$jscomp$inline_338) ||
-      namesToPlugins[pluginName$jscomp$inline_338] !==
-        pluginModule$jscomp$inline_339
+      !namesToPlugins.hasOwnProperty(pluginName$jscomp$inline_339) ||
+      namesToPlugins[pluginName$jscomp$inline_339] !==
+        pluginModule$jscomp$inline_340
     ) {
-      if (namesToPlugins[pluginName$jscomp$inline_338])
+      if (namesToPlugins[pluginName$jscomp$inline_339])
         throw Error(
           "EventPluginRegistry: Cannot inject two different event plugins using the same name, `" +
-            (pluginName$jscomp$inline_338 + "`.")
+            (pluginName$jscomp$inline_339 + "`.")
         );
-      namesToPlugins[pluginName$jscomp$inline_338] =
-        pluginModule$jscomp$inline_339;
-      isOrderingDirty$jscomp$inline_337 = !0;
+      namesToPlugins[pluginName$jscomp$inline_339] =
+        pluginModule$jscomp$inline_340;
+      isOrderingDirty$jscomp$inline_338 = !0;
     }
   }
-isOrderingDirty$jscomp$inline_337 && recomputePluginOrdering();
+isOrderingDirty$jscomp$inline_338 && recomputePluginOrdering();
 function batchedUpdatesImpl(fn, bookkeeping) {
   return fn(bookkeeping);
 }
@@ -1405,12 +1405,11 @@ function dispatchEvent(target, topLevelType, nativeEventParam) {
       (_enableNativeEventTargetEventDispatching =
         "function" === typeof event && event()));
     if (_enableNativeEventTargetEventDispatching)
-      null != eventTarget &&
-        reactPrivateInterface.dispatchNativeEvent(
-          eventTarget,
-          topLevelType,
-          nativeEvent
-        );
+      reactPrivateInterface.dispatchNativeEvent(
+        eventTarget,
+        topLevelType,
+        nativeEvent
+      );
     else {
       event = eventTarget;
       for (
@@ -9090,10 +9089,6 @@ function commitBeforeMutationEffects_complete(
       current = fiber.alternate,
       flags = fiber.flags;
     switch (fiber.tag) {
-      case 0:
-      case 11:
-      case 15:
-        break;
       case 1:
         if (0 !== (flags & 1024) && null !== current) {
           isViewTransitionEligible = void 0;
@@ -9118,6 +9113,9 @@ function commitBeforeMutationEffects_complete(
         break;
       case 3:
         break;
+      case 0:
+      case 11:
+      case 15:
       case 5:
       case 26:
       case 27:
@@ -9622,8 +9620,8 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         null !== current)
       )
         for (var ii = 0; ii < current.length; ii++) {
-          var _eventPayloads$ii2 = current[ii];
-          _eventPayloads$ii2.ref.impl = _eventPayloads$ii2.nextImpl;
+          var _eventPayloads$ii = current[ii];
+          _eventPayloads$ii.ref.impl = _eventPayloads$ii.nextImpl;
         }
       recursivelyTraverseMutationEffects(root, finishedWork, lanes);
       commitReconciliationEffects(finishedWork);
@@ -9727,17 +9725,17 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
       break;
     case 22:
       ii = null !== finishedWork.memoizedState;
-      _eventPayloads$ii2 = null !== current && null !== current.memoizedState;
+      _eventPayloads$ii = null !== current && null !== current.memoizedState;
       if (finishedWork.mode & 1) {
         var prevOffscreenSubtreeIsHidden = offscreenSubtreeIsHidden,
           prevOffscreenSubtreeWasHidden = offscreenSubtreeWasHidden;
         offscreenSubtreeIsHidden = prevOffscreenSubtreeIsHidden || ii;
         offscreenSubtreeWasHidden =
-          prevOffscreenSubtreeWasHidden || _eventPayloads$ii2;
+          prevOffscreenSubtreeWasHidden || _eventPayloads$ii;
         recursivelyTraverseMutationEffects(root, finishedWork, lanes);
         offscreenSubtreeWasHidden = prevOffscreenSubtreeWasHidden;
         offscreenSubtreeIsHidden = prevOffscreenSubtreeIsHidden;
-        _eventPayloads$ii2 &&
+        _eventPayloads$ii &&
           !ii &&
           !prevOffscreenSubtreeIsHidden &&
           !prevOffscreenSubtreeWasHidden &&
@@ -9757,11 +9755,11 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         (root._visibility = ii ? root._visibility & -2 : root._visibility | 1),
         !ii ||
           null === current ||
-          _eventPayloads$ii2 ||
+          _eventPayloads$ii ||
           offscreenSubtreeIsHidden ||
           offscreenSubtreeWasHidden ||
           0 === (finishedWork.mode & 1) ||
-          ((root = _eventPayloads$ii2 || offscreenSubtreeWasHidden),
+          ((root = _eventPayloads$ii || offscreenSubtreeWasHidden),
           (lanes = offscreenSubtreeIsHidden),
           (current = offscreenSubtreeWasHidden),
           (offscreenSubtreeIsHidden = ii || offscreenSubtreeIsHidden),
@@ -9803,12 +9801,12 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
           safelyDetachRef(current, current.return));
       flags = pushMutationContext();
       ii = (lanes & 335544064) === lanes;
-      _eventPayloads$ii2 = finishedWork.memoizedProps;
+      _eventPayloads$ii = finishedWork.memoizedProps;
       ii &&
         "none" !==
           getViewTransitionClassName(
-            _eventPayloads$ii2.default,
-            _eventPayloads$ii2.update
+            _eventPayloads$ii.default,
+            _eventPayloads$ii.update
           );
       recursivelyTraverseMutationEffects(root, finishedWork, lanes);
       commitReconciliationEffects(finishedWork);
@@ -11311,23 +11309,27 @@ function performWorkOnRoot(root$jscomp$0, lanes, forceSync) {
           var root = root$jscomp$0;
           yieldDuration = workInProgressRootConcurrentErrors;
           exitStatus = renderRootSync(root, JSCompiler_inline_result, !1);
-          2 !== exitStatus &&
-            6 !== exitStatus &&
-            (workInProgressRootDidAttachPingListener
-              ? ((root.errorRecoveryDisabledLanes |= renderWasConcurrent),
-                (workInProgressRootInterleavedUpdatedLanes |=
-                  renderWasConcurrent),
-                (exitStatus = 4))
-              : ((renderWasConcurrent = workInProgressRootRecoverableErrors),
-                (workInProgressRootRecoverableErrors = yieldDuration),
-                null !== renderWasConcurrent &&
-                  ((yieldDuration = renderWasConcurrent),
-                  null === workInProgressRootRecoverableErrors
-                    ? (workInProgressRootRecoverableErrors = yieldDuration)
-                    : workInProgressRootRecoverableErrors.push.apply(
-                        workInProgressRootRecoverableErrors,
-                        yieldDuration
-                      ))));
+          6 === exitStatus
+            ? (root.errorRecoveryDisabledLanes =
+                root.errorRecoveryDisabledLanes |
+                renderWasConcurrent |
+                workInProgressDeferredLane)
+            : 2 !== exitStatus &&
+              (workInProgressRootDidAttachPingListener
+                ? ((root.errorRecoveryDisabledLanes |= renderWasConcurrent),
+                  (workInProgressRootInterleavedUpdatedLanes |=
+                    renderWasConcurrent),
+                  (exitStatus = 4))
+                : ((renderWasConcurrent = workInProgressRootRecoverableErrors),
+                  (workInProgressRootRecoverableErrors = yieldDuration),
+                  null !== renderWasConcurrent &&
+                    ((yieldDuration = renderWasConcurrent),
+                    null === workInProgressRootRecoverableErrors
+                      ? (workInProgressRootRecoverableErrors = yieldDuration)
+                      : workInProgressRootRecoverableErrors.push.apply(
+                          workInProgressRootRecoverableErrors,
+                          yieldDuration
+                        ))));
           renderWasConcurrent = !1;
           if (2 !== exitStatus) continue;
           else yieldDuration = now$1();
@@ -13644,7 +13646,7 @@ batchedUpdatesImpl = function (fn, a) {
   }
 };
 var roots = new Map(),
-  internals$jscomp$inline_1630 = {
+  internals$jscomp$inline_1634 = {
     bundleType: 0,
     version: "19.3.0",
     rendererPackageName: "react-native-renderer",
@@ -13652,18 +13654,18 @@ var roots = new Map(),
     reconcilerVersion: "19.3.0"
   };
 null !== extraDevToolsConfig &&
-  (internals$jscomp$inline_1630.rendererConfig = extraDevToolsConfig);
+  (internals$jscomp$inline_1634.rendererConfig = extraDevToolsConfig);
 if ("undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__) {
-  var hook$jscomp$inline_1972 = __REACT_DEVTOOLS_GLOBAL_HOOK__;
+  var hook$jscomp$inline_1981 = __REACT_DEVTOOLS_GLOBAL_HOOK__;
   if (
-    !hook$jscomp$inline_1972.isDisabled &&
-    hook$jscomp$inline_1972.supportsFiber
+    !hook$jscomp$inline_1981.isDisabled &&
+    hook$jscomp$inline_1981.supportsFiber
   )
     try {
-      (rendererID = hook$jscomp$inline_1972.inject(
-        internals$jscomp$inline_1630
+      (rendererID = hook$jscomp$inline_1981.inject(
+        internals$jscomp$inline_1634
       )),
-        (injectedHook = hook$jscomp$inline_1972);
+        (injectedHook = hook$jscomp$inline_1981);
     } catch (err) {}
 }
 exports.createPortal = function (children, containerTag) {

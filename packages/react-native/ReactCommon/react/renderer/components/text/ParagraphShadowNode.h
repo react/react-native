@@ -40,23 +40,7 @@ class ParagraphShadowNode
 
   ParagraphShadowNode(const ShadowNode &sourceShadowNode, const ShadowNodeFragment &fragment);
 
-  static ShadowNodeTraits BaseTraits()
-  {
-    auto traits = ConcreteViewShadowNode::BaseTraits();
-    traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
-    traits.set(ShadowNodeTraits::Trait::MeasurableYogaNode);
-    traits.set(ShadowNodeTraits::Trait::BaselineYogaNode);
-
-#ifdef ANDROID
-    // Unsetting `FormsStackingContext` trait is essential on Android where we
-    // can't mount views inside `TextView`.
-    // T221699219: This should be removed when PreparedLayoutTextView is rolled
-    // out.
-    traits.unset(ShadowNodeTraits::Trait::FormsStackingContext);
-#endif
-
-    return traits;
-  }
+  static ShadowNodeTraits BaseTraits();
 
   /*
    * Associates a shared TextLayoutManager with the node.
@@ -129,7 +113,7 @@ class ParagraphShadowNode
    * may be used, given the currently assigned layout to the ShadowNode and
    * the current pixel density
    */
-  MeasuredPreparedTextLayout *findUsableLayout(Float pointScaleFactor);
+  const MeasuredPreparedTextLayout *findUsableLayout(Float pointScaleFactor);
 
   /**
    * Returns the final measure of the content frame, before layout rounding
@@ -145,9 +129,11 @@ class ParagraphShadowNode
 
   /*
    * Intermediate layout results generated during measurement, that may be
-   * reused by the platform.
+   * reused by the platform. Layouts are immutable once measured, so a clone
+   * shares them instead of copying them (on Android, copying one creates a
+   * JNI global reference).
    */
-  mutable std::vector<MeasuredPreparedTextLayout> measuredLayouts_;
+  mutable std::vector<std::shared_ptr<const MeasuredPreparedTextLayout>> measuredLayouts_;
 };
 
 } // namespace facebook::react

@@ -20,36 +20,36 @@ import nullthrows from 'nullthrows';
 import {useInsertionEffect, useMemo, useRef} from 'react';
 
 type CompositeKey = {
-  style?: {[string]: CompositeKeyComponent},
-  [string]:
+  style?: {[key: string]: CompositeKeyComponent},
+  [key: string]:
     | CompositeKeyComponent
     | AnimatedEvent
     | ReadonlyArray<unknown>
-    | Readonly<{[string]: unknown}>,
+    | Readonly<{[key: string]: unknown}>,
 };
 
 type CompositeKeyComponent =
   | AnimatedNode
   | ReadonlyArray<CompositeKeyComponent | null>
-  | Readonly<{[string]: CompositeKeyComponent}>;
+  | Readonly<{[key: string]: CompositeKeyComponent}>;
 
 type $ReadOnlyCompositeKey = Readonly<{
-  style?: Readonly<{[string]: CompositeKeyComponent}>,
-  [string]:
+  style?: Readonly<{[key: string]: CompositeKeyComponent}>,
+  [key: string]:
     | $ReadOnlyCompositeKeyComponent
     | AnimatedEvent
     | ReadonlyArray<unknown>
-    | Readonly<{[string]: unknown}>,
+    | Readonly<{[key: string]: unknown}>,
 }>;
 
 type $ReadOnlyCompositeKeyComponent =
   | AnimatedNode
   | ReadonlyArray<$ReadOnlyCompositeKeyComponent | null>
-  | Readonly<{[string]: $ReadOnlyCompositeKeyComponent}>;
+  | Readonly<{[key: string]: $ReadOnlyCompositeKeyComponent}>;
 
 type AnimatedPropsMemoHook = (
-  () => AnimatedProps,
-  props: Readonly<{[string]: unknown}>,
+  v0: () => AnimatedProps,
+  props: Readonly<{[key: string]: unknown}>,
 ) => AnimatedProps;
 
 /**
@@ -62,7 +62,7 @@ export function createAnimatedPropsMemoHook(
 ): AnimatedPropsMemoHook {
   return function useAnimatedPropsMemo(
     create: () => AnimatedProps,
-    props: Readonly<{[string]: unknown}>,
+    props: Readonly<{[key: string]: unknown}>,
   ): AnimatedProps {
     const compositeKey = useMemo(
       () => createCompositeKeyForProps(props, allowlist),
@@ -107,7 +107,7 @@ export function createAnimatedPropsMemoHook(
  * returns null.
  */
 export function createCompositeKeyForProps(
-  props: Readonly<{[string]: unknown}>,
+  props: Readonly<{[key: string]: unknown}>,
   allowlist: ?AnimatedPropsAllowlist,
 ): $ReadOnlyCompositeKey | null {
   let compositeKey: CompositeKey | null = null;
@@ -122,7 +122,7 @@ export function createCompositeKeyForProps(
       if (key === 'style') {
         // $FlowFixMe[incompatible-call] - `style` is a valid argument.
         // $FlowFixMe[incompatible-type] - `flattenStyle` returns an object.
-        const flatStyle: ?{[string]: unknown} = flattenStyle(value);
+        const flatStyle: ?{[key: string]: unknown} = flattenStyle(value);
         if (flatStyle != null) {
           compositeKeyComponent = createCompositeKeyForObject(
             flatStyle,
@@ -200,10 +200,11 @@ function createCompositeKeyForArray(
  * If `object` contains no `AnimatedNode` instances, this returns null.
  */
 function createCompositeKeyForObject(
-  object: Readonly<{[string]: unknown}>,
+  object: Readonly<{[key: string]: unknown}>,
   allowlist?: ?AnimatedStyleAllowlist,
-): Readonly<{[string]: $ReadOnlyCompositeKeyComponent}> | null {
-  let compositeKey: {[string]: $ReadOnlyCompositeKeyComponent} | null = null;
+): Readonly<{[key: string]: $ReadOnlyCompositeKeyComponent}> | null {
+  let compositeKey: {[key: string]: $ReadOnlyCompositeKeyComponent} | null =
+    null;
 
   const keys = Object.keys(object);
   for (let ii = 0, length = keys.length; ii < length; ii++) {
@@ -222,7 +223,7 @@ function createCompositeKeyForObject(
       }
       if (compositeKeyComponent != null) {
         if (compositeKey == null) {
-          compositeKey = {} as {[string]: $ReadOnlyCompositeKeyComponent};
+          compositeKey = {} as {[key: string]: $ReadOnlyCompositeKeyComponent};
         }
         compositeKey[key] = compositeKeyComponent;
       }

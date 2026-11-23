@@ -137,7 +137,7 @@ function visit(
 function getConfigType(
   // TODO(T71778680): Flow-type this node.
   ast: $FlowFixMe,
-  Visitor: ({isComponent: boolean, isModule: boolean}) => {
+  Visitor: (v: {isComponent: boolean, isModule: boolean}) => {
     [type: string]: (node: $FlowFixMe) => void,
   },
 ): 'module' | 'component' | 'none' {
@@ -199,6 +199,18 @@ function isModuleRegistryCall(node: $FlowFixMe): boolean {
   return true;
 }
 
+/**
+ * Returns the type arguments of a generic type reference such as
+ * `Array<T>`. Flow's ESTree output stores them in `typeArguments`, which is
+ * `null` when there are none; Babel's TypeScript AST and older Flow parser
+ * versions use `typeParameters`.
+ */
+function getTypeArguments(typeAnnotation: ASTNode): ASTNode {
+  return Object.hasOwn(typeAnnotation, 'typeArguments')
+    ? typeAnnotation.typeArguments
+    : typeAnnotation.typeParameters;
+}
+
 function getSortedObject<T>(unsortedObject: {[key: string]: T}): {
   [key: string]: T,
 } {
@@ -218,4 +230,5 @@ module.exports = {
   visit,
   isModuleRegistryCall,
   getSortedObject,
+  getTypeArguments,
 };

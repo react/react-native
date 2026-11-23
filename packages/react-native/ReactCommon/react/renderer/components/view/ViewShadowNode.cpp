@@ -53,6 +53,7 @@ void ViewShadowNode::initialize() noexcept {
       isColorMeaningful(viewProps.shadowColor) ||
       viewProps.accessibilityElementsHidden ||
       viewProps.accessibilityViewIsModal ||
+      viewProps.accessibilityLiveRegion != AccessibilityLiveRegion::None ||
       viewProps.importantForAccessibility != ImportantForAccessibility::Auto ||
       viewProps.removeClippedSubviews || viewProps.cursor != Cursor::Auto ||
       viewProps.onSafeAreaInsetsChange || !viewProps.filter.empty() ||

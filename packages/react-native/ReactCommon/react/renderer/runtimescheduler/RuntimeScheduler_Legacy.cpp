@@ -133,7 +133,7 @@ void RuntimeScheduler_Legacy::executeNowOnTheSameThread(
     RawCallback&& callback) {
   TraceSection s("RuntimeScheduler::executeNowOnTheSameThread");
 
-  static thread_local jsi::Runtime* runtimePtr = nullptr;
+  static constinit thread_local jsi::Runtime* runtimePtr = nullptr;
 
   if (runtimePtr == nullptr) {
     runtimeAccessRequests_ += 1;

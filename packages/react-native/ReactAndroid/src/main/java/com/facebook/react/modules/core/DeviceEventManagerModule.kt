@@ -61,19 +61,12 @@ public open class DeviceEventManagerModule(
   }
 
   /**
-   * Enables or disables in-app back interception.
-   *
-   * When enabled on Android 16+, RN registers a predictive-back animation callback that delivers
-   * progress to native handlers and [com.facebook.react.PredictiveBackProgressListener]. When
-   * disabled, the system handles the gesture and the navigation-observer still notifies JS on
-   * app-exit commit.
+   * Called by BackHandler whenever its listeners change, with whether at least one asks for back.
+   * Acts on the current activity if it is a [ReactActivity].
    */
   override fun setInterceptEnabled(enabled: Boolean) {
-    reactApplicationContext.runOnUiQueueThread {
-      val activity = reactApplicationContext.currentActivity
-      if (activity is ReactActivity) {
-        activity.setInterceptEnabled(enabled)
-      }
+    UiThreadUtil.runOnUiThread {
+      (reactApplicationContext.currentActivity as? ReactActivity)?.setInterceptEnabled(enabled)
     }
   }
 

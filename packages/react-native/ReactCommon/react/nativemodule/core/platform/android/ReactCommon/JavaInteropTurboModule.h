@@ -40,7 +40,6 @@ class JSI_EXPORT JavaInteropTurboModule : public JavaTurboModule {
 
  private:
   std::vector<MethodDescriptor> methodDescriptors_;
-  std::vector<jmethodID> methodIDs_;
   jsi::Value constantsCache_;
 
   const jsi::Value &getConstants(jsi::Runtime &runtime);

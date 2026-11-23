@@ -12,7 +12,6 @@
 #import <vector>
 
 #import <React/RCTAssert.h>
-#import <React/RCTBridge.h>
 #import <React/RCTBundleManager.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTConstants.h>

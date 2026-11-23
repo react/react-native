@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<cd6aa804d1c10b93775adf83419368e3>>
+ * @generated SignedSource<<0c48d40c626fc4618879ba5ca9df77ef>>
  */
 
 /**
@@ -27,7 +27,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun cdpInteractionMetricsEnabled(): Boolean = false
 
-  override fun cxxNativeAnimatedEnabled(): Boolean = false
+  override fun cxxNativeAnimatedEnabled(): Boolean = true
 
   override fun defaultTextToOverflowHidden(): Boolean = true
 
@@ -52,8 +52,6 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableAccessibilityOrder(): Boolean = false
 
   override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = false
-
-  override fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean = false
 
   override fun enableAndroidTextMeasurementOptimizations(): Boolean = true
 
@@ -81,7 +79,7 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableFlexboxAutoMinSizeInStrictMode(): Boolean = false
 
-  override fun enableFontScaleChangesUpdatingLayout(): Boolean = true
+  override fun enableFollowUpMountItemDispatchAndroid(): Boolean = false
 
   override fun enableIOSCompressedTextFrameAdjustment(): Boolean = false
 
@@ -95,9 +93,13 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = false
 
+  override fun enableImmediateUpdateModeForScrollContentView(): Boolean = false
+
   override fun enableImperativeEvents(): Boolean = false
 
   override fun enableImperativeFocus(): Boolean = false
+
+  override fun enableInteractableResponderViews(): Boolean = false
 
   override fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean = false
 
@@ -118,6 +120,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableNativeCSSParsing(): Boolean = false
 
   override fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean = false
+
+  override fun enablePredictiveBackAndroid(): Boolean = false
 
   override fun enablePreparedTextLayout(): Boolean = true
 
@@ -145,6 +149,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = false
 
+  override fun fixTextInlineViewLineHeight(): Boolean = false
+
   override fun fixTextLayoutOnPixelDensityChange(): Boolean = false
 
   override fun fixYogaFlexBasisFitContentInMainAxis(): Boolean = false
@@ -153,11 +159,13 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun fuseboxEnabledRelease(): Boolean = false
 
-  override fun fuseboxFrameRecordingEnabled(): Boolean = false
+  override fun fuseboxFrameRecordingEnabled(): Boolean = true
 
   override fun fuseboxScreenshotCaptureEnabled(): Boolean = true
 
-  override fun fuseboxWebSocketEventsEnabled(): Boolean = false
+  override fun fuseboxWebSocketEventsEnabled(): Boolean = true
+
+  override fun keepTimersRunningWhileHostPausedAndroid(): Boolean = false
 
   override fun optimizedAnimatedPropUpdates(): Boolean = false
 

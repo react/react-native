@@ -9,7 +9,7 @@
  */
 
 import {ensureMockFunction} from './mocks';
-import {snapshotContext} from './snapshotContext';
+import {ScreenshotSnapshotError, snapshotContext} from './snapshotContext';
 import deepEqual from 'deep-equal';
 import {diff} from 'jest-diff';
 import {format, plugins} from 'pretty-format';
@@ -17,6 +17,7 @@ import {format, plugins} from 'pretty-format';
 const stringify = (data: unknown): string =>
   format(data, {min: true, plugins: [plugins.ReactElement]});
 
+// $FlowFixMe[incompatible-type]
 class ErrorWithCustomBlame extends Error {
   // Initially 5 to ignore all the frames from Babel helpers to instantiate this
   // custom error class.
@@ -48,6 +49,7 @@ class ErrorWithCustomBlame extends Error {
       // $FlowExpectedError[incompatible-type]
       delete this.stack;
 
+      // $FlowFixMe[incompatible-use]
       const lines = originalStack.split('\n');
       const index = lines.findIndex(line =>
         /at (.*) \((.*):(\d+):(\d+)\)/.test(line),
@@ -70,6 +72,7 @@ class ErrorWithCustomBlame extends Error {
     // In this case we're inheriting the error and we don't know if the stack
     // contains helpers that we need to ignore.
     errorWithCustomBlame.#ignoredFrameCount = 0;
+    // $FlowFixMe[incompatible-type]
     errorWithCustomBlame.stack = error.stack;
     return errorWithCustomBlame;
   }
@@ -130,7 +133,7 @@ class Expect {
   }
 
   toBe(expected: unknown): void {
-    const pass = this.#received === expected;
+    const pass = Object.is(this.#received, expected);
     if (!this.#isExpectedResult(pass)) {
       throw new ErrorWithCustomBlame(
         `Expected${this.#maybeNotLabel()} ${String(expected)} but received ${String(this.#received)}.`,
@@ -147,9 +150,23 @@ class Expect {
     }
   }
 
-  toBeCloseTo(expected: number, precision: number = 2): void {
+  toBeCloseTo(expected: unknown, precision: number = 2): void {
+    const received = this.#received;
+    if (typeof expected !== 'number') {
+      throw new ErrorWithCustomBlame(
+        `Expected ${String(expected)} to be a number but it was a ${typeof expected}`,
+      ).blameToPreviousFrame();
+    }
+    if (typeof received !== 'number') {
+      throw new ErrorWithCustomBlame(
+        `Expected ${String(received)} to be a number but it was a ${typeof received}`,
+      ).blameToPreviousFrame();
+    }
+
     const pass =
-      Math.abs(expected - Number(this.#received)) < Math.pow(10, -precision);
+      (received === Infinity && expected === Infinity) ||
+      (received === -Infinity && expected === -Infinity) ||
+      Math.abs(expected - received) < Math.pow(10, -precision) / 2;
     if (!this.#isExpectedResult(pass)) {
       throw new ErrorWithCustomBlame(
         `Expected ${String(this.#received)}${this.#maybeNotLabel()} to be close to ${expected}`,
@@ -176,7 +193,7 @@ class Expect {
   }
 
   toBeNull(): void {
-    const pass = this.#received == null;
+    const pass = Object.is(this.#received, null);
     if (!this.#isExpectedResult(pass)) {
       throw new ErrorWithCustomBlame(
         `Expected ${String(this.#received)}${this.#maybeNotLabel()} to be null`,
@@ -517,14 +534,27 @@ class Expect {
       ).blameToPreviousFrame();
     }
 
+    const Screenshot = require('../src/Screenshot').default;
+    const screenshot =
+      this.#received instanceof Screenshot ? this.#received : undefined;
     const receivedValue = format(this.#received, {
       plugins: [plugins.ReactElement],
     });
 
     try {
-      snapshotContext.toMatchSnapshot(receivedValue, expected);
+      snapshotContext.toMatchSnapshot(receivedValue, expected, screenshot);
     } catch (err) {
-      throw new ErrorWithCustomBlame(err.message).blameToPreviousFrame();
+      const error = new ErrorWithCustomBlame(
+        err.message,
+      ).blameToPreviousFrame();
+      if (err instanceof ScreenshotSnapshotError) {
+        err.stack = error.stack;
+        err.previewError.stack = new ErrorWithCustomBlame(
+          err.previewError.message,
+        ).blameToPreviousFrame().stack;
+        throw err;
+      }
+      throw error;
     }
   }
 
@@ -600,6 +630,7 @@ Expect.prototype.lastCalledWith = Expect.prototype.toHaveBeenLastCalledWith;
  * unsoundness in flow */
 Expect.prototype.nthCalledWith = Expect.prototype.toHaveBeenNthCalledWith;
 
-const expect: unknown => Expect = (received: unknown) => new Expect(received);
+const expect: (v: unknown) => Expect = (received: unknown) =>
+  new Expect(received);
 
 export default expect;

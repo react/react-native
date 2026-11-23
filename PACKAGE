@@ -1,0 +1,3 @@
+load("@prelude//cfg/modifier:set_cfg_modifiers.bzl", "set_cfg_modifiers")
+
+set_cfg_modifiers(cfg_modifiers = ["fbsource//third-party/fmt:12_2_0"])

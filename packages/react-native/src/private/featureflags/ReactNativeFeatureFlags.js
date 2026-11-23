@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5a79107fda7ef89a1d68594cad01b8e7>>
+ * @generated SignedSource<<de4b63c5c92bd590f42f16f5b656ddbe>>
  * @flow strict
  * @noformat
  */
@@ -34,7 +34,6 @@ export type ReactNativeFeatureFlagsJsOnly = Readonly<{
   animatedKeepListenersOnDetach: Getter<boolean>,
   animatedShouldSyncValueBeforeStartCallback: Getter<boolean>,
   deferFlatListFocusChangeRenderUpdate: Getter<boolean>,
-  enableNativeEventTargetEventDispatching: Getter<boolean>,
   externalElementInspectionEnabled: Getter<boolean>,
   fixCrossOrientationNestedListViewability: Getter<boolean>,
   fixVirtualizeListCollapseWindowSize: Getter<boolean>,
@@ -64,7 +63,6 @@ export type ReactNativeFeatureFlags = Readonly<{
   disableViewPreallocationAndroid: Getter<boolean>,
   enableAccessibilityOrder: Getter<boolean>,
   enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean>,
-  enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
@@ -78,15 +76,17 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableFabricCommitBranchingMergeOnMainThread: Getter<boolean>,
   enableFabricLogs: Getter<boolean>,
   enableFlexboxAutoMinSizeInStrictMode: Getter<boolean>,
-  enableFontScaleChangesUpdatingLayout: Getter<boolean>,
+  enableFollowUpMountItemDispatchAndroid: Getter<boolean>,
   enableIOSCompressedTextFrameAdjustment: Getter<boolean>,
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
   enableIOSViewClipToPaddingBox: Getter<boolean>,
   enableImagePrefetchingAndroid: Getter<boolean>,
   enableImageTransparentTintColor: Getter<boolean>,
   enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean>,
+  enableImmediateUpdateModeForScrollContentView: Getter<boolean>,
   enableImperativeEvents: Getter<boolean>,
   enableImperativeFocus: Getter<boolean>,
+  enableInteractableResponderViews: Getter<boolean>,
   enableInteropViewManagerClassLookUpOptimizationIOS: Getter<boolean>,
   enableIntersectionObserverByDefault: Getter<boolean>,
   enableKeyEvents: Getter<boolean>,
@@ -97,6 +97,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableMutationObserverByDefault: Getter<boolean>,
   enableNativeCSSParsing: Getter<boolean>,
   enablePreallocatedPropsDiffOnInsertAndroid: Getter<boolean>,
+  enablePredictiveBackAndroid: Getter<boolean>,
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
   enableResizeObserverByDefault: Getter<boolean>,
@@ -110,6 +111,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableVirtualViewContainerStateExperimental: Getter<boolean>,
   fixBorderlessRippleAndroid: Getter<boolean>,
   fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean>,
+  fixTextInlineViewLineHeight: Getter<boolean>,
   fixTextLayoutOnPixelDensityChange: Getter<boolean>,
   fixYogaFlexBasisFitContentInMainAxis: Getter<boolean>,
   fuseboxAssertSingleHostState: Getter<boolean>,
@@ -117,6 +119,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   fuseboxFrameRecordingEnabled: Getter<boolean>,
   fuseboxScreenshotCaptureEnabled: Getter<boolean>,
   fuseboxWebSocketEventsEnabled: Getter<boolean>,
+  keepTimersRunningWhileHostPausedAndroid: Getter<boolean>,
   optimizedAnimatedPropUpdates: Getter<boolean>,
   overrideBySynchronousMountPropsAtMountingAndroid: Getter<boolean>,
   perfIssuesEnabled: Getter<boolean>,
@@ -178,11 +181,6 @@ export const animatedShouldSyncValueBeforeStartCallback: Getter<boolean> = creat
 export const deferFlatListFocusChangeRenderUpdate: Getter<boolean> = createJavaScriptFlagGetter('deferFlatListFocusChangeRenderUpdate', false);
 
 /**
- * When enabled, the React Native renderer dispatches events through the W3C EventTarget API (addEventListener/dispatchEvent) instead of the legacy plugin-based system.
- */
-export const enableNativeEventTargetEventDispatching: Getter<boolean> = createJavaScriptFlagGetter('enableNativeEventTargetEventDispatching', true);
-
-/**
  * Enable the external inspection API for DevTools to communicate with the Inspector overlay.
  */
 export const externalElementInspectionEnabled: Getter<boolean> = createJavaScriptFlagGetter('externalElementInspectionEnabled', true);
@@ -232,7 +230,7 @@ export const cdpInteractionMetricsEnabled: Getter<boolean> = createNativeFlagGet
 /**
  * Use a C++ implementation of Native Animated instead of the platform implementation.
  */
-export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', false);
+export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', true);
 /**
  * When enabled, sets the default overflow style for Text components to hidden instead of visible.
  */
@@ -281,10 +279,6 @@ export const enableAccessibilityOrder: Getter<boolean> = createNativeFlagGetter(
  * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
  */
 export const enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean> = createNativeFlagGetter('enableAccumulatedUpdatesInRawPropsAndroid', false);
-/**
- * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
- */
-export const enableAndroidAutoOffscreenCompositingForElevation: Getter<boolean> = createNativeFlagGetter('enableAndroidAutoOffscreenCompositingForElevation', false);
 /**
  * Enables various optimizations throughout the path of measuring text on Android.
  */
@@ -338,9 +332,9 @@ export const enableFabricLogs: Getter<boolean> = createNativeFlagGetter('enableF
  */
 export const enableFlexboxAutoMinSizeInStrictMode: Getter<boolean> = createNativeFlagGetter('enableFlexboxAutoMinSizeInStrictMode', false);
 /**
- * Enables font scale changes updating layout for measurable nodes.
+ * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
  */
-export const enableFontScaleChangesUpdatingLayout: Getter<boolean> = createNativeFlagGetter('enableFontScaleChangesUpdatingLayout', true);
+export const enableFollowUpMountItemDispatchAndroid: Getter<boolean> = createNativeFlagGetter('enableFollowUpMountItemDispatchAndroid', false);
 /**
  * Adjusts iOS Text drawing frames for compressed explicit line heights.
  */
@@ -366,6 +360,10 @@ export const enableImageTransparentTintColor: Getter<boolean> = createNativeFlag
  */
 export const enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean> = createNativeFlagGetter('enableImmediateUpdateModeForContentOffsetChanges', false);
 /**
+ * Apply ScrollContentView state updates synchronously on the main thread.
+ */
+export const enableImmediateUpdateModeForScrollContentView: Getter<boolean> = createNativeFlagGetter('enableImmediateUpdateModeForScrollContentView', false);
+/**
  * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
  */
 export const enableImperativeEvents: Getter<boolean> = createNativeFlagGetter('enableImperativeEvents', false);
@@ -373,6 +371,10 @@ export const enableImperativeEvents: Getter<boolean> = createNativeFlagGetter('e
  * Enable ref.focus() and ref.blur() for all views, not just TextInput.
  */
 export const enableImperativeFocus: Getter<boolean> = createNativeFlagGetter('enableImperativeFocus', false);
+/**
+ * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
+ */
+export const enableInteractableResponderViews: Getter<boolean> = createNativeFlagGetter('enableInteractableResponderViews', false);
 /**
  * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
  */
@@ -413,6 +415,10 @@ export const enableNativeCSSParsing: Getter<boolean> = createNativeFlagGetter('e
  * When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.
  */
 export const enablePreallocatedPropsDiffOnInsertAndroid: Getter<boolean> = createNativeFlagGetter('enablePreallocatedPropsDiffOnInsertAndroid', false);
+/**
+ * On Android 16+ with targetSdk 36+, ReactActivity creates its back callback disabled so Android can play the predictive back animation. Back reaches JS only while a BackHandler listener asks for it with `intercept: true`.
+ */
+export const enablePredictiveBackAndroid: Getter<boolean> = createNativeFlagGetter('enablePredictiveBackAndroid', false);
 /**
  * Enables caching text layout artifacts for later reuse
  */
@@ -466,6 +472,10 @@ export const fixBorderlessRippleAndroid: Getter<boolean> = createNativeFlagGette
  */
 export const fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean> = createNativeFlagGetter('fixMappingOfEventPrioritiesBetweenFabricAndReact', false);
 /**
+ * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.
+ */
+export const fixTextInlineViewLineHeight: Getter<boolean> = createNativeFlagGetter('fixTextInlineViewLineHeight', false);
+/**
  * Re-measures text and re-sends padding and overflow insets to mounted views when the pixel density changes, so text and padded views do not keep sizes from the old density.
  */
 export const fixTextLayoutOnPixelDensityChange: Getter<boolean> = createNativeFlagGetter('fixTextLayoutOnPixelDensityChange', false);
@@ -484,7 +494,7 @@ export const fuseboxEnabledRelease: Getter<boolean> = createNativeFlagGetter('fu
 /**
  * Enable frame timings and screenshots support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
-export const fuseboxFrameRecordingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxFrameRecordingEnabled', false);
+export const fuseboxFrameRecordingEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxFrameRecordingEnabled', true);
 /**
  * Enable Page.captureScreenshot CDP method support in the React Native DevTools CDP backend. This flag is global and should not be changed across React Host lifetimes.
  */
@@ -492,7 +502,11 @@ export const fuseboxScreenshotCaptureEnabled: Getter<boolean> = createNativeFlag
 /**
  * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
  */
-export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', false);
+export const fuseboxWebSocketEventsEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxWebSocketEventsEnabled', true);
+/**
+ * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
+ */
+export const keepTimersRunningWhileHostPausedAndroid: Getter<boolean> = createNativeFlagGetter('keepTimersRunningWhileHostPausedAndroid', false);
 /**
  * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.
  */

@@ -107,7 +107,7 @@ const path = require('node:path');
  */
 function discoverPlugins(
   deps /*: ReadonlyArray<AutolinkedDep> */,
-  readConfig /*: (root: string) => ?{readonly [string]: unknown} */,
+  readConfig /*: (root: string) => ?{readonly [key: string]: unknown} */,
   denyList /*: ReadonlyArray<string> */ = [],
 ) /*: Array<DiscoveredPlugin> */ {
   const denied = new Set(denyList);

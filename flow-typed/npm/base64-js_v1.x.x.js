@@ -5,8 +5,8 @@
 
 declare module 'base64-js' {
   declare module.exports: {
-    byteLength: string => number,
-    fromByteArray: (Uint8Array | Array<number>) => string,
-    toByteArray: string => Uint8Array,
+    byteLength: (v: string) => number,
+    fromByteArray: (v: Uint8Array | Array<number>) => string,
+    toByteArray: (v: string) => Uint8Array,
   };
 }

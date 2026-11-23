@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e3c3ccaf63fcdcf48c6f02f793f77b65>>
+ * @generated SignedSource<<a71eef1dc00ec39954b9a889794296be>>
  */
 
 /**
@@ -117,11 +117,6 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
 
   /**
-   * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
-   */
-  RN_EXPORT static bool enableAndroidAutoOffscreenCompositingForElevation();
-
-  /**
    * Enables various optimizations throughout the path of measuring text on Android.
    */
   RN_EXPORT static bool enableAndroidTextMeasurementOptimizations();
@@ -187,9 +182,9 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableFlexboxAutoMinSizeInStrictMode();
 
   /**
-   * Enables font scale changes updating layout for measurable nodes.
+   * When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.
    */
-  RN_EXPORT static bool enableFontScaleChangesUpdatingLayout();
+  RN_EXPORT static bool enableFollowUpMountItemDispatchAndroid();
 
   /**
    * Adjusts iOS Text drawing frames for compressed explicit line heights.
@@ -222,6 +217,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool enableImmediateUpdateModeForContentOffsetChanges();
 
   /**
+   * Apply ScrollContentView state updates synchronously on the main thread.
+   */
+  RN_EXPORT static bool enableImmediateUpdateModeForScrollContentView();
+
+  /**
    * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
    */
   RN_EXPORT static bool enableImperativeEvents();
@@ -230,6 +230,11 @@ class ReactNativeFeatureFlags {
    * Enable ref.focus() and ref.blur() for all views, not just TextInput.
    */
   RN_EXPORT static bool enableImperativeFocus();
+
+  /**
+   * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
+   */
+  RN_EXPORT static bool enableInteractableResponderViews();
 
   /**
    * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
@@ -280,6 +285,11 @@ class ReactNativeFeatureFlags {
    * When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.
    */
   RN_EXPORT static bool enablePreallocatedPropsDiffOnInsertAndroid();
+
+  /**
+   * On Android 16+ with targetSdk 36+, ReactActivity creates its back callback disabled so Android can play the predictive back animation. Back reaches JS only while a BackHandler listener asks for it with `intercept: true`.
+   */
+  RN_EXPORT static bool enablePredictiveBackAndroid();
 
   /**
    * Enables caching text layout artifacts for later reuse
@@ -347,6 +357,11 @@ class ReactNativeFeatureFlags {
   RN_EXPORT static bool fixMappingOfEventPrioritiesBetweenFabricAndReact();
 
   /**
+   * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.
+   */
+  RN_EXPORT static bool fixTextInlineViewLineHeight();
+
+  /**
    * Re-measures text and re-sends padding and overflow insets to mounted views when the pixel density changes, so text and padded views do not keep sizes from the old density.
    */
   RN_EXPORT static bool fixTextLayoutOnPixelDensityChange();
@@ -380,6 +395,11 @@ class ReactNativeFeatureFlags {
    * Enable reporting of WebSocket network events (`Network.webSocket*` CDP events) to the React Native DevTools CDP backend.
    */
   RN_EXPORT static bool fuseboxWebSocketEventsEnabled();
+
+  /**
+   * Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.
+   */
+  RN_EXPORT static bool keepTimersRunningWhileHostPausedAndroid();
 
   /**
    * When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. Other platforms apply the props of each view through the existing synchronous update.

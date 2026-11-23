@@ -3,7 +3,7 @@
 # reset returns offset to 0.
 appId: ${APP_ID}
 tags:
-  - android-release-only
+  - release-only
 ---
 - launchApp
 - setOrientation: portrait

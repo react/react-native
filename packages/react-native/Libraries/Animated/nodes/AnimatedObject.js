@@ -23,7 +23,7 @@ export function isPlainObject(
   value: unknown,
   /* $FlowFixMe[incompatible-type-guard] - Flow does not know that the prototype
      and ReactElement checks preserve the type refinement of `value`. */
-): value is Readonly<{[string]: unknown}> {
+): value is Readonly<{[key: string]: unknown}> {
   const proto =
     value !== null && typeof value === 'object'
       ? Object.getPrototypeOf(value)
@@ -78,7 +78,7 @@ function mapAnimatedNodes(
   } else if (Array.isArray(value)) {
     return value.map(element => mapAnimatedNodes(element, fn, depth + 1));
   } else if (isPlainObject(value)) {
-    const result: {[string]: unknown} = {};
+    const result: {[key: string]: unknown} = {};
     const keys = Object.keys(value);
     for (let ii = 0, length = keys.length; ii < length; ii++) {
       const key = keys[ii];

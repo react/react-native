@@ -34,6 +34,10 @@ export interface Spec extends TurboModule {
    *  - withAnimation can be: 'none' | 'fade' | 'slide'
    */
   readonly setHidden: (hidden: boolean, withAnimation: string) => void;
+  /**
+   *  - returns 'leading', 'trailing', or null when there is no vertical bar
+   */
+  readonly getVerticalBarEdge?: () => ?string;
 }
 
 const NativeModule = TurboModuleRegistry.getEnforcing<Spec>('StatusBarManager');
@@ -78,6 +82,13 @@ const NativeStatusBarManager = {
    */
   setHidden(hidden: boolean, withAnimation: string): void {
     NativeModule.setHidden(hidden, withAnimation);
+  },
+
+  /**
+   *  - returns 'leading', 'trailing', or null when there is no vertical bar
+   */
+  getVerticalBarEdge(): ?string {
+    return NativeModule.getVerticalBarEdge?.() ?? null;
   },
 };
 

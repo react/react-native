@@ -30,12 +30,12 @@ jobs:
       - name: Run yarn
         uses: ./.github/actions/yarn-install
       - name: Download Maven Local
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: maven-local
           path: /tmp/react-native-tmp/maven-local
       - name: Download React Native Package
-        uses: actions/download-artifact@v7
+        uses: ./.github/actions/download-artifact
         with:
           name: react-native-package
           path: /tmp/react-native-tmp

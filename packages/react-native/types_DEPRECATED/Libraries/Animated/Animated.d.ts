@@ -597,35 +597,49 @@ export namespace Animated {
     options?: AnimatedComponentOptions,
   ): AnimatedComponent<T>;
 
-  /**
-   * Animated variants of the basic native views. Accepts Animated.Value for
-   * props and style.
-   */
-  export const View: AnimatedComponent<typeof _View>;
-  export const Image: AnimatedComponent<typeof _Image>;
-  export const Text: AnimatedComponent<typeof _Text>;
-  export const ScrollView: AnimatedComponent<typeof _ScrollView>;
-
-  /**
-   * FlatList and SectionList infer generic Type defined under their `data` and `section` props.
-   */
-
-  export class FlatList<ItemT = any> extends FlatListComponent<
-    ItemT,
-    AnimatedProps<FlatListProps<ItemT>>
-  > {}
-
-  export class SectionList<
+  /** @deprecated Use `AnimatedView` instead. */
+  export const View: typeof AnimatedView;
+  /** @deprecated Use `AnimatedImage` instead. */
+  export const Image: typeof AnimatedImage;
+  /** @deprecated Use `AnimatedText` instead. */
+  export const Text: typeof AnimatedText;
+  /** @deprecated Use `AnimatedScrollView` instead. */
+  export const ScrollView: typeof AnimatedScrollView;
+  /** @deprecated Use `AnimatedFlatList` instead. */
+  export const FlatList: typeof AnimatedFlatList;
+  /** @deprecated Use `AnimatedSectionList` instead. */
+  export const SectionList: typeof AnimatedSectionList;
+  /** @deprecated Use `AnimatedFlatList` instead. */
+  export type FlatList<ItemT = any> = AnimatedFlatList<ItemT>;
+  /** @deprecated Use `AnimatedSectionList` instead. */
+  export type SectionList<
     ItemT = any,
     SectionT = DefaultSectionT,
-  > extends SectionListComponent<
-    AnimatedProps<SectionListProps<ItemT, SectionT>>
-  > {}
+  > = AnimatedSectionList<ItemT, SectionT>;
 }
 
-// We need to alias these views so we can reference them in the Animated
-// namespace where their names are shadowed.
-declare const _View: typeof View;
-declare const _Image: typeof Image;
-declare const _Text: typeof Text;
-declare const _ScrollView: typeof ScrollView;
+/**
+ * Animated variants of the basic native views. Accepts Animated.Value for
+ * props and style.
+ */
+export const AnimatedView: Animated.AnimatedComponent<typeof View>;
+export const AnimatedImage: Animated.AnimatedComponent<typeof Image>;
+export const AnimatedText: Animated.AnimatedComponent<typeof Text>;
+export const AnimatedScrollView: Animated.AnimatedComponent<typeof ScrollView>;
+
+/**
+ * AnimatedFlatList and AnimatedSectionList infer generic Type defined under
+ * their `data` and `section` props.
+ */
+
+export class AnimatedFlatList<ItemT = any> extends FlatListComponent<
+  ItemT,
+  Animated.AnimatedProps<FlatListProps<ItemT>>
+> {}
+
+export class AnimatedSectionList<
+  ItemT = any,
+  SectionT = DefaultSectionT,
+> extends SectionListComponent<
+  Animated.AnimatedProps<SectionListProps<ItemT, SectionT>>
+> {}

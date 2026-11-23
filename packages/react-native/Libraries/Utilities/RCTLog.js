@@ -20,7 +20,7 @@ const levelsMap = {
   fatal: 'error',
 };
 
-let warningHandler: ?(...Array<unknown>) => void = null;
+let warningHandler: ?(...rest: Array<unknown>) => void = null;
 
 const RCTLog = {
   // level one of log, info, warn, error, mustfix

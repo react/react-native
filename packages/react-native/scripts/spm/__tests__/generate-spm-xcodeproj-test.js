@@ -15,6 +15,7 @@ const {
   buildEmbedFrameworksScript,
   buildSchemePreActionScript,
   buildSyncAutolinkingScript,
+  ensureStubPackages,
   flavorForBuildConfiguration,
   frameworkConditionalSettings,
   generateReactNativeXcconfig,
@@ -921,5 +922,54 @@ describe('readScriptPhasesManifest', () => {
       },
       {id: 'b', name: 'B', script: 'echo', position: 'end'},
     ]);
+  });
+});
+
+describe('ensureStubPackages', () => {
+  const {REACT_CODEGEN_PRODUCTS} = require('../spm-utils');
+  let appRoot;
+  let logSpy;
+
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-stub-packages-'));
+    logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    logSpy.mockRestore();
+    fs.rmSync(appRoot, {recursive: true, force: true});
+  });
+
+  const codegenManifestPath = () =>
+    path.join(appRoot, 'build', 'generated', 'ios', 'Package.swift');
+
+  it('declares every codegen product exactly once in the codegen stub', () => {
+    ensureStubPackages(appRoot);
+    const manifest = fs.readFileSync(codegenManifestPath(), 'utf8');
+
+    const products = [
+      'ReactCodegen',
+      'ReactAppDependencyProvider',
+      ...REACT_CODEGEN_PRODUCTS,
+    ];
+    const declarationCounts = Object.fromEntries(
+      products.map(product => [
+        product,
+        manifest.split(`.library(name: "${product}"`).length - 1,
+      ]),
+    );
+
+    expect(declarationCounts).toEqual(
+      Object.fromEntries(products.map(product => [product, 1])),
+    );
+  });
+
+  it('leaves an existing codegen Package.swift untouched', () => {
+    const existing = '// swift-tools-version: 5.9\n// real codegen output\n';
+    fs.mkdirSync(path.dirname(codegenManifestPath()), {recursive: true});
+    fs.writeFileSync(codegenManifestPath(), existing, 'utf8');
+
+    ensureStubPackages(appRoot);
+
+    expect(fs.readFileSync(codegenManifestPath(), 'utf8')).toBe(existing);
   });
 });

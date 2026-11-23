@@ -21,7 +21,7 @@ import AnimatedInterpolation from '../nodes/AnimatedInterpolation';
 
 function createInterpolation<T extends InterpolationConfigSupportedOutputType>(
   config: InterpolationConfigType<T>,
-): number => T {
+): (v: number) => T {
   let parentValue = null;
   const interpolation = new AnimatedInterpolation(
     // $FlowFixMe[incompatible-type]

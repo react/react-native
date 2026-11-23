@@ -16,20 +16,20 @@ namespace facebook::react {
 #endif
 
 const Props::Shared& ShadowNodeFragment::propsPlaceholder() {
-  NO_DESTROY static Props::Shared instance;
+  NO_DESTROY static constinit Props::Shared instance;
   return instance;
 }
 
 const std::shared_ptr<const std::vector<std::shared_ptr<const ShadowNode>>>&
 ShadowNodeFragment::childrenPlaceholder() {
-  NO_DESTROY static std::shared_ptr<
+  NO_DESTROY static constinit std::shared_ptr<
       const std::vector<std::shared_ptr<const ShadowNode>>>
       instance;
   return instance;
 }
 
 const State::Shared& ShadowNodeFragment::statePlaceholder() {
-  NO_DESTROY static State::Shared instance;
+  NO_DESTROY static constinit State::Shared instance;
   return instance;
 }
 

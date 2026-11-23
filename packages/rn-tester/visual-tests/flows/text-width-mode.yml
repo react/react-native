@@ -1,0 +1,18 @@
+appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebook.react.uiapp
+---
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TextExample/textWidthMode
+- extendedWaitUntil:
+    visible:
+      id: 'text-width-mode-example'
+    timeout: 15000
+- assertVisible:
+    id: 'text-width-mode-auto'
+- assertVisible:
+    id: 'text-width-mode-longest-line'
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/text/width-mode/default
+    cropOn:
+      id: 'text-width-mode-example'

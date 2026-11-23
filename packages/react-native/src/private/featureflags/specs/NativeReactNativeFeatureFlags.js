@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a21712fc03890b45ea92ecb883fa3139>>
+ * @generated SignedSource<<906a5c0d76e55427dbdf0ea6ab57f059>>
  * @flow strict
  * @noformat
  */
@@ -40,7 +40,6 @@ export interface Spec extends TurboModule {
   readonly disableViewPreallocationAndroid?: () => boolean;
   readonly enableAccessibilityOrder?: () => boolean;
   readonly enableAccumulatedUpdatesInRawPropsAndroid?: () => boolean;
-  readonly enableAndroidAutoOffscreenCompositingForElevation?: () => boolean;
   readonly enableAndroidTextMeasurementOptimizations?: () => boolean;
   readonly enableAsyncDiskCacheCheckInMultiSourceImageAndroid?: () => boolean;
   readonly enableBridgelessArchitecture?: () => boolean;
@@ -54,15 +53,17 @@ export interface Spec extends TurboModule {
   readonly enableFabricCommitBranchingMergeOnMainThread?: () => boolean;
   readonly enableFabricLogs?: () => boolean;
   readonly enableFlexboxAutoMinSizeInStrictMode?: () => boolean;
-  readonly enableFontScaleChangesUpdatingLayout?: () => boolean;
+  readonly enableFollowUpMountItemDispatchAndroid?: () => boolean;
   readonly enableIOSCompressedTextFrameAdjustment?: () => boolean;
   readonly enableIOSTextBaselineOffsetPerLine?: () => boolean;
   readonly enableIOSViewClipToPaddingBox?: () => boolean;
   readonly enableImagePrefetchingAndroid?: () => boolean;
   readonly enableImageTransparentTintColor?: () => boolean;
   readonly enableImmediateUpdateModeForContentOffsetChanges?: () => boolean;
+  readonly enableImmediateUpdateModeForScrollContentView?: () => boolean;
   readonly enableImperativeEvents?: () => boolean;
   readonly enableImperativeFocus?: () => boolean;
+  readonly enableInteractableResponderViews?: () => boolean;
   readonly enableInteropViewManagerClassLookUpOptimizationIOS?: () => boolean;
   readonly enableIntersectionObserverByDefault?: () => boolean;
   readonly enableKeyEvents?: () => boolean;
@@ -73,6 +74,7 @@ export interface Spec extends TurboModule {
   readonly enableMutationObserverByDefault?: () => boolean;
   readonly enableNativeCSSParsing?: () => boolean;
   readonly enablePreallocatedPropsDiffOnInsertAndroid?: () => boolean;
+  readonly enablePredictiveBackAndroid?: () => boolean;
   readonly enablePreparedTextLayout?: () => boolean;
   readonly enablePropsUpdateReconciliationAndroid?: () => boolean;
   readonly enableResizeObserverByDefault?: () => boolean;
@@ -86,6 +88,7 @@ export interface Spec extends TurboModule {
   readonly enableVirtualViewContainerStateExperimental?: () => boolean;
   readonly fixBorderlessRippleAndroid?: () => boolean;
   readonly fixMappingOfEventPrioritiesBetweenFabricAndReact?: () => boolean;
+  readonly fixTextInlineViewLineHeight?: () => boolean;
   readonly fixTextLayoutOnPixelDensityChange?: () => boolean;
   readonly fixYogaFlexBasisFitContentInMainAxis?: () => boolean;
   readonly fuseboxAssertSingleHostState?: () => boolean;
@@ -93,6 +96,7 @@ export interface Spec extends TurboModule {
   readonly fuseboxFrameRecordingEnabled?: () => boolean;
   readonly fuseboxScreenshotCaptureEnabled?: () => boolean;
   readonly fuseboxWebSocketEventsEnabled?: () => boolean;
+  readonly keepTimersRunningWhileHostPausedAndroid?: () => boolean;
   readonly optimizedAnimatedPropUpdates?: () => boolean;
   readonly overrideBySynchronousMountPropsAtMountingAndroid?: () => boolean;
   readonly perfIssuesEnabled?: () => boolean;

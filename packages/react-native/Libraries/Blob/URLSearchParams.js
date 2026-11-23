@@ -121,7 +121,9 @@ export class URLSearchParams {
 
   sort(): void {
     this._searchParams = new Map(
-      [...this._searchParams.entries()].sort(([a], [b]) => a.localeCompare(b)),
+      [...this._searchParams.entries()].sort(([a], [b]) =>
+        a < b ? -1 : a > b ? 1 : 0,
+      ),
     );
   }
 

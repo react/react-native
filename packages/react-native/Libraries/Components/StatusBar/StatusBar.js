@@ -41,6 +41,12 @@ export type StatusBarStyle = keyof {
 };
 
 /**
+ * The edge where the system places the vertical bar that holds the status bar,
+ * such as the side rail on iPhone Duo.
+ */
+export type StatusBarVerticalBarEdgeIOS = 'leading' | 'trailing';
+
+/**
  * Status bar animation
  */
 export type StatusBarAnimation = keyof {
@@ -72,7 +78,8 @@ export type StatusBarPropsIOS = Readonly<{
 
 type StatusBarBaseProps = Readonly<{
   /**
-   * If the status bar is hidden.
+   * If the status bar is hidden. Has no effect on iPhone Duo, where the
+   * status bar is in a vertical bar.
    *
    * @default `false`
    */
@@ -141,7 +148,7 @@ function mergePropsStack(
   propsStack: Array<StackProps>,
   defaultValues: ResolvedStackProps,
 ): ResolvedStackProps {
-  const merged: ResolvedStackProps = propsStack.reduce(
+  const merged: ResolvedStackProps = propsStack.reduce<ResolvedStackProps>(
     (prev, cur) => {
       for (const prop in cur) {
         // $FlowFixMe[invalid-computed-prop] dynamic merge over the known StackProps keys
@@ -273,7 +280,8 @@ class StatusBar extends React.Component<StatusBarProps> {
   // See the corresponding prop for more detail.
 
   /**
-   * Show or hide the status bar
+   * Show or hide the status bar. Has no effect on iPhone Duo, where the status
+   * bar is in a vertical bar.
    * @param hidden Hide the status bar.
    * @param animation Optional animation when
    *    changing the status bar hidden property.
@@ -302,6 +310,22 @@ class StatusBar extends React.Component<StatusBarProps> {
     } else if (Platform.OS === 'android') {
       NativeStatusBarManagerAndroid.setStyle(resolvedStyle);
     }
+  }
+
+  /**
+   * Get the edge where the system places the vertical bar that holds the
+   * status bar beside the content, such as the side rail on iPhone Duo.
+   * Returns `null` when the system places no vertical bar, such as on other
+   * devices, in orientations that keep the status bar at the top, or before
+   * iOS 27.1.
+   *
+   * @platform ios
+   */
+  static getVerticalBarEdgeIOS(): ?StatusBarVerticalBarEdgeIOS {
+    if (Platform.OS !== 'ios') {
+      return null;
+    }
+    return toVerticalBarEdge(NativeStatusBarManagerIOS.getVerticalBarEdge());
   }
 
   /**
@@ -447,5 +471,9 @@ class StatusBar extends React.Component<StatusBarProps> {
 }
 
 export type StatusBarInstance = StatusBar;
+
+function toVerticalBarEdge(edge: ?string): ?StatusBarVerticalBarEdgeIOS {
+  return edge === 'leading' || edge === 'trailing' ? edge : null;
+}
 
 export default StatusBar;

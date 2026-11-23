@@ -72,7 +72,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     cxxNativeAnimatedEnabled: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2025-03-14',
         description:
@@ -80,7 +80,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'stable',
     },
     defaultTextToOverflowHidden: {
       defaultValue: true,
@@ -209,17 +209,6 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2024-12-10',
         description:
           'When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    enableAndroidAutoOffscreenCompositingForElevation: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-08-31',
-        description:
-          'When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -363,12 +352,12 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'experimental',
     },
-    enableFontScaleChangesUpdatingLayout: {
-      defaultValue: true,
+    enableFollowUpMountItemDispatchAndroid: {
+      defaultValue: false,
       metadata: {
-        dateAdded: '2025-04-07',
+        dateAdded: '2026-09-29',
         description:
-          'Enables font scale changes updating layout for measurable nodes.',
+          'When mount items are queued while MountItemDispatcher is already dispatching on Android (e.g. from a synchronous state update), dispatch them in the same frame instead of deferring them to the next one.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -439,6 +428,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableImmediateUpdateModeForScrollContentView: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-17',
+        description:
+          'Apply ScrollContentView state updates synchronously on the main thread.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableImperativeEvents: {
       defaultValue: false,
       metadata: {
@@ -455,6 +455,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2024-09-13',
         description:
           'Enable ref.focus() and ref.blur() for all views, not just TextInput.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableInteractableResponderViews: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-08-07',
+        description:
+          'Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -563,6 +574,16 @@ const definitions: FeatureFlagDefinitions = {
           'When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    enablePredictiveBackAndroid: {
+      defaultValue: false,
+      metadata: {
+        description:
+          'On Android 16+ with targetSdk 36+, ReactActivity creates its back callback disabled so Android can play the predictive back animation. Back reaches JS only while a BackHandler listener asks for it with `intercept: true`.',
+        expectedReleaseValue: true,
+        purpose: 'release',
       },
       ossReleaseStage: 'none',
     },
@@ -707,6 +728,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    fixTextInlineViewLineHeight: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-20',
+        description:
+          'Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'canary',
+    },
     fixTextLayoutOnPixelDensityChange: {
       defaultValue: false,
       metadata: {
@@ -750,7 +782,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     fuseboxFrameRecordingEnabled: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-03-05',
         description:
@@ -758,7 +790,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'stable',
     },
     fuseboxScreenshotCaptureEnabled: {
       defaultValue: true,
@@ -772,7 +804,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'stable',
     },
     fuseboxWebSocketEventsEnabled: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-07-11',
         description:
@@ -780,7 +812,18 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'stable',
+    },
+    keepTimersRunningWhileHostPausedAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-22',
+        description:
+          'Keep JS timers running on Android while the React host is paused, stopping them only when the React instance is destroyed. Matches iOS, where timers do not depend on host lifecycle.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
     },
     optimizedAnimatedPropUpdates: {
       defaultValue: false,
@@ -791,7 +834,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'none',
+      ossReleaseStage: 'canary',
     },
     overrideBySynchronousMountPropsAtMountingAndroid: {
       defaultValue: true,
@@ -1004,7 +1047,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'experimental',
+      ossReleaseStage: 'canary',
     },
     useTraitHiddenOnAndroid: {
       defaultValue: false,
@@ -1133,17 +1176,6 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2025-07-02',
         description:
           'Use the deferred cell render update mechanism for focus change in FlatList.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    enableNativeEventTargetEventDispatching: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2026-04-13',
-        description:
-          'When enabled, the React Native renderer dispatches events through the W3C EventTarget API (addEventListener/dispatchEvent) instead of the legacy plugin-based system.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },

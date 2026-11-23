@@ -31,5 +31,6 @@ target_link_libraries(
         jsi
         jsitooling
         fbjni
+        glog_init
         bridgeless
 )

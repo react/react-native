@@ -10,8 +10,9 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 const styles = StyleSheet.create({
   invisibleBox: {
@@ -83,7 +84,7 @@ function CursorExampleViewFlattening(): React.Node {
   return (
     <View style={styles.row}>
       <View style={[styles.invisibleBox, styles.centerContent, styles.pointer]}>
-        <Text>pointer</Text>
+        <RNTesterText>pointer</RNTesterText>
       </View>
     </View>
   );

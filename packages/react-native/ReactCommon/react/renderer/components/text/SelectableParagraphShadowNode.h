@@ -29,6 +29,17 @@ class SelectableParagraphShadowNode : public ParagraphShadowNode {
   {
     return ComponentHandle(Name());
   }
+
+  static ShadowNodeTraits BaseTraits()
+  {
+    auto traits = ParagraphShadowNode::BaseTraits();
+#ifdef ANDROID
+    // Selectable text is always rendered by `ReactTextView`, which can't mount
+    // views inside of it.
+    traits.unset(ShadowNodeTraits::Trait::FormsStackingContext);
+#endif
+    return traits;
+  }
 };
 
 } // namespace facebook::react

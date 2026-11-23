@@ -358,7 +358,7 @@ public object BackgroundStyleApplicator {
    * @param view The view to get the outline width from
    * @return The outline width in pixels, or null if not set
    */
-  public fun getOutlineWidth(view: View): Float? = getOutlineDrawable(view)?.outlineOffset
+  public fun getOutlineWidth(view: View): Float? = getOutlineDrawable(view)?.outlineWidth
 
   /**
    * Sets box shadows for the view.

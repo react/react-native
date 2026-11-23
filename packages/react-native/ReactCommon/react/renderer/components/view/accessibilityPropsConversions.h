@@ -71,7 +71,7 @@ inline void fromString(const std::string &string, AccessibilityTraits &result)
     result = AccessibilityTraits::StartsMediaSession;
     return;
   }
-  if (string == "adjustable") {
+  if (string == "adjustable" || string == "slider") {
     result = AccessibilityTraits::Adjustable;
     return;
   }

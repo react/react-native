@@ -19,7 +19,7 @@ declare export default class DOMRectList
   [index: number]: DOMRectReadOnly;
   readonly length: number;
   item(index: number): DOMRectReadOnly | null;
-  @@iterator(): Iterator<DOMRectReadOnly>;
+  @@iterator(): IteratorObject<DOMRectReadOnly>;
 }
 
 declare export function createDOMRectList(

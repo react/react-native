@@ -9,6 +9,7 @@
  */
 
 import NativeDeviceEventManager from '../../Libraries/NativeModules/specs/NativeDeviceEventManager';
+import * as ReactNativeFeatureFlags from '../../src/private/featureflags/ReactNativeFeatureFlags';
 import {setEventInitTimeStamp} from '../../src/private/webapis/dom/events/internals/EventInternals';
 import RCTDeviceEventEmitter from '../EventEmitter/RCTDeviceEventEmitter';
 import {HardwareBackPressEvent} from './HardwareBackPressEvent';
@@ -18,7 +19,37 @@ const DEVICE_BACK_EVENT = 'hardwareBackPress';
 type BackPressEventName = 'backPress' | 'hardwareBackPress';
 type BackPressHandler = (event: HardwareBackPressEvent) => ?boolean;
 
-const _backPressSubscriptions: Array<BackPressHandler> = [];
+type BackPressSubscription = {
+  handler: BackPressHandler,
+  intercept: boolean,
+};
+
+const _backPressSubscriptions: Array<BackPressSubscription> = [];
+
+/**
+ * Turns interception on while at least one listener asks for it, and off
+ * when none does. Android reads this before the back gesture starts, so it
+ * has to be up to date ahead of time.
+ *
+ * With the `enablePredictiveBackAndroid` feature flag on, it sends the value on
+ * every change to the listeners, even when it is the same as before, so a
+ * repeated request (for example when a screen gets focus) applies again if
+ * native code or another activity changed it. With the flag off and no
+ * listener asking for back, nothing is sent.
+ */
+function updateIntercept(): void {
+  const interceptEnabled = _backPressSubscriptions.some(
+    subscription => subscription.intercept,
+  );
+  if (
+    !interceptEnabled &&
+    !ReactNativeFeatureFlags.enablePredictiveBackAndroid()
+  ) {
+    return;
+  }
+  // Optional: native code built before this method existed doesn't have it.
+  NativeDeviceEventManager?.setInterceptEnabled?.(interceptEnabled);
+}
 
 RCTDeviceEventEmitter.addListener(DEVICE_BACK_EVENT, function (nativeEvent) {
   const options = {};
@@ -28,13 +59,36 @@ RCTDeviceEventEmitter.addListener(DEVICE_BACK_EVENT, function (nativeEvent) {
   }
   const event = new HardwareBackPressEvent(options);
   for (let i = _backPressSubscriptions.length - 1; i >= 0; i--) {
-    if (_backPressSubscriptions[i]?.(event)) {
+    if (_backPressSubscriptions[i]?.handler(event)) {
       return;
     }
   }
 
   BackHandler.exitApp();
 });
+
+type BackHandlerOptions = {
+  /**
+   * Android 16+ with targetSdk 36+ only. Ask Android to send back to React
+   * Native while this listener exists, instead of handling back itself with
+   * the predictive back animation. React Native intercepts back while at
+   * least one listener asks for it. Set it ahead of time, for example to your
+   * navigator's `canGoBack`. Defaults to `false`.
+   *
+   * It is a request, not a guarantee: native code that adds its own back
+   * callback after React Native's still receives back first.
+   */
+  intercept?: boolean,
+};
+
+type BackHandlerSubscription = {
+  remove: () => void,
+  /**
+   * Changes this listener's `intercept` request without removing it.
+   */
+  setInterceptEnabled: (enabled: boolean) => void,
+  ...
+};
 
 /**
  * Detects hardware button presses for back navigation and lets you register
@@ -50,21 +104,8 @@ type TBackHandler = {
   readonly addEventListener: (
     eventName: BackPressEventName,
     handler: BackPressHandler,
-  ) => {remove: () => void, ...},
-  /**
-   * Android only. When true, React Native consumes the back gesture so
-   * BackHandler can pop an in-app screen. On Android 16+, progress is
-   * delivered to PredictiveBackAnimatedView and native PredictiveBackHandler
-   * plugins. When false, the system predictive-back animation can run;
-   * BackHandler still observes app-exit commit.
-   *
-   * Consuming is not reserving: React Native registers at the platform
-   * default priority, the same one AndroidX' FragmentManager uses, so the
-   * gesture goes to whichever enabled callback registered last. A library
-   * that needs the gesture for itself takes it by disabling React Native's
-   * consuming callback.
-   */
-  readonly setInterceptEnabled: (enabled: boolean) => void,
+    options?: BackHandlerOptions,
+  ) => BackHandlerSubscription,
 };
 const BackHandler: TBackHandler = {
   /**
@@ -78,31 +119,43 @@ const BackHandler: TBackHandler = {
     NativeDeviceEventManager.invokeDefaultBackPressHandler();
   },
 
-  setInterceptEnabled: function (enabled: boolean): void {
-    if (!NativeDeviceEventManager) {
-      return;
-    }
-
-    NativeDeviceEventManager.setInterceptEnabled(enabled);
-  },
-
   /**
    * Listen for the `hardwareBackPress` event. The handler should return `true`
    * to prevent the event from bubbling to earlier registered listeners.
+   *
+   * Adding the same handler again reuses its listener: it keeps its place,
+   * and its request changes only if `intercept` is passed.
    */
   addEventListener: function (
     eventName: BackPressEventName,
     handler: BackPressHandler,
-  ): {remove: () => void, ...} {
-    if (_backPressSubscriptions.indexOf(handler) === -1) {
-      _backPressSubscriptions.push(handler);
+    options?: BackHandlerOptions,
+  ): BackHandlerSubscription {
+    let subscription: ?BackPressSubscription = _backPressSubscriptions.find(
+      existing => existing.handler === handler,
+    );
+    if (subscription == null) {
+      const created: BackPressSubscription = {handler, intercept: false};
+      _backPressSubscriptions.push(created);
+      subscription = created;
     }
+    if (options?.intercept !== undefined) {
+      subscription.intercept = options.intercept === true;
+    }
+    updateIntercept();
+
+    const registered = subscription;
     return {
       remove: (): void => {
-        const index = _backPressSubscriptions.indexOf(handler);
+        const index = _backPressSubscriptions.indexOf(registered);
         if (index !== -1) {
           _backPressSubscriptions.splice(index, 1);
+          updateIntercept();
         }
+      },
+      setInterceptEnabled: (enabled: boolean): void => {
+        registered.intercept = enabled;
+        updateIntercept();
       },
     };
   },

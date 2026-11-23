@@ -5,12 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#ifndef RCT_REMOVE_LEGACY_COMPONENT_INTEROP
+
 #import "RCTViewManager.h"
 
 #import "RCTAssert.h"
 #import "RCTBorderCurve.h"
 #import "RCTBorderStyle.h"
-#import "RCTBridge.h"
 #import "RCTConvert+Transform.h"
 #import "RCTConvert.h"
 #import "RCTCursor.h"
@@ -745,3 +746,5 @@ CGFloat RCTJSONParseOnlyNumber(id json)
 }
 
 @end
+
+#endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP

@@ -1,0 +1,58 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TransformExample/rotate
+- extendedWaitUntil:
+    visible:
+      id: 'transform-rotate'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/transform/rotate/default
+    cropOn:
+      id: 'transform-rotate'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TransformExample/rotate-scale
+- extendedWaitUntil:
+    visible:
+      id: 'transform-rotate-scale'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/transform/rotate-scale/default
+    cropOn:
+      id: 'transform-rotate-scale'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TransformExample/translate-percentage
+- extendedWaitUntil:
+    visible:
+      id: 'transform-translate-percentage'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/transform/translate-percentage/default
+    cropOn:
+      id: 'transform-translate-percentage'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/TransformExample/string-transform
+- extendedWaitUntil:
+    visible:
+      id: 'transform-string'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/transform/string/default
+    cropOn:
+      id: 'transform-string'

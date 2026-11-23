@@ -118,7 +118,7 @@ void YogaStylableProps::setProp(
     RawPropsPropNameHash hash,
     const char* propName,
     const RawValue& value) {
-  static const auto ygDefaults = yoga::Style{};
+  static constinit const auto ygDefaults = yoga::Style{};
   static const auto defaults = YogaStylableProps{};
 
   Props::setProp(context, hash, propName, value);
