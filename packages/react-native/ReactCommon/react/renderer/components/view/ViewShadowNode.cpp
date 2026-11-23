@@ -65,7 +65,7 @@ void ViewShadowNode::initialize() noexcept {
       viewProps.mixBlendMode != BlendMode::Normal ||
       viewProps.isolation == Isolation::Isolate ||
       HostPlatformViewTraitsInitializer::formsStackingContext(viewProps) ||
-      !viewProps.accessibilityOrder.empty();
+      !viewProps.accessibilityOrder.empty() || viewProps.clipPath != nullptr;
 
   bool formsView = formsStackingContext ||
       isColorMeaningful(viewProps.backgroundColor) || hasBorder() ||
@@ -90,6 +90,12 @@ void ViewShadowNode::initialize() noexcept {
     traits_.set(ShadowNodeTraits::Trait::ChildrenFormStackingContext);
   } else {
     traits_.unset(ShadowNodeTraits::Trait::ChildrenFormStackingContext);
+  }
+
+  if (viewProps.clipPath != nullptr) {
+    traits_.set(ShadowNodeTraits::Trait::NeedsComputedBoxModel);
+  } else {
+    traits_.unset(ShadowNodeTraits::Trait::NeedsComputedBoxModel);
   }
 }
 
