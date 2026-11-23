@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0e427a7632512e804255c89c72233039>>
+ * @generated SignedSource<<6d01a135e00c9288230fd9be945b59bf>>
  */
 
 /**
@@ -83,6 +83,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableMutationObserverByDefault();
   bool enableNativeCSSParsing();
   bool enablePreallocatedPropsDiffOnInsertAndroid();
+  bool enablePredictiveBackAndroid();
   bool enablePreparedTextLayout();
   bool enablePropsUpdateReconciliationAndroid();
   bool enableResizeObserverByDefault();
@@ -144,7 +145,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 99> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 100> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -195,6 +196,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableMutationObserverByDefault_;
   std::atomic<std::optional<bool>> enableNativeCSSParsing_;
   std::atomic<std::optional<bool>> enablePreallocatedPropsDiffOnInsertAndroid_;
+  std::atomic<std::optional<bool>> enablePredictiveBackAndroid_;
   std::atomic<std::optional<bool>> enablePreparedTextLayout_;
   std::atomic<std::optional<bool>> enablePropsUpdateReconciliationAndroid_;
   std::atomic<std::optional<bool>> enableResizeObserverByDefault_;

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<705049f8ca1f9561e4fa3ee993023e85>>
+ * @generated SignedSource<<de4b63c5c92bd590f42f16f5b656ddbe>>
  * @flow strict
  * @noformat
  */
@@ -97,6 +97,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableMutationObserverByDefault: Getter<boolean>,
   enableNativeCSSParsing: Getter<boolean>,
   enablePreallocatedPropsDiffOnInsertAndroid: Getter<boolean>,
+  enablePredictiveBackAndroid: Getter<boolean>,
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
   enableResizeObserverByDefault: Getter<boolean>,
@@ -414,6 +415,10 @@ export const enableNativeCSSParsing: Getter<boolean> = createNativeFlagGetter('e
  * When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.
  */
 export const enablePreallocatedPropsDiffOnInsertAndroid: Getter<boolean> = createNativeFlagGetter('enablePreallocatedPropsDiffOnInsertAndroid', false);
+/**
+ * On Android 16+ with targetSdk 36+, ReactActivity creates its back callback disabled so Android can play the predictive back animation. Back reaches JS only while a BackHandler listener asks for it with `intercept: true`.
+ */
+export const enablePredictiveBackAndroid: Getter<boolean> = createNativeFlagGetter('enablePredictiveBackAndroid', false);
 /**
  * Enables caching text layout artifacts for later reuse
  */

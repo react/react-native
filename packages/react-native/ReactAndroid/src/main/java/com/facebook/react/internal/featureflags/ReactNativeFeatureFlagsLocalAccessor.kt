@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4d0de8e6c65d709e98e638afb976a665>>
+ * @generated SignedSource<<1c833938e138144ffd285a8902fae226>>
  */
 
 /**
@@ -73,6 +73,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableMutationObserverByDefaultCache: Boolean? = null
   private var enableNativeCSSParsingCache: Boolean? = null
   private var enablePreallocatedPropsDiffOnInsertAndroidCache: Boolean? = null
+  private var enablePredictiveBackAndroidCache: Boolean? = null
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
   private var enableResizeObserverByDefaultCache: Boolean? = null
@@ -610,6 +611,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enablePreallocatedPropsDiffOnInsertAndroid()
       accessedFeatureFlags.add("enablePreallocatedPropsDiffOnInsertAndroid")
       enablePreallocatedPropsDiffOnInsertAndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun enablePredictiveBackAndroid(): Boolean {
+    var cached = enablePredictiveBackAndroidCache
+    if (cached == null) {
+      cached = currentProvider.enablePredictiveBackAndroid()
+      accessedFeatureFlags.add("enablePredictiveBackAndroid")
+      enablePredictiveBackAndroidCache = cached
     }
     return cached
   }
