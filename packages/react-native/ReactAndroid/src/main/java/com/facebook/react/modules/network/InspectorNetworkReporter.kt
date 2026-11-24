@@ -48,6 +48,25 @@ public object InspectorNetworkReporter {
   )
 
   /**
+   * Report a network request that is about to be sent after following a redirect, under the same
+   * `requestId` as the request that was redirected. `encodedDataLength` is the size of the redirect
+   * response.
+   * - Corresponds to `Network.requestWillBeSent` with `redirectResponse` in CDP.
+   */
+  @JvmStatic
+  public external fun reportRequestStart(
+      requestId: String,
+      requestUrl: String,
+      requestMethod: String,
+      requestHeaders: Map<String, String>,
+      requestBody: String,
+      encodedDataLength: Long,
+      redirectResponseUrl: String,
+      redirectResponseStatus: Int,
+      redirectResponseHeaders: Map<String, String>,
+  )
+
+  /**
    * Report detailed timing info, such as DNS lookup, when a request has started.
    * - Corresponds to `Network.requestWillBeSentExtraInfo` in CDP.
    * - Corresponds to `PerformanceResourceTiming.domainLookupStart`,
