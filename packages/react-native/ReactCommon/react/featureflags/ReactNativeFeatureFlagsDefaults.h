@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e1814fcdfbfd497e4432e267e5a9eb91>>
+ * @generated SignedSource<<c7ab21a50db95c57a914f721f6caad6a>>
  */
 
 /**
@@ -94,6 +94,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid() override {
+    return false;
+  }
+
+  bool enableAsyncSettingsManagerUpdatesIOS() override {
     return false;
   }
 

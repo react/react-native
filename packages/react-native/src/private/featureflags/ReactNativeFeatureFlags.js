@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<efc3269aad4b903c9b26333e69742c53>>
+ * @generated SignedSource<<c0f6f38c7d7ae11da473459e99ea0e9e>>
  * @flow strict
  * @noformat
  */
@@ -65,6 +65,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean>,
+  enableAsyncSettingsManagerUpdatesIOS: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
   enableCppPropsIteratorSetter: Getter<boolean>,
   enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean>,
@@ -287,6 +288,10 @@ export const enableAndroidTextMeasurementOptimizations: Getter<boolean> = create
  * Runs multi-source image disk-cache checks asynchronously on Android.
  */
 export const enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean> = createNativeFlagGetter('enableAsyncDiskCacheCheckInMultiSourceImageAndroid', false);
+/**
+ * Process SettingsManager defaults notifications on a dedicated serial queue on iOS.
+ */
+export const enableAsyncSettingsManagerUpdatesIOS: Getter<boolean> = createNativeFlagGetter('enableAsyncSettingsManagerUpdatesIOS', false);
 /**
  * Feature flag to enable the new bridgeless architecture.
  */

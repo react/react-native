@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c936bbf73a21cd34668645173f36c1fb>>
+ * @generated SignedSource<<0907a93d882e4c19ec89453911dd67f9>>
  */
 
 /**
@@ -198,6 +198,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableAsyncDiskCacheCheckInMultiSourceImageAndroid();
+  }
+
+  bool enableAsyncSettingsManagerUpdatesIOS() override {
+    auto value = values_["enableAsyncSettingsManagerUpdatesIOS"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableAsyncSettingsManagerUpdatesIOS();
   }
 
   bool enableBridgelessArchitecture() override {
