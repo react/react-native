@@ -258,7 +258,7 @@ jobs:
             const isDryRun = false
             await publishTemplate(github, version, isDryRun);
       - name: Wait for template to be published
-        timeout-minutes: 3
+        timeout-minutes: 16
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
@@ -273,7 +273,7 @@ jobs:
             -H "Authorization: Bearer $REACT_NATIVE_BOT_GITHUB_TOKEN" \
             -d "{\"event_type\": \"publish\", \"client_payload\": { \"version\": \"${{ github.ref_name }}\" }}"
       - name: Verify Release is on NPM
-        timeout-minutes: 3
+        timeout-minutes: 16
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}

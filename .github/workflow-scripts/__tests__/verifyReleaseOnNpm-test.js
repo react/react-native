@@ -33,7 +33,7 @@ describe('#verifyReleaseOnNPM', () => {
       'react-native',
       version,
       null,
-      18,
+      90,
     );
   });
 
@@ -47,7 +47,7 @@ describe('#verifyReleaseOnNPM', () => {
       'react-native',
       version,
       'latest',
-      18,
+      90,
     );
   });
 
@@ -61,7 +61,7 @@ describe('#verifyReleaseOnNPM', () => {
       'react-native',
       version,
       'next',
-      18,
+      90,
     );
   });
 
@@ -75,7 +75,7 @@ describe('#verifyReleaseOnNPM', () => {
       'react-native',
       version,
       'next',
-      18,
+      90,
     );
   });
 
