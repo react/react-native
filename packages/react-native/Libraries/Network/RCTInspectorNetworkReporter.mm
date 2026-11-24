@@ -13,6 +13,8 @@
 #import <React/RCTUtils.h>
 #import <react/networking/NetworkReporter.h>
 
+#include <mutex>
+
 using namespace facebook::react;
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
@@ -72,6 +74,8 @@ std::string convertRequestBodyToStringTruncated(NSURLRequest *request)
 
 // Dictionary to buffer incremental response bodies (CDP debugging active only)
 static const NSMutableDictionary<NSString *, NSMutableString *> *responseBuffers = nil;
+// Reporters can call from different threads, so every access to responseBuffers holds this
+static std::mutex responseBuffersMutex;
 
 #endif
 
@@ -135,15 +139,16 @@ static const NSMutableDictionary<NSString *, NSMutableString *> *responseBuffers
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
   // Debug build: Check for buffered response body and flush to NetworkReporter
-  if (responseBuffers != nullptr) {
-    NSMutableString *buffer = responseBuffers[requestId];
-    if (buffer != nullptr) {
-      if (buffer.length > 0) {
-        NetworkReporter::getInstance().storeResponseBody(
-            requestId.UTF8String, RCTStringViewFromNSString(buffer), false);
-      }
+  NSMutableString *buffer = nil;
+  {
+    std::lock_guard<std::mutex> lock(responseBuffersMutex);
+    if (responseBuffers != nullptr) {
+      buffer = responseBuffers[requestId];
       [responseBuffers removeObjectForKey:requestId];
     }
+  }
+  if (buffer.length > 0) {
+    NetworkReporter::getInstance().storeResponseBody(requestId.UTF8String, RCTStringViewFromNSString(buffer), false);
   }
 #endif
 }
@@ -154,6 +159,7 @@ static const NSMutableDictionary<NSString *, NSMutableString *> *responseBuffers
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
   // Debug build: Clear buffer for request
+  std::lock_guard<std::mutex> lock(responseBuffersMutex);
   if (responseBuffers != nullptr) {
     [responseBuffers removeObjectForKey:requestId];
   }
@@ -196,6 +202,7 @@ static const NSMutableDictionary<NSString *, NSMutableString *> *responseBuffers
     return;
   }
 
+  std::lock_guard<std::mutex> lock(responseBuffersMutex);
   if (responseBuffers == nullptr) {
     responseBuffers = [NSMutableDictionary dictionary];
   }

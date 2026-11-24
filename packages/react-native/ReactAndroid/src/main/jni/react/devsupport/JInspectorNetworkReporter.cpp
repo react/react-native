@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <string>
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
+#include <mutex>
 #include <unordered_map>
 #endif
 
@@ -55,6 +56,8 @@ std::string limitRequestBodySize(std::string requestBody) {
 
 // Dictionary to buffer incremental response bodies (CDP debugging active only)
 static std::unordered_map<std::string, std::string> responseBuffers;
+// Requests report from different threads, so every access holds this
+static std::mutex responseBuffersMutex;
 
 #endif
 
@@ -126,11 +129,17 @@ static std::unordered_map<std::string, std::string> responseBuffers;
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
   // Debug build: Check for buffered response body and flush to NetworkReporter
-  auto it = responseBuffers.find(requestIdStr);
-  if (it != responseBuffers.end() && !it->second.empty()) {
-    NetworkReporter::getInstance().storeResponseBody(
-        requestIdStr, it->second, false);
-    responseBuffers.erase(it);
+  std::string body;
+  {
+    std::lock_guard<std::mutex> lock(responseBuffersMutex);
+    auto it = responseBuffers.find(requestIdStr);
+    if (it != responseBuffers.end()) {
+      body = std::move(it->second);
+      responseBuffers.erase(it);
+    }
+  }
+  if (!body.empty()) {
+    NetworkReporter::getInstance().storeResponseBody(requestIdStr, body, false);
   }
 #endif
 }
@@ -139,8 +148,14 @@ static std::unordered_map<std::string, std::string> responseBuffers;
     jni::alias_ref<jclass> /*unused*/,
     jni::alias_ref<jstring> requestId,
     jboolean cancelled) {
+  auto requestIdStr = requestId->toStdString();
   NetworkReporter::getInstance().reportRequestFailed(
-      requestId->toStdString(), cancelled != 0u);
+      requestIdStr, cancelled != 0u);
+
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+  std::lock_guard<std::mutex> lock(responseBuffersMutex);
+  responseBuffers.erase(requestIdStr);
+#endif
 }
 
 /* static */ void JInspectorNetworkReporter::maybeStoreResponseBodyImpl(
@@ -173,8 +188,9 @@ JInspectorNetworkReporter::maybeStoreResponseBodyIncrementalImpl(
   }
 
   auto requestIdStr = requestId->toStdString();
-  auto& buffer = responseBuffers[requestIdStr];
-  buffer += data->toStdString();
+  auto dataStr = data->toStdString();
+  std::lock_guard<std::mutex> lock(responseBuffersMutex);
+  responseBuffers[requestIdStr] += dataStr;
 #endif
 }
 
