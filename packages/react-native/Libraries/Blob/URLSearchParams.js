@@ -84,7 +84,7 @@ export class URLSearchParams {
   values(): IteratorObject<string> {
     function* generateValues(
       params: Map<string, string[]>,
-    ): IteratorObject<string> {
+    ): IteratorObject<string, void> {
       for (const valueArray of params.values()) {
         for (const value of valueArray) {
           yield value;
@@ -97,7 +97,7 @@ export class URLSearchParams {
   entries(): Iterator<[string, string]> {
     function* generateEntries(
       params: Map<string, string[]>,
-    ): IteratorObject<[string, string]> {
+    ): IteratorObject<[string, string], void> {
       for (const [key, values] of params) {
         for (const value of values) {
           yield [key, value];
