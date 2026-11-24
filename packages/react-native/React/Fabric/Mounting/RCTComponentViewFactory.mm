@@ -186,9 +186,11 @@ static Class<RCTComponentViewProtocol> RCTComponentViewClassWithName(const char 
     // for this lock in -createComponentViewWithComponentHandle:.
     _providerRegistry.add(provider);
     auto classDescriptor = [self _componentViewClassDescriptorFromClass:[RCTLegacyViewManagerInteropComponentView class]];
-    std::unique_lock lock(_mutex);
-    _componentViewClasses[componentHandle] = classDescriptor;
-    _registrationStatusMap.insert({provider.name, true});
+    {
+      std::unique_lock lock(_mutex);
+      _componentViewClasses[componentHandle] = classDescriptor;
+      _registrationStatusMap.insert({provider.name, true});
+    }
     return;
   }
 #endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
@@ -203,9 +205,11 @@ static Class<RCTComponentViewProtocol> RCTComponentViewClassWithName(const char 
 
   _providerRegistry.add(provider);
   auto classDescriptor = [self _componentViewClassDescriptorFromClass:[RCTUnimplementedViewComponentView class]];
-  std::unique_lock lock(_mutex);
-  _componentViewClasses[componentHandle] = classDescriptor;
-  _registrationStatusMap.insert({provider.name, false});
+  {
+    std::unique_lock lock(_mutex);
+    _componentViewClasses[componentHandle] = classDescriptor;
+    _registrationStatusMap.insert({provider.name, false});
+  }
 }
 
 - (void)registerComponentViewClass:(Class<RCTComponentViewProtocol>)componentViewClass
