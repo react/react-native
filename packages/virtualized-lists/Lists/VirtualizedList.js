@@ -430,7 +430,7 @@ class VirtualizedList extends StateSafePureComponent<
       return false;
     }
 
-    const cell = this._cellRefs[cellKey];
+    const cell = this._cellRefs[cellKey]?.current;
     if (cell == null) {
       return null;
     }
@@ -1016,7 +1016,7 @@ class VirtualizedList extends StateSafePureComponent<
           onUpdateSeparators={this._onUpdateSeparators}
           onCellFocusCapture={this._onCellFocusCapture}
           onUnmount={this._onCellUnmount}
-          ref={this._getCellRefCallback(key)}
+          ref={this._getCellRef(key)}
           renderItem={renderItem}
           {...(shouldListenForLayout && {
             onCellLayout: this._onCellLayout,
@@ -1050,8 +1050,8 @@ class VirtualizedList extends StateSafePureComponent<
 
   _onUpdateSeparators = (keys: Array<?string>, newProps: any) => {
     keys.forEach(key => {
-      const ref = key != null && this._cellRefs[key];
-      ref && ref.updateSeparatorProps(newProps);
+      const cell = key != null ? this._cellRefs[key]?.current : null;
+      cell?.updateSeparatorProps(newProps);
     });
   };
 
@@ -1465,12 +1465,9 @@ class VirtualizedList extends StateSafePureComponent<
     }
   }
 
-  _cellRefs: {[key: string]: null | CellRenderer<any>} = {};
-  // Ref callbacks are cached per cell key so that re-rendering the list does
-  // not hand every cell a new ref function, which would make React detach and
-  // re-attach each cell's ref on every commit.
-  _cellRefCallbacks: Map<string, (ref: null | CellRenderer<any>) => void> =
-    new Map();
+  // One ref object per cell key, kept across renders so React doesn't detach
+  // and re-attach every cell's ref on each commit.
+  _cellRefs: {[key: string]: {current: null | CellRenderer<any>}} = {};
   _fillRateHelper: FillRateHelper;
   _listMetrics: ListMetricsAggregator = new ListMetricsAggregator();
   _footerLength = 0;
@@ -1604,22 +1601,17 @@ class VirtualizedList extends StateSafePureComponent<
     }
   };
 
-  _getCellRefCallback(
-    cellKey: string,
-  ): (ref: null | CellRenderer<any>) => void {
-    let callback = this._cellRefCallbacks.get(cellKey);
-    if (callback == null) {
-      callback = ref => {
-        this._cellRefs[cellKey] = ref;
-      };
-      this._cellRefCallbacks.set(cellKey, callback);
+  _getCellRef(cellKey: string): {current: null | CellRenderer<any>} {
+    let ref = this._cellRefs[cellKey];
+    if (ref == null) {
+      ref = {current: null};
+      this._cellRefs[cellKey] = ref;
     }
-    return callback;
+    return ref;
   }
 
   _onCellUnmount = (cellKey: string) => {
     delete this._cellRefs[cellKey];
-    this._cellRefCallbacks.delete(cellKey);
     this._listMetrics.notifyCellUnmounted(cellKey);
   };
 
@@ -2272,13 +2264,13 @@ class VirtualizedList extends StateSafePureComponent<
     // Keep a viewport's worth of content around the last focused cell to allow
     // random navigation around it without any blanking. E.g. tabbing from one
     // focused item out of viewport to another.
-    if (!(
-      this._lastFocusedCellKey && this._cellRefs[this._lastFocusedCellKey]
-    )) {
+    const lastFocusedCellRenderer =
+      this._lastFocusedCellKey != null
+        ? this._cellRefs[this._lastFocusedCellKey]?.current
+        : null;
+    if (lastFocusedCellRenderer == null) {
       return [];
     }
-
-    const lastFocusedCellRenderer = this._cellRefs[this._lastFocusedCellKey];
     const focusedCellIndex = lastFocusedCellRenderer.props.index;
     const itemCount = props.getItemCount(props.data);
 

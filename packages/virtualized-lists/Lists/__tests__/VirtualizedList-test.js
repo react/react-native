@@ -62,16 +62,19 @@ describe('VirtualizedList', () => {
       );
     });
 
-    const cellRefs = listRef.current._cellRefs;
+    const cellRefs = {...listRef.current._cellRefs};
     expect(Object.keys(cellRefs)).toEqual(['i1', 'i2', 'i3']);
     const refWrites = jest.fn();
-    listRef.current._cellRefs = new Proxy(cellRefs, {
-      set(target, key, value) {
-        refWrites(key, value);
-        target[key] = value;
-        return true;
-      },
-    });
+    for (const [key, ref] of Object.entries(cellRefs)) {
+      let current = ref.current;
+      Object.defineProperty(ref, 'current', {
+        get: () => current,
+        set: value => {
+          refWrites(key, value);
+          current = value;
+        },
+      });
+    }
     renderItem.mockClear();
 
     // Re-render the list with a prop that doesn't affect the cells.
@@ -84,7 +87,8 @@ describe('VirtualizedList', () => {
     expect(renderItem).not.toHaveBeenCalled();
     expect(refWrites).not.toHaveBeenCalled();
     for (const key of ['i1', 'i2', 'i3']) {
-      expect(listRef.current._cellRefs[key]).not.toBeNull();
+      expect(listRef.current._cellRefs[key]).toBe(cellRefs[key]);
+      expect(cellRefs[key].current).not.toBeNull();
     }
   });
 
@@ -2576,7 +2580,7 @@ it('calls _onCellLayout properly', async () => {
       />,
     );
   });
-  const cell = virtualList._cellRefs.i4;
+  const cell = virtualList._cellRefs.i4.current;
   const event = {
     nativeEvent: {layout: {x: 0, y: 0, width: 50, height: 50}, zoomScale: 1},
   };
