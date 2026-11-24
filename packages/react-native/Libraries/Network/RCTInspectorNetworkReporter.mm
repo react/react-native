@@ -86,6 +86,14 @@ static std::mutex responseBuffersMutex;
                    request:(NSURLRequest *)request
          encodedDataLength:(int)encodedDataLength
 {
+  [self reportRequestStart:requestId request:request encodedDataLength:encodedDataLength redirectResponse:nil];
+}
+
++ (void)reportRequestStart:(NSString *)requestId
+                   request:(NSURLRequest *)request
+         encodedDataLength:(int)encodedDataLength
+          redirectResponse:(NSHTTPURLResponse *)redirectResponse
+{
   RequestInfo requestInfo;
   requestInfo.url = [request.URL absoluteString].UTF8String;
   requestInfo.httpMethod = [request.HTTPMethod UTF8String];
@@ -95,7 +103,20 @@ static std::mutex responseBuffersMutex;
   requestInfo.httpBody = convertRequestBodyToStringTruncated(request);
 #endif
 
-  NetworkReporter::getInstance().reportRequestStart(requestId.UTF8String, requestInfo, encodedDataLength, std::nullopt);
+  std::optional<ResponseInfo> redirectResponseInfo;
+  if (redirectResponse != nil) {
+    ResponseInfo responseInfo;
+    responseInfo.url = redirectResponse.URL.absoluteString.UTF8String;
+    responseInfo.statusCode = static_cast<uint16_t>(redirectResponse.statusCode);
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+    responseInfo.headers =
+        convertNSDictionaryToHeaders((NSDictionary<NSString *, NSString *> *)redirectResponse.allHeaderFields);
+#endif
+    redirectResponseInfo = std::move(responseInfo);
+  }
+
+  NetworkReporter::getInstance().reportRequestStart(
+      requestId.UTF8String, requestInfo, encodedDataLength, redirectResponseInfo);
 }
 
 + (void)reportConnectionTiming:(NSString *)requestId request:(NSURLRequest *)request
