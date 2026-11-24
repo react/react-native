@@ -13,6 +13,7 @@
 #include <mutex>
 #include <string>
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
+#include <mutex>
 #include <unordered_map>
 #endif
 
@@ -183,8 +184,14 @@ static std::mutex responseBuffersMutex;
     jni::alias_ref<jclass> /*unused*/,
     jni::alias_ref<jstring> requestId,
     jboolean cancelled) {
+  auto requestIdStr = requestId->toStdString();
   NetworkReporter::getInstance().reportRequestFailed(
-      requestId->toStdString(), cancelled != 0u);
+      requestIdStr, cancelled != 0u);
+
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+  std::lock_guard<std::mutex> lock(responseBuffersMutex);
+  responseBuffers.erase(requestIdStr);
+#endif
 }
 
 /* static */ void JInspectorNetworkReporter::maybeStoreResponseBodyImpl(
