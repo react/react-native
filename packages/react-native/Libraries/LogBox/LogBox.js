@@ -85,7 +85,9 @@ if (__DEV__) {
 
       if (global.RN$registerExceptionListener != null) {
         global.RN$registerExceptionListener(
-          (error: ExtendedExceptionData & {preventDefault: () => unknown}) => {
+          (
+            error: ExtendedExceptionData & {preventDefault: () => unknown, ...},
+          ) => {
             if (global.RN$isRuntimeReady?.() || !error.isFatal) {
               error.preventDefault();
               addException(error);

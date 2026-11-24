@@ -40,7 +40,6 @@ function getExtendedError(
     error = new SyntheticError('Unspecified error') as ExtendedError;
   }
   try {
-    // $FlowFixMe[incompatible-use] this is in try/catch.
     error.componentStack = errorInfo.componentStack;
     error.isComponentError = true;
   } catch {

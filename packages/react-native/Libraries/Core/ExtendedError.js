@@ -12,7 +12,7 @@ export type ExtendedError = Error &
   interface {
     jsEngine?: string,
     preventSymbolication?: boolean,
-    componentStack?: string,
+    componentStack?: ?string,
     isComponentError?: boolean,
     type?: string,
     // Note: A field keyed by the Symbol ExceptionsManager.decoratedExtraDataKey is also read from ExtendedErrors.
