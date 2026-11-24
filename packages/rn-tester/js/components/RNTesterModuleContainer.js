@@ -27,6 +27,7 @@ type Props = {
   module: RNTesterModule,
   example?: ?RNTesterModuleExample,
   onExampleCardPress?: ?(exampleName: string) => unknown,
+  bottomInset?: number,
 };
 
 function getExampleTitle(title: $FlowFixMe, platform: $FlowFixMe) {
@@ -34,7 +35,7 @@ function getExampleTitle(title: $FlowFixMe, platform: $FlowFixMe) {
 }
 
 export default function RNTesterModuleContainer(props: Props): React.Node {
-  const {module, example, onExampleCardPress} = props;
+  const {module, example, onExampleCardPress, bottomInset} = props;
   const theme = useContext(RNTesterThemeContext);
   const renderExample = (e: $FlowFixMe, i: $FlowFixMe) => {
     // Filter platform-specific es
@@ -82,11 +83,24 @@ export default function RNTesterModuleContainer(props: Props): React.Node {
   return singleModule != null ? (
     <>
       {singleModule.scrollable === true ? (
-        <ScrollView style={styles.examplesContainer} testID="example-container">
+        <ScrollView
+          style={styles.examplesContainer}
+          contentContainerStyle={
+            bottomInset != null ? {paddingBottom: bottomInset} : undefined
+          }
+          automaticallyAdjustContentInsets={
+            bottomInset != null ? false : undefined
+          }
+          testID="example-container">
           <singleModule.render />
         </ScrollView>
       ) : (
-        <View style={styles.examplesContainer} testID="example-container">
+        <View
+          style={[
+            styles.examplesContainer,
+            bottomInset != null && {marginBottom: bottomInset},
+          ]}
+          testID="example-container">
           <singleModule.render />
         </View>
       )}
@@ -99,6 +113,7 @@ export default function RNTesterModuleContainer(props: Props): React.Node {
           testID="example_search"
           page="examples_page"
           hideFilterPills={true}
+          bottomInset={bottomInset}
           sections={sections}
           filter={filter}
           render={({filteredSections}) =>
