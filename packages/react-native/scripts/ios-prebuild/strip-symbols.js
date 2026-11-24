@@ -16,6 +16,11 @@ const path = require('node:path');
  * Strips local symbols from a framework's binary and, when the framework was
  * signed, re-signs it ad hoc so its seal stays valid. Must run after the
  * framework's dSYM is copied and after its contents are final.
+ *
+ * A versioned (macOS-style) framework with files in its root cannot be sealed:
+ * codesign rejects it with "unsealed contents present in the root directory".
+ * Its bundle seal was already invalid before the strip, so only the binary is
+ * re-signed.
  */
 function stripLocalSymbols(
   frameworkPath /*: string */,
@@ -27,8 +32,11 @@ function stripLocalSymbols(
   log(`Stripping local symbols: ${binaryPath}`);
   execFileSync('xcrun', ['strip', '-x', binaryPath], {stdio: 'inherit'});
   if (wasSigned) {
-    log(`Re-signing ad hoc: ${frameworkPath}`);
-    execFileSync('codesign', ['--force', '--sign', '-', frameworkPath], {
+    const signPath = hasUnsealableRoot(frameworkPath)
+      ? binaryPath
+      : frameworkPath;
+    log(`Re-signing ad hoc: ${signPath}`);
+    execFileSync('codesign', ['--force', '--sign', '-', signPath], {
       stdio: 'inherit',
     });
   }
@@ -41,6 +49,19 @@ function isSigned(frameworkPath /*: string */) /*: boolean */ {
   } catch {
     return false;
   }
+}
+
+function hasUnsealableRoot(frameworkPath /*: string */) /*: boolean */ {
+  if (!fs.existsSync(path.join(frameworkPath, 'Versions'))) {
+    return false;
+  }
+  return fs
+    .readdirSync(frameworkPath)
+    .some(
+      entry =>
+        entry !== 'Versions' &&
+        !fs.lstatSync(path.join(frameworkPath, entry)).isSymbolicLink(),
+    );
 }
 
 module.exports = {stripLocalSymbols};

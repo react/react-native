@@ -23,7 +23,13 @@ const VERSIONED_SLICES = new Set([
 ]);
 
 const mockCalls = [];
-const mockSignedSlices = new Set(['ios-arm64_x86_64-simulator']);
+const mockSignedSlices = new Set([
+  'ios-arm64_x86_64-simulator',
+  'ios-arm64_x86_64-maccatalyst',
+]);
+// Signed versioned slices with a resource bundle in the framework root, which
+// codesign refuses to seal.
+const mockRootBundleSlices = new Set(['macos-arm64_x86_64']);
 
 jest.mock(
   '../../../../packages/react-native/scripts/ios-prebuild/headers-xcframework',
@@ -61,6 +67,11 @@ jest.mock('node:child_process', () => {
               `Versions/Current/${SCHEME}`,
               mockPath.join(framework, SCHEME),
             );
+            if (mockRootBundleSlices.has(slice)) {
+              mockFs.mkdirSync(
+                mockPath.join(framework, `${SCHEME}_Dep.bundle`),
+              );
+            }
           } else {
             mockFs.mkdirSync(framework, {recursive: true});
             mockFs.writeFileSync(mockPath.join(framework, SCHEME), '');
@@ -74,12 +85,25 @@ jest.mock('node:child_process', () => {
     }),
     execFileSync: jest.fn((file, args) => {
       mockCalls.push([file, ...args].join(' '));
+      if (file !== 'codesign') {
+        return;
+      }
+      const target = args[args.length - 1];
+      const slice = sliceOf(target) ?? '';
       if (
-        file === 'codesign' &&
         args[0] === '-d' &&
-        !mockSignedSlices.has(sliceOf(args[1]))
+        !mockSignedSlices.has(slice) &&
+        !mockRootBundleSlices.has(slice)
       ) {
         throw new Error('code object is not signed at all');
+      }
+      if (
+        args[0] === '--force' &&
+        mockFs.existsSync(mockPath.join(target, `${SCHEME}_Dep.bundle`))
+      ) {
+        throw new Error(
+          'unsealed contents present in the root directory of an embedded framework',
+        );
       }
     }),
   };
@@ -192,6 +216,39 @@ describe('createFramework symbol stripping', () => {
         c => c.startsWith('codesign --force') && c.includes(`/${slice}/`),
       ),
     ).toEqual([]);
+  });
+
+  it('re-signs a versioned slice whose root holds only symlinks', async () => {
+    const slice = 'ios-arm64_x86_64-maccatalyst';
+    const framework = path.join(
+      tmp,
+      `${SCHEME}.xcframework`,
+      slice,
+      `${SCHEME}.framework`,
+    );
+
+    await compose('Release');
+
+    expect(mockCalls).toContain(`codesign --force --sign - ${framework}`);
+  });
+
+  it('re-signs only the binary of a versioned slice with files in its root', async () => {
+    const slice = 'macos-arm64_x86_64';
+
+    await compose('Release');
+
+    const stripIndex = mockCalls.indexOf(
+      `xcrun strip -x ${sliceBinary(slice)}`,
+    );
+    expect(stripIndex).toBeGreaterThanOrEqual(0);
+    expect(
+      mockCalls.filter(
+        c => c.startsWith('codesign --force') && c.includes(`/${slice}/`),
+      ),
+    ).toEqual([`codesign --force --sign - ${sliceBinary(slice)}`]);
+    expect(
+      mockCalls.indexOf(`codesign --force --sign - ${sliceBinary(slice)}`),
+    ).toBeGreaterThan(stripIndex);
   });
 
   it('does not strip Debug slices', async () => {
