@@ -122,7 +122,7 @@ class NetworkReporter {
    *
    * Corresponds to `Network.loadingFailed` in CDP.
    */
-  void reportRequestFailed(const std::string &requestId, bool cancelled) const;
+  void reportRequestFailed(const std::string &requestId, bool cancelled);
 
   /**
    * Report that a WebSocket connection is about to be created.
