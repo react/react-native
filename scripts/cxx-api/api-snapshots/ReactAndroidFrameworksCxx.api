@@ -9287,6 +9287,7 @@ class facebook::react::jsinspector_modern::JInspectorNetworkReporter : public jn
   public static void reportDataReceivedImpl(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jint dataLength);
   public static void reportRequestFailed(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jboolean cancelled);
   public static void reportRequestStart(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jni::alias_ref<jstring> requestUrl, jni::alias_ref<jstring> requestMethod, jni::alias_ref<jni::JMap<jstring, jstring>> requestHeaders, jni::alias_ref<jstring> requestBody, jlong encodedDataLength);
+  public static void reportRequestStartWithRedirect(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jni::alias_ref<jstring> requestUrl, jni::alias_ref<jstring> requestMethod, jni::alias_ref<jni::JMap<jstring, jstring>> requestHeaders, jni::alias_ref<jstring> requestBody, jlong encodedDataLength, jni::alias_ref<jstring> redirectResponseUrl, jint redirectResponseStatus, jni::alias_ref<jni::JMap<jstring, jstring>> redirectResponseHeaders);
   public static void reportResponseEnd(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jlong encodedDataLength);
   public static void reportResponseStart(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId, jni::alias_ref<jstring> requestUrl, jint responseStatus, jni::alias_ref<jni::JMap<jstring, jstring>> responseHeaders, jlong encodedDataLength);
   public static void reportWebSocketClosed(jni::alias_ref<jclass>, jni::alias_ref<jstring> requestId);
