@@ -2,21 +2,22 @@
 
 ## v0.89.0-rc.3
 
-### Changed
-- **ScrollView**: With `contentInsetAdjustmentBehavior`, `contentContainerStyle` padding adds to an inset that includes a navigation bar, tab bar or toolbar, instead of being absorbed by it ([c652e84272](https://github.com/react/react-native/commit/c652e84272c9bce8072f5f347f5024e8b296b4ef) by [@huntie](https://github.com/huntie))
-
 ### Fixed
-- Fix case-colliding React/ and react/ folders in the prebuilt iOS headers ([593ec790f3](https://github.com/react/react-native/commit/593ec790f3ff9d124d26e45f34b006a0ef69cc3a) by [@j-piasecki](https://github.com/j-piasecki))
-- Fix quadratic layout time in wrapping flex containers with many lines ([ef013914ea](https://github.com/react/react-native/commit/ef013914eaadaf3bce57221547678a19a67356ac) by [@cipolleschi](https://github.com/cipolleschi))
-- Resolve radial gradient length color stops against the horizontal radius ([90494820cf](https://github.com/react/react-native/commit/90494820cf65667eb8e10cd8eec2845e75d1efb1) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+
+- **Gradients**: Resolve radial gradient length color stops against the horizontal radius ([90494820cf](https://github.com/react/react-native/commit/90494820cf65667eb8e10cd8eec2845e75d1efb1) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+- **Yoga**: Fix quadratic layout time in wrapping flex containers with many lines ([ef013914ea](https://github.com/react/react-native/commit/ef013914eaadaf3bce57221547678a19a67356ac) by [@cipolleschi](https://github.com/cipolleschi))
 
 #### Android specific
--  ([375d0a97cd](https://github.com/react/react-native/commit/375d0a97cd16fdb74bfd173cb4991e11ac0b690b) by [@Yqwed](https://github.com/Yqwed))
-- Draw text decorations after a text update that did not change the view's frame ([7b6e7909b1](https://github.com/react/react-native/commit/7b6e7909b1c40d101f919105d50df6b22134edfa) by [@tshmieldev](https://github.com/tshmieldev))
-- **Text**: Fix `Text` wrapping onto a second line when it is laid out at its own measured width ([63c3b8ea38](https://github.com/react/react-native/commit/63c3b8ea385a76247eaaa0045dfe31c826f78170) by [@Abbondanzo](https://github.com/Abbondanzo))
+
+- **Text**: Draw text decorations after a text update that did not change the view's frame ([7b6e7909b1](https://github.com/react/react-native/commit/7b6e7909b1c40d101f919105d50df6b22134edfa) by [@tshmieldev](https://github.com/tshmieldev))
+- **Text**: Fix `Text` wrapping onto a second line when it is laid out at its own measured width ([225e8aae6a](https://github.com/react/react-native/commit/225e8aae6a36d9394c07c8f3278fd049d4de8e50) by [@Abbondanzo](https://github.com/Abbondanzo))
+- **ViewManagers**: Do not key `WeakHashMap` by `Integer` as preparation for JEP-401 ([375d0a97cd](https://github.com/react/react-native/commit/375d0a97cd16fdb74bfd173cb4991e11ac0b690b) by [@Yqwed](https://github.com/Yqwed))
 
 #### iOS specific
-- Fix `ImageRequestParams.h` not found in codegen with static frameworks ([a83804d29d](https://github.com/react/react-native/commit/a83804d29d6390266a893afd355f7883a5a54638) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+
+- **Codegen**: Fix `ImageRequestParams.h` not found in codegen with static frameworks ([a83804d29d](https://github.com/react/react-native/commit/a83804d29d6390266a893afd355f7883a5a54638) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+- **Prebuild**: Fix case-colliding `React/` and `react/` folders in the prebuilt iOS headers ([2774d34dc2](https://github.com/react/react-native/commit/2774d34dc2092d191d2bba20466f62f7fe674b90) by [@j-piasecki](https://github.com/j-piasecki))
+- **ScrollView**: With `contentInsetAdjustmentBehavior`, `contentContainerStyle` padding adds to an inset that includes a navigation bar, tab bar or toolbar, instead of being absorbed by it ([c652e84272](https://github.com/react/react-native/commit/c652e84272c9bce8072f5f347f5024e8b296b4ef) by [@huntie](https://github.com/huntie))
 
 ## v0.89.0-rc.1
 
