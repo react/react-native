@@ -99,6 +99,13 @@
 + (void)maybeStoreResponseBody:(NSString *)requestId data:(NSData *)data base64Encoded:(bool)base64Encoded;
 
 /**
+ * Store a decoded text response body preview. As with
+ * `maybeStoreResponseBody:data:base64Encoded:`, this is a no-op if CDP
+ * debugging is disabled.
+ */
++ (void)maybeStoreResponseBody:(NSString *)requestId body:(NSString *)body;
+
+/**
  * Incrementally store a response body preview, when a string response is
  * received in chunks. Buffered contents will be flushed to `NetworkReporter`
  * with `reportResponseEnd`.
