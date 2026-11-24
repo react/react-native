@@ -458,7 +458,14 @@ public class ReactModalHostView(context: ThemedReactContext) :
         syncSystemBarsVisibility(activityRootWindowInsets, dialogWindowInsetsController)
       }
     } else {
-      dialogWindow.decorView.systemUiVisibility = activityWindow.decorView.systemUiVisibility
+      // Keep the Dialog's layout configuration while synchronizing Activity appearance.
+      val layoutFlags =
+          View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+              View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+              View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+      dialogWindow.decorView.systemUiVisibility =
+          (dialogWindow.decorView.systemUiVisibility and layoutFlags) or
+              (activityWindow.decorView.systemUiVisibility and layoutFlags.inv())
     }
   }
 
