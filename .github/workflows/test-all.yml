@@ -465,7 +465,7 @@ jobs:
           skip-apple-prebuilts: ${{ needs.check_code_changes.outputs.should_test_ios == 'false' }}
 
   test_android_helloworld:
-    runs-on: 4-core-ubuntu
+    runs-on: ubuntu-latest
     needs: [build_npm_package, build_android]
     if: ${{ always() && needs.build_android.result == 'success' && needs.build_npm_package.result == 'success' }}
     container:

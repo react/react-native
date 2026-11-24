@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: 4-core-ubuntu
+    runs-on: ubuntu-latest
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
