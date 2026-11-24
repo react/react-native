@@ -12,6 +12,7 @@ import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.LineHeightSpan
 import android.text.style.MetricAffectingSpan
+import com.facebook.react.views.text.TextLayoutManager
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
@@ -25,10 +26,12 @@ import kotlin.math.max
  * holding an inline view grow to contain it, as CSS does for inline replaced elements.
  */
 internal class CustomLineHeightSpan(
-    height: Float,
+    val height: Float,
     private val inlineViews: InlineViewHeights? = null,
 ) : LineHeightSpan.WithDensity, ReactSpan {
-  val lineHeight: Int = ceil(height.toDouble()).toInt()
+  // Lines are laid out a whole number of pixels tall, so round the height up, but not past a whole
+  // number of pixels it only exceeds by floating point error.
+  val lineHeight: Int = ceil(height - TextLayoutManager.PIXEL_SIZE_TOLERANCE).toInt()
 
   override fun chooseHeight(
       text: CharSequence,
