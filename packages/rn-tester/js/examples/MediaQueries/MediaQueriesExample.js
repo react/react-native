@@ -20,6 +20,20 @@ import {
   View,
   useColorScheme,
 } from 'react-native';
+import {ReactNativeFeatureFlags} from 'react-native/react-private-interface';
+
+const isEnabled = ReactNativeFeatureFlags.enableConditionalStyleValues();
+
+function DisabledNotice(): React.Node {
+  if (isEnabled) {
+    return null;
+  }
+  return (
+    <RNTesterText style={styles.notice}>
+      Turn on the enableConditionalStyleValues feature flag to see this example.
+    </RNTesterText>
+  );
+}
 
 function ColorSchemeControls(): React.Node {
   const colorScheme = useColorScheme();
@@ -68,6 +82,7 @@ const Bar = React.memo(function Bar(): React.Node {
 function ColorSchemeExample(): React.Node {
   return (
     <View>
+      <DisabledNotice />
       <ColorSchemeControls />
       <Card />
     </View>
@@ -77,6 +92,7 @@ function ColorSchemeExample(): React.Node {
 function LayoutExample(): React.Node {
   return (
     <View>
+      <DisabledNotice />
       <ColorSchemeControls />
       <RNTesterText>The bar is wider in the dark color scheme.</RNTesterText>
       <Bar />
@@ -85,6 +101,10 @@ function LayoutExample(): React.Node {
 }
 
 const styles = StyleSheet.create({
+  notice: {
+    color: 'red',
+    marginBottom: 12,
+  },
   controls: {
     gap: 8,
     marginBottom: 12,
