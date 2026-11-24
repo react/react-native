@@ -20,7 +20,7 @@ on:
 
 jobs:
   test:
-    runs-on: 4-core-ubuntu
+    runs-on: ubuntu-latest
     outputs:
       status: ${{ steps.report-status.outputs.status }}
       failure-debug: ${{ steps.report-status.outputs.failure-debug }}
