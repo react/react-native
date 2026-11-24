@@ -37,6 +37,8 @@ using NativeIntersectionObserverObserveOptions = NativeIntersectionObserverNativ
     // rootThresholds
     std::optional<std::vector<Float>>,
     // rootMargin
+    std::optional<std::string>,
+    // scrollMargin
     std::optional<std::string>>;
 
 template <>

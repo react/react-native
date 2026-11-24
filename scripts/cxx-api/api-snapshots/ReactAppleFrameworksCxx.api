@@ -3297,6 +3297,7 @@ using facebook::react::DebuggingOverlayShadowNode = facebook::react::ConcreteVie
 using facebook::react::DebuggingOverlayState = facebook::react::StateData;
 using facebook::react::DispatchEvent = std::function<void(const facebook::react::ShadowNode& targetNode, const std::string& type, facebook::react::ReactEventPriority priority, const facebook::react::EventPayload& payload)>;
 using facebook::react::EdgeInsets = facebook::react::RectangleEdges<facebook::react::Float>;
+using facebook::react::EdgeMargins = facebook::react::RectangleEdges<facebook::react::MarginValue>;
 using facebook::react::EndResult = facebook::react::NativeAnimatedTurboModuleEndResult<bool, std::optional<double>, std::optional<double>>;
 using facebook::react::EventEmitterCallback = std::function<void(const std::string&, id)>;
 using facebook::react::EventEmitterListener = facebook::react::EventListenerT<facebook::react::Tag, const std::string&, const facebook::react::EventPayload&>;
@@ -3491,6 +3492,7 @@ facebook::react::ColorComponents facebook::react::colorComponentsFromHostPlatfor
 facebook::react::ColorSpace facebook::react::getDefaultColorSpace();
 facebook::react::ComponentRegistryFactory facebook::react::getDefaultComponentRegistryFactory();
 facebook::react::DisplayType facebook::react::displayTypeFromYGDisplay(YGDisplay display);
+facebook::react::EdgeInsets facebook::react::resolveEdgeMargins(const facebook::react::EdgeMargins& margins, const facebook::react::Size& size) noexcept;
 facebook::react::Float facebook::react::floatFromYogaFloat(float value);
 facebook::react::Float facebook::react::floatFromYogaOptionalFloat(facebook::yoga::FloatOptional value);
 facebook::react::LayoutMetrics facebook::react::layoutMetricsFromYogaNode(facebook::yoga::Node& yogaNode);
@@ -4802,6 +4804,7 @@ struct facebook::react::LayoutableShadowNode::LayoutInspectingPolicy {
   public bool enableOverflowClipping;
   public bool includeTransform;
   public bool includeViewportOffset;
+  public std::optional<facebook::react::EdgeMargins> clipMargin;
 }
 
 class facebook::react::LineMeasureCacheKey {
@@ -5765,6 +5768,7 @@ class facebook::react::ScrollViewMaintainVisibleContentPosition {
 class facebook::react::ScrollViewShadowNode : public facebook::react::ConcreteViewShadowNode<facebook::react::ScrollViewComponentName, facebook::react::ScrollViewProps, facebook::react::ScrollViewEventEmitter, facebook::react::ScrollViewState> {
   public ScrollViewShadowNode(const facebook::react::ShadowNode& sourceShadowNode, const facebook::react::ShadowNodeFragment& fragment);
   public ScrollViewShadowNode(const facebook::react::ShadowNodeFragment& fragment, const facebook::react::ShadowNodeFamily::Shared& family, facebook::react::ShadowNodeTraits traits);
+  public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public static facebook::react::ScrollViewState initialStateData(const facebook::react::Props::Shared& props, const facebook::react::ShadowNodeFamily::Shared& family, const facebook::react::ComponentDescriptor& componentDescriptor);
   public virtual facebook::react::Point getContentOriginOffset(bool includeTransform) const override;
   public virtual void layout(facebook::react::LayoutContext layoutContext) override;
@@ -5880,6 +5884,8 @@ enum facebook::react::ShadowNodeTraits::Trait : int32_t {
   ChildrenFormStackingContext,
   DirtyYogaNode,
   ForceFlattenView,
+  FormsContentClip,
+  FormsScrollContainer,
   FormsStackingContext,
   FormsView,
   Hidden,
@@ -8342,6 +8348,12 @@ struct facebook::react::Magic32 {
   public uint32_t value;
 }
 
+struct facebook::react::MarginValue {
+  public bool isPercentage;
+  public bool operator==(const facebook::react::MarginValue& rhs) const noexcept = default;
+  public facebook::react::Float value;
+}
+
 struct facebook::react::MeasuredPreparedTextLayout {
   public facebook::react::Float pointScaleFactor;
   public facebook::react::LayoutConstraints layoutConstraints;
@@ -8997,7 +9009,7 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverEntr
   public bool operator==(const facebook::react::NativeIntersectionObserverNativeIntersectionObserverEntry& other) const;
 }
 
-template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5>
+template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
 struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObserveOptions {
   public P0 intersectionObserverId;
   public P1 rootShadowNode;
@@ -9005,6 +9017,7 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObse
   public P3 thresholds;
   public P4 rootThresholds;
   public P5 rootMargin;
+  public P6 scrollMargin;
   public bool operator==(const facebook::react::NativeIntersectionObserverNativeIntersectionObserverObserveOptions& other) const;
 }
 

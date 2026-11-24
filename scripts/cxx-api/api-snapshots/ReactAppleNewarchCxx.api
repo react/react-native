@@ -3143,6 +3143,7 @@ using facebook::react::DebuggingOverlayComponentDescriptor = facebook::react::Co
 using facebook::react::DebuggingOverlayShadowNode = facebook::react::ConcreteViewShadowNode<facebook::react::DebuggingOverlayComponentName, facebook::react::DebuggingOverlayProps, facebook::react::DebuggingOverlayEventEmitter, facebook::react::DebuggingOverlayState>;
 using facebook::react::DebuggingOverlayState = facebook::react::StateData;
 using facebook::react::EdgeInsets = facebook::react::RectangleEdges<facebook::react::Float>;
+using facebook::react::EdgeMargins = facebook::react::RectangleEdges<facebook::react::MarginValue>;
 using facebook::react::EventEmitterCallback = std::function<void(const std::string&, id)>;
 using facebook::react::EventListener = std::function<bool(const facebook::react::RawEvent& event)>;
 using facebook::react::EventPipe = std::function<void(facebook::jsi::Runtime& runtime, facebook::react::EventTarget* eventTarget, const std::string& type, facebook::react::ReactEventPriority priority, const facebook::react::EventPayload& payload, facebook::react::HighResTimeStamp eventTimestamp)>;
@@ -3223,6 +3224,7 @@ facebook::react::ColorComponents facebook::react::colorComponentsFromColor(faceb
 facebook::react::ColorComponents facebook::react::colorComponentsFromHostPlatformColor(facebook::react::Color color);
 facebook::react::ColorSpace facebook::react::getDefaultColorSpace();
 facebook::react::DisplayType facebook::react::displayTypeFromYGDisplay(YGDisplay display);
+facebook::react::EdgeInsets facebook::react::resolveEdgeMargins(const facebook::react::EdgeMargins& margins, const facebook::react::Size& size) noexcept;
 facebook::react::Float facebook::react::floatFromYogaFloat(float value);
 facebook::react::Float facebook::react::floatFromYogaOptionalFloat(facebook::yoga::FloatOptional value);
 facebook::react::LayoutMetrics facebook::react::layoutMetricsFromYogaNode(facebook::yoga::Node& yogaNode);
@@ -3984,6 +3986,7 @@ struct facebook::react::LayoutableShadowNode::LayoutInspectingPolicy {
   public bool enableOverflowClipping;
   public bool includeTransform;
   public bool includeViewportOffset;
+  public std::optional<facebook::react::EdgeMargins> clipMargin;
 }
 
 class facebook::react::LongLivedObject {
@@ -4524,6 +4527,8 @@ enum facebook::react::ShadowNodeTraits::Trait : int32_t {
   ChildrenFormStackingContext,
   DirtyYogaNode,
   ForceFlattenView,
+  FormsContentClip,
+  FormsScrollContainer,
   FormsStackingContext,
   FormsView,
   Hidden,
@@ -5401,6 +5406,12 @@ struct facebook::react::LinearGradient {
   public std::vector<facebook::react::ColorStop> colorStops;
 }
 
+struct facebook::react::MarginValue {
+  public bool isPercentage;
+  public bool operator==(const facebook::react::MarginValue& rhs) const noexcept = default;
+  public facebook::react::Float value;
+}
+
 struct facebook::react::ModalHostViewSupportedOrientationsMaskWrapped {
   public facebook::react::ModalHostViewSupportedOrientationsMask value;
 }
@@ -5841,7 +5852,7 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverEntr
   public bool operator==(const facebook::react::NativeIntersectionObserverNativeIntersectionObserverEntry& other) const;
 }
 
-template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5>
+template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
 struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObserveOptions {
   public P0 intersectionObserverId;
   public P1 rootShadowNode;
@@ -5849,6 +5860,7 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObse
   public P3 thresholds;
   public P4 rootThresholds;
   public P5 rootMargin;
+  public P6 scrollMargin;
   public bool operator==(const facebook::react::NativeIntersectionObserverNativeIntersectionObserverObserveOptions& other) const;
 }
 
