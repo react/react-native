@@ -84,6 +84,23 @@ Value valueFromDynamic(Runtime& runtime, const folly::dynamic& dynInput) {
       }
       case folly::dynamic::OBJECT: {
         Object obj = std::move(top.obj);
+        // Storing a "__proto__" key into an object whose prototype is
+        // Object.prototype calls the inherited __proto__ setter
+        // (ES2026 10.1.9.2, step 6), which replaces the prototype with an
+        // object or null value and drops any other value
+        // (ES2026 20.1.3.8.2). JSON.parse makes the key an own property
+        // instead (ES2026 13.2.5.6, step 2), so an object with that key is
+        // filled while its prototype is null.
+        //
+        // JSCRuntime cuts property names at the first NUL, so on JSC a key
+        // such as "__proto__\0x" is stored as "__proto__" too. This lookup
+        // doesn't match it, so it can still call the setter.
+        bool hasProtoKey = top.dyn->count("__proto__");
+        Value prototype;
+        if (hasProtoKey) {
+          prototype = obj.getPrototype(runtime);
+          obj.setPrototype(runtime, Value::null());
+        }
         for (const auto& element : top.dyn->items()) {
           if (element.first.isNumber() || element.first.isString()) {
             obj.setProperty(
@@ -91,6 +108,9 @@ Value valueFromDynamic(Runtime& runtime, const folly::dynamic& dynInput) {
                 PropNameID::forUtf8(runtime, element.first.asString()),
                 valueFromDynamicShallow(runtime, stack, element.second));
           }
+        }
+        if (hasProtoKey) {
+          obj.setPrototype(runtime, prototype);
         }
         break;
       }
