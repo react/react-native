@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @flow strict-local
- * @fantom_flags updateRuntimeShadowNodeReferencesOnCommit:* updateRuntimeShadowNodeReferencesOnCommitThread:*
+ * @fantom_flags enableConditionalStyleValues:true updateRuntimeShadowNodeReferencesOnCommit:* updateRuntimeShadowNodeReferencesOnCommitThread:*
  * @format
  */
 

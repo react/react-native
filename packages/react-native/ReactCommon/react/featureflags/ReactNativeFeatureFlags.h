@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f20f175d0628995e9659684d0803f997>>
+ * @generated SignedSource<<b8aa3c1a668a5e946cae7954f68ce5d2>>
  */
 
 /**
@@ -130,6 +130,11 @@ class ReactNativeFeatureFlags {
    * Feature flag to enable the new bridgeless architecture.
    */
   RN_EXPORT static bool enableBridgelessArchitecture();
+
+  /**
+   * Enable conditional style values, such as `@media (prefers-color-scheme: dark)`.
+   */
+  RN_EXPORT static bool enableConditionalStyleValues();
 
   /**
    * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).

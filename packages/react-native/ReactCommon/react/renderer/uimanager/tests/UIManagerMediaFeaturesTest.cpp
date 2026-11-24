@@ -78,11 +78,34 @@ class CancelCommitHook : public UIManagerCommitHook {
   bool cancelNextCommit{false};
 };
 
+class ConditionalStyleValuesFlags : public ReactNativeFeatureFlagsDefaults {
+ public:
+  bool enableConditionalStyleValues() override {
+    return true;
+  }
+};
+
+// A base class, so the flags are set before the fixture reads them.
+class WithFlags {
+ public:
+  explicit WithFlags(std::unique_ptr<ReactNativeFeatureFlagsProvider> flags) {
+    ReactNativeFeatureFlags::dangerouslyReset();
+    ReactNativeFeatureFlags::override(std::move(flags));
+  }
+
+  ~WithFlags() {
+    ReactNativeFeatureFlags::dangerouslyReset();
+  }
+};
+
 } // namespace
 
-class UIManagerMediaFeaturesTest : public ::testing::Test {
+class UIManagerMediaFeaturesTest : public WithFlags, public ::testing::Test {
  public:
-  UIManagerMediaFeaturesTest() {
+  explicit UIManagerMediaFeaturesTest(
+      std::unique_ptr<ReactNativeFeatureFlagsProvider> flags =
+          std::make_unique<ConditionalStyleValuesFlags>())
+      : WithFlags(std::move(flags)) {
     contextContainer_ = std::make_shared<ContextContainer>();
     contextContainer_->insert(
         kMediaFeaturesStoreKey, std::make_shared<MediaFeaturesStore>());
@@ -309,30 +332,19 @@ TEST_F(UIManagerMediaFeaturesTest, aChangeDoesNotCloneViewsThatDoNotReadIt) {
 
 namespace {
 
-class CommitBranchingFlags : public ReactNativeFeatureFlagsDefaults {
+class CommitBranchingFlags : public ConditionalStyleValuesFlags {
  public:
   bool enableFabricCommitBranching() override {
     return true;
   }
 };
 
-// A base class, so the flags are set before the fixture reads them.
-class WithCommitBranching {
- public:
-  WithCommitBranching() {
-    ReactNativeFeatureFlags::dangerouslyReset();
-    ReactNativeFeatureFlags::override(std::make_unique<CommitBranchingFlags>());
-  }
-
-  ~WithCommitBranching() {
-    ReactNativeFeatureFlags::dangerouslyReset();
-  }
-};
-
 } // namespace
 
-class UIManagerMediaFeaturesBranchingTest : public WithCommitBranching,
-                                            public UIManagerMediaFeaturesTest {
+class UIManagerMediaFeaturesBranchingTest : public UIManagerMediaFeaturesTest {
+ public:
+  UIManagerMediaFeaturesBranchingTest()
+      : UIManagerMediaFeaturesTest(std::make_unique<CommitBranchingFlags>()) {}
 };
 
 // With commit branching, a React commit is put on screen by a later merge.

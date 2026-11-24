@@ -28,9 +28,29 @@ folly::dynamic resolve(const char* json, const MediaFeatures& features) {
   return resolveConditionalValue(folly::parseJson(json), features);
 }
 
+class ConditionalStyleValuesFlags : public ReactNativeFeatureFlagsDefaults {
+ public:
+  bool enableConditionalStyleValues() override {
+    return true;
+  }
+};
+
 } // namespace
 
-TEST(ConditionalValuesTest, resolvesTheMatchingCondition) {
+class ConditionalValuesTest : public ::testing::Test {
+ protected:
+  ConditionalValuesTest() {
+    ReactNativeFeatureFlags::dangerouslyReset();
+    ReactNativeFeatureFlags::override(
+        std::make_unique<ConditionalStyleValuesFlags>());
+  }
+
+  ~ConditionalValuesTest() override {
+    ReactNativeFeatureFlags::dangerouslyReset();
+  }
+};
+
+TEST_F(ConditionalValuesTest, resolvesTheMatchingCondition) {
   auto entry = R"({
     "default": 1,
     "conditions": [{"query": {"colorScheme": "dark"}, "value": 2}]
@@ -39,7 +59,7 @@ TEST(ConditionalValuesTest, resolvesTheMatchingCondition) {
   EXPECT_EQ(resolve(entry, kDark), 2);
 }
 
-TEST(ConditionalValuesTest, theLastMatchingConditionWins) {
+TEST_F(ConditionalValuesTest, theLastMatchingConditionWins) {
   auto entry = R"({
     "default": 1,
     "conditions": [
@@ -52,7 +72,7 @@ TEST(ConditionalValuesTest, theLastMatchingConditionWins) {
   EXPECT_EQ(resolve(entry, kDark), 4);
 }
 
-TEST(ConditionalValuesTest, keepsNullAndObjectValues) {
+TEST_F(ConditionalValuesTest, keepsNullAndObjectValues) {
   auto entry = R"({
     "default": null,
     "conditions": [
@@ -70,13 +90,13 @@ TEST(ConditionalValuesTest, keepsNullAndObjectValues) {
   EXPECT_EQ(resolve(nullCondition, kDark), nullptr);
 }
 
-TEST(ConditionalValuesTest, resolvesTheDefaultWithoutConditions) {
+TEST_F(ConditionalValuesTest, resolvesTheDefaultWithoutConditions) {
   EXPECT_EQ(resolve(R"({"default": 1})", kDark), 1);
   EXPECT_EQ(resolve(R"({"default": 1, "conditions": []})", kDark), 1);
   EXPECT_EQ(resolve(R"({"default": 1, "conditions": null})", kDark), 1);
 }
 
-TEST(ConditionalValuesTest, aQueryWithAnUnknownFeatureNeverMatches) {
+TEST_F(ConditionalValuesTest, aQueryWithAnUnknownFeatureNeverMatches) {
   auto entry = R"({
     "default": 1,
     "conditions": [
@@ -89,7 +109,7 @@ TEST(ConditionalValuesTest, aQueryWithAnUnknownFeatureNeverMatches) {
   EXPECT_EQ(resolve(entry, kDark), 1);
 }
 
-TEST(ConditionalValuesTest, skipsInvalidConditions) {
+TEST_F(ConditionalValuesTest, skipsInvalidConditions) {
   auto entry = R"({
     "default": 1,
     "conditions": [
@@ -107,14 +127,14 @@ TEST(ConditionalValuesTest, skipsInvalidConditions) {
   EXPECT_EQ(resolve(entry, kLight), 1);
 }
 
-TEST(ConditionalValuesTest, returnsNullForAnInvalidEntry) {
+TEST_F(ConditionalValuesTest, returnsNullForAnInvalidEntry) {
   EXPECT_EQ(resolve("null", kDark), nullptr);
   EXPECT_EQ(resolve("1", kDark), nullptr);
   EXPECT_EQ(resolve("[]", kDark), nullptr);
   EXPECT_EQ(resolve("{}", kDark), nullptr);
 }
 
-TEST(ConditionalValuesTest, aMatchWorksWithoutADefault) {
+TEST_F(ConditionalValuesTest, aMatchWorksWithoutADefault) {
   auto entry = R"({
     "conditions": [{"query": {"colorScheme": "dark"}, "value": 2}]
   })";
@@ -122,7 +142,7 @@ TEST(ConditionalValuesTest, aMatchWorksWithoutADefault) {
   EXPECT_EQ(resolve(entry, kLight), nullptr);
 }
 
-TEST(ConditionalValuesTest, propsKeepTheConditionalValuesOfTheSource) {
+TEST_F(ConditionalValuesTest, propsKeepTheConditionalValuesOfTheSource) {
   Props source;
   source.conditionalValues = std::make_shared<const ConditionalValues>(
       ConditionalValues{.values = folly::dynamic::object("opacity", 1)});
@@ -204,11 +224,11 @@ std::optional<ConditionalValuesResolution> resolveValues(
 
 } // namespace
 
-TEST(ConditionalValuesTest, changesNothingWithoutConditionalValues) {
+TEST_F(ConditionalValuesTest, changesNothingWithoutConditionalValues) {
   EXPECT_FALSE(resolveValues(nullptr, folly::dynamic::object("opacity", 1)));
 }
 
-TEST(ConditionalValuesTest, resolvesNewConditionalValues) {
+TEST_F(ConditionalValuesTest, resolvesNewConditionalValues) {
   auto values = withFlag(
       folly::dynamic::object("opacity", sent(oneOrTwo()))("nativeID", "a"));
 
@@ -227,7 +247,7 @@ TEST(ConditionalValuesTest, resolvesNewConditionalValues) {
   EXPECT_EQ(light->rawProps.toDynamic()["opacity"], 1);
 }
 
-TEST(ConditionalValuesTest, resolvesTheDefaultWithoutAStore) {
+TEST_F(ConditionalValuesTest, resolvesTheDefaultWithoutAStore) {
   auto result = resolveConditionalValues(
       nullptr,
       RawProps(withFlag(folly::dynamic::object("opacity", sent(oneOrTwo())))),
@@ -236,12 +256,12 @@ TEST(ConditionalValuesTest, resolvesTheDefaultWithoutAStore) {
   EXPECT_EQ(result->rawProps.toDynamic()["opacity"], 1);
 }
 
-TEST(ConditionalValuesTest, keepsStoredValuesOfOtherProps) {
+TEST_F(ConditionalValuesTest, keepsStoredValuesOfOtherProps) {
   auto source = propsWith(folly::dynamic::object("opacity", oneOrTwo()));
   EXPECT_FALSE(resolveValues(&source, folly::dynamic::object("nativeID", "a")));
 }
 
-TEST(ConditionalValuesTest, aPlainValueRemovesTheStoredValue) {
+TEST_F(ConditionalValuesTest, aPlainValueRemovesTheStoredValue) {
   auto source = propsWith(
       folly::dynamic::object("opacity", oneOrTwo())(
           "borderWidth", halfOrQuarter()));
@@ -255,7 +275,7 @@ TEST(ConditionalValuesTest, aPlainValueRemovesTheStoredValue) {
       folly::dynamic(folly::dynamic::object("borderWidth", halfOrQuarter())));
 }
 
-TEST(ConditionalValuesTest, aNullValueRemovesTheStoredValue) {
+TEST_F(ConditionalValuesTest, aNullValueRemovesTheStoredValue) {
   auto source = propsWith(folly::dynamic::object("opacity", oneOrTwo()));
   auto result =
       resolveValues(&source, folly::dynamic::object("opacity", nullptr));
@@ -263,7 +283,7 @@ TEST(ConditionalValuesTest, aNullValueRemovesTheStoredValue) {
   EXPECT_EQ(result->conditionalValues, nullptr);
 }
 
-TEST(ConditionalValuesTest, findsTheMediaFeaturesThatQueriesRead) {
+TEST_F(ConditionalValuesTest, findsTheMediaFeaturesThatQueriesRead) {
   auto colorScheme = static_cast<MediaFeatureSet>(MediaFeature::ColorScheme);
   EXPECT_EQ(getMediaFeatureDependencies(oneOrTwo()), colorScheme);
   EXPECT_EQ(
@@ -276,7 +296,7 @@ TEST(ConditionalValuesTest, findsTheMediaFeaturesThatQueriesRead) {
       getMediaFeatureDependencies(folly::parseJson(R"({"default": 1})")), 0);
 }
 
-TEST(ConditionalValuesTest, isOutdatedOnlyForTheMediaFeaturesItReads) {
+TEST_F(ConditionalValuesTest, isOutdatedOnlyForTheMediaFeaturesItReads) {
   auto readsColorScheme =
       propsWith(folly::dynamic::object("opacity", oneOrTwo()), kLight);
   EXPECT_FALSE(readsColorScheme.conditionalValues->isOutdatedFor(kLight));
@@ -288,7 +308,7 @@ TEST(ConditionalValuesTest, isOutdatedOnlyForTheMediaFeaturesItReads) {
   EXPECT_FALSE(readsNothing.conditionalValues->isOutdatedFor(kDark));
 }
 
-TEST(ConditionalValuesTest, storesTheMediaFeaturesOfTheResolution) {
+TEST_F(ConditionalValuesTest, storesTheMediaFeaturesOfTheResolution) {
   auto result = resolveValues(
       nullptr, withFlag(folly::dynamic::object("opacity", sent(oneOrTwo()))));
   ASSERT_TRUE(result);
@@ -298,7 +318,7 @@ TEST(ConditionalValuesTest, storesTheMediaFeaturesOfTheResolution) {
   EXPECT_EQ(result->conditionalValues->resolvedFor, kDark);
 }
 
-TEST(ConditionalValuesTest, resolvesOutdatedStoredValuesAgain) {
+TEST_F(ConditionalValuesTest, resolvesOutdatedStoredValuesAgain) {
   auto source =
       propsWith(folly::dynamic::object("opacity", oneOrTwo()), kLight);
   auto result = resolveValues(
@@ -312,7 +332,7 @@ TEST(ConditionalValuesTest, resolvesOutdatedStoredValuesAgain) {
   EXPECT_EQ(result->conditionalValues->resolvedFor, kDark);
 }
 
-TEST(ConditionalValuesTest, mergesNewValuesWithStoredValues) {
+TEST_F(ConditionalValuesTest, mergesNewValuesWithStoredValues) {
   auto source = propsWith(folly::dynamic::object("opacity", oneOrTwo()));
   auto result = resolveValues(
       &source,
@@ -328,13 +348,13 @@ TEST(ConditionalValuesTest, mergesNewValuesWithStoredValues) {
               "borderWidth", halfOrQuarter())));
 }
 
-TEST(ConditionalValuesTest, anEmptyUpdateChangesNothing) {
+TEST_F(ConditionalValuesTest, anEmptyUpdateChangesNothing) {
   auto source = propsWith(folly::dynamic::object("opacity", oneOrTwo()));
   EXPECT_FALSE(resolveConditionalValues(
       &source, RawProps(), containerWith(kLight).get()));
 }
 
-TEST(ConditionalValuesTest, aNewValueReplacesTheStoredValue) {
+TEST_F(ConditionalValuesTest, aNewValueReplacesTheStoredValue) {
   auto source = propsWith(folly::dynamic::object("opacity", oneOrTwo()));
   auto result = resolveValues(
       &source,
@@ -350,7 +370,7 @@ TEST(ConditionalValuesTest, aNewValueReplacesTheStoredValue) {
 
 // For example, the `setNativeProps` props that `ShadowNode::clone` applies
 // again.
-TEST(ConditionalValuesTest, resolvesAReplacingValueWithoutTheFlag) {
+TEST_F(ConditionalValuesTest, resolvesAReplacingValueWithoutTheFlag) {
   auto source = propsWith(folly::dynamic::object("opacity", oneOrTwo()));
   auto result = resolveValues(
       &source, folly::dynamic::object("opacity", sent(halfOrQuarter())));
@@ -360,12 +380,12 @@ TEST(ConditionalValuesTest, resolvesAReplacingValueWithoutTheFlag) {
       folly::dynamic(folly::dynamic::object("opacity", 0.25)));
 }
 
-TEST(ConditionalValuesTest, doesNotResolveANewViewWithoutTheFlag) {
+TEST_F(ConditionalValuesTest, doesNotResolveANewViewWithoutTheFlag) {
   EXPECT_FALSE(resolveValues(
       nullptr, folly::dynamic::object("opacity", sent(oneOrTwo()))));
 }
 
-TEST(ConditionalValuesTest, removesTheFlag) {
+TEST_F(ConditionalValuesTest, removesTheFlag) {
   auto result =
       resolveValues(nullptr, withFlag(folly::dynamic::object("opacity", 1)));
   ASSERT_TRUE(result);
@@ -427,7 +447,7 @@ void expectClonePropsResolvesConditionalValues() {
   EXPECT_EQ(replaced->conditionalValues, nullptr);
 }
 
-class EnableCppPropsIteratorSetter : public ReactNativeFeatureFlagsDefaults {
+class EnableCppPropsIteratorSetter : public ConditionalStyleValuesFlags {
  public:
   bool enableCppPropsIteratorSetter() override {
     return true;
@@ -436,7 +456,7 @@ class EnableCppPropsIteratorSetter : public ReactNativeFeatureFlagsDefaults {
 
 } // namespace
 
-TEST(ConditionalValuesTest, clonePropsResolvesOnTheClassicPath) {
+TEST_F(ConditionalValuesTest, clonePropsResolvesOnTheClassicPath) {
   // `TestProps` does not declare its own `setProp`, so it always uses the
   // classic path.
   static_assert(!HasIteratorSetterCtor<TestProps>);
@@ -445,7 +465,7 @@ TEST(ConditionalValuesTest, clonePropsResolvesOnTheClassicPath) {
       TestProps>();
 }
 
-TEST(ConditionalValuesTest, clonePropsResolvesOnTheIteratorSetterPath) {
+TEST_F(ConditionalValuesTest, clonePropsResolvesOnTheIteratorSetterPath) {
   static_assert(HasIteratorSetterCtor<ViewProps>);
   ReactNativeFeatureFlags::dangerouslyReset();
   ReactNativeFeatureFlags::override(
@@ -456,7 +476,7 @@ TEST(ConditionalValuesTest, clonePropsResolvesOnTheIteratorSetterPath) {
   ReactNativeFeatureFlags::dangerouslyReset();
 }
 
-TEST(ConditionalValuesTest, anInvalidConditionalValueResolvesToNull) {
+TEST_F(ConditionalValuesTest, anInvalidConditionalValueResolvesToNull) {
   auto result = resolveValues(
       nullptr, withFlag(folly::dynamic::object("opacity", sent(1))));
   ASSERT_TRUE(result);

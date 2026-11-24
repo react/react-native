@@ -17,6 +17,7 @@ import type {
   StyleObject,
 } from '../../StyleSheet/processStyleConditions';
 
+import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import ReactNativeStyleAttributes from '../../Components/View/ReactNativeStyleAttributes';
 import flattenStyle from '../../StyleSheet/flattenStyle';
 import {
@@ -64,6 +65,7 @@ function isStyleConditionValue(
     typeof value === 'object' &&
     value !== null &&
     (validAttributes as unknown) === ReactNativeStyleAttributes &&
+    ReactNativeFeatureFlags.enableConditionalStyleValues() &&
     isConditionalValue(value)
   );
 }

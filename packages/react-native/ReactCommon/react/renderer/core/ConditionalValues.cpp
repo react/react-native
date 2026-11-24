@@ -7,6 +7,8 @@
 
 #include "ConditionalValues.h"
 
+#include <react/featureflags/ReactNativeFeatureFlags.h>
+
 namespace facebook::react {
 
 namespace {
@@ -105,6 +107,10 @@ std::optional<ConditionalValuesResolution> resolveConditionalValues(
     const Props* sourceProps,
     const RawProps& rawProps,
     const ContextContainer* contextContainer) {
+  if (!ReactNativeFeatureFlags::enableConditionalStyleValues()) {
+    return std::nullopt;
+  }
+
   const auto* sourceConditionalValues =
       sourceProps != nullptr ? sourceProps->conditionalValues.get() : nullptr;
 

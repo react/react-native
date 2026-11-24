@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<99c0c14cf6e3eca24e7bf1c7eaf64d07>>
+ * @generated SignedSource<<f5cd8a5137a643d95355eaaa24304099>>
  */
 
 /**
@@ -137,6 +137,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableBridgelessArchitecture(): Boolean = accessor.enableBridgelessArchitecture()
+
+  /**
+   * Enable conditional style values, such as `@media (prefers-color-scheme: dark)`.
+   */
+  @JvmStatic
+  public fun enableConditionalStyleValues(): Boolean = accessor.enableConditionalStyleValues()
 
   /**
    * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).

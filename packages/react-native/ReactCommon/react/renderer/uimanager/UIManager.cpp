@@ -515,6 +515,9 @@ void UIManager::setNativeProps_DEPRECATED(
 }
 
 void UIManager::setMediaFeatures(MediaFeatures mediaFeatures) const {
+  if (!ReactNativeFeatureFlags::enableConditionalStyleValues()) {
+    return;
+  }
   auto store = contextContainer_->find<std::shared_ptr<MediaFeaturesStore>>(
       kMediaFeaturesStoreKey);
   if (!store || (*store)->get() == mediaFeatures) {

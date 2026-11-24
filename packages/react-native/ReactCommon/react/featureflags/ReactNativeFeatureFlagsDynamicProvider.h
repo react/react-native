@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c936bbf73a21cd34668645173f36c1fb>>
+ * @generated SignedSource<<4fddee2855cf3cf126911237099f3dd6>>
  */
 
 /**
@@ -207,6 +207,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableBridgelessArchitecture();
+  }
+
+  bool enableConditionalStyleValues() override {
+    auto value = values_["enableConditionalStyleValues"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableConditionalStyleValues();
   }
 
   bool enableCppPropsIteratorSetter() override {
