@@ -1505,7 +1505,13 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 
           // If the subview is an image view, we have to apply the mask directly to the image view's layer,
           // otherwise the image might overflow with the border radius.
-          subview.layer.mask = [self createMaskLayer:subview.bounds cornerInsets:cornerInsets];
+          CAShapeLayer *imageMask = [subview.layer.mask isKindOfClass:[CAShapeLayer class]]
+              ? (CAShapeLayer *)subview.layer.mask
+              : [CAShapeLayer layer];
+          CGPathRef imageMaskPath = RCTPathCreateWithRoundedRect(subview.bounds, cornerInsets, nil, NO);
+          [self setMaskLayer:imageMask path:imageMaskPath followingBoundsAnimationOfLayer:subview.layer];
+          CGPathRelease(imageMaskPath);
+          subview.layer.mask = imageMask;
         }
       }
     } else if (
@@ -1549,6 +1555,29 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
   maskLayer.path = path;
   CGPathRelease(path);
   return maskLayer;
+}
+
+// Animates the path change together with the bounds animation UIKit may have added to the masked layer,
+// so the mask does not snap to the final size while the layer is still animating (e.g. during rotation).
+- (void)setMaskLayer:(CAShapeLayer *)maskLayer path:(CGPathRef)path followingBoundsAnimationOfLayer:(CALayer *)layer
+{
+  CGPathRef previousPath = maskLayer.path != NULL ? CGPathRetain(maskLayer.path) : NULL;
+  maskLayer.path = path;
+
+  CAAnimation *boundsAnimation = [layer animationForKey:@"bounds.size"];
+  if (previousPath != NULL && [boundsAnimation isKindOfClass:[CABasicAnimation class]] &&
+      !CGPathEqualToPath(previousPath, path)) {
+    CABasicAnimation *pathAnimation = [(CABasicAnimation *)boundsAnimation copy];
+    pathAnimation.keyPath = @"path";
+    pathAnimation.fromValue = (__bridge id)previousPath;
+    pathAnimation.toValue = (__bridge id)path;
+    pathAnimation.additive = NO;
+    [maskLayer addAnimation:pathAnimation forKey:@"path"];
+  }
+
+  if (previousPath != NULL) {
+    CGPathRelease(previousPath);
+  }
 }
 
 - (void)clearExistingBackgroundImageLayers
