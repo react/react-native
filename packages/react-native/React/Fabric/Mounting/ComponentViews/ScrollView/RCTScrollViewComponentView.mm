@@ -1238,6 +1238,8 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
 - (void)_prepareForMaintainVisibleScrollPosition
 {
+  _firstVisibleView = nil;
+
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
   if (!props.maintainVisibleContentPosition || _avoidAdjustmentForMaintainVisibleContentPosition) {
     return;
