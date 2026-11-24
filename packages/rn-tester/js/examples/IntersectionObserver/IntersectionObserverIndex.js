@@ -17,6 +17,7 @@ import * as IntersectionObserverExplicitRoot from './IntersectionObserverExplici
 import * as IntersectionObserverExplicitRootScroll from './IntersectionObserverExplicitRootScroll';
 import * as IntersectionObserverMDNExample from './IntersectionObserverMDNExample';
 import * as IntersectionObserverRootThreshold from './IntersectionObserverRootThreshold';
+import * as IntersectionObserverScrollMarginPrefetch from './IntersectionObserverScrollMarginPrefetch';
 
 export const framework = 'React';
 export const title = 'IntersectionObserver';
@@ -34,4 +35,5 @@ export const examples: Array<RNTesterModuleExample> = [
   IntersectionObserverExplicitRootScroll,
   IntersectionObserverClippingParent,
   IntersectionObserverClippingRoot,
+  IntersectionObserverScrollMarginPrefetch,
 ];

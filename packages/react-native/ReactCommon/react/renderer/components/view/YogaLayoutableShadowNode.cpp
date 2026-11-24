@@ -448,6 +448,16 @@ void YogaLayoutableShadowNode::updateYogaProps() {
     YGNodeSetAlwaysFormsContainingBlock(&yogaNode_, alwaysFormsContainingBlock);
   }
 
+  switch (YGNodeStyleGetOverflow(&yogaNode_)) {
+    case YGOverflowVisible:
+      ShadowNode::traits_.unset(ShadowNodeTraits::Trait::FormsContentClip);
+      break;
+    case YGOverflowHidden:
+    case YGOverflowScroll:
+      ShadowNode::traits_.set(ShadowNodeTraits::Trait::FormsContentClip);
+      break;
+  }
+
   if (YGNodeStyleGetDisplay(&yogaNode_) == YGDisplayContents) {
     ShadowNode::traits_.set(ShadowNodeTraits::ForceFlattenView);
   } else {

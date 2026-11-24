@@ -93,6 +93,12 @@ class ShadowNodeTraits {
     // **Deprecated**: This trait is deprecated and will be removed in a future
     // version of React Native.
     DirtyYogaNode = 1 << 14,
+
+    // Clips descendant content according to the resolved overflow style.
+    FormsContentClip = 1 << 15,
+
+    // Scroll container for descendant views, independent of user scrolling.
+    FormsScrollContainer = 1 << 16,
   };
 
   /*

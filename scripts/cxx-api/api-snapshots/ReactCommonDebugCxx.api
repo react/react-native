@@ -99,6 +99,7 @@ using facebook::react::ComponentHandle = int64_t;
 using facebook::react::ComponentName = const char*;
 using facebook::react::CornerInsets = facebook::react::RectangleCorners<Float>;
 using facebook::react::EdgeInsets = facebook::react::RectangleEdges<Float>;
+using facebook::react::EdgeMargins = facebook::react::RectangleEdges<facebook::react::MarginValue>;
 using facebook::react::EventListener = std::function<bool(const facebook::react::RawEvent& event)>;
 using facebook::react::EventPipe = std::function<void(facebook::jsi::Runtime& runtime, facebook::react::EventTarget* eventTarget, const std::string& type, facebook::react::ReactEventPriority priority, const facebook::react::EventPayload& payload, facebook::react::HighResTimeStamp eventTimestamp)>;
 using facebook::react::EventPipeConclusion = std::function<void(facebook::jsi::Runtime& runtime)>;
@@ -166,6 +167,7 @@ facebook::jsi::Value facebook::react::createPromiseAsJSIValue(facebook::jsi::Run
 facebook::react::ColorComponents facebook::react::colorComponentsFromColor(facebook::react::SharedColor color);
 facebook::react::ColorSpace facebook::react::getDefaultColorSpace();
 facebook::react::DisplayType facebook::react::displayTypeFromYGDisplay(YGDisplay display);
+facebook::react::EdgeInsets facebook::react::resolveEdgeMargins(const facebook::react::EdgeMargins& margins, const facebook::react::Size& size) noexcept;
 facebook::react::LayoutMetrics facebook::react::layoutMetricsFromYogaNode(facebook::yoga::Node& yogaNode);
 facebook::react::Rect facebook::react::insetBy(const facebook::react::Rect& rect, const facebook::react::EdgeInsets& insets) noexcept;
 facebook::react::Rect facebook::react::outsetBy(const facebook::react::Rect& rect, const facebook::react::EdgeInsets& outsets) noexcept;
@@ -859,6 +861,7 @@ struct facebook::react::LayoutableShadowNode::LayoutInspectingPolicy {
   public bool enableOverflowClipping;
   public bool includeTransform;
   public bool includeViewportOffset;
+  public std::optional<facebook::react::EdgeMargins> clipMargin;
 }
 
 class facebook::react::LongLivedObject {
@@ -1111,6 +1114,8 @@ enum facebook::react::ShadowNodeTraits::Trait : int32_t {
   ChildrenFormStackingContext,
   DirtyYogaNode,
   ForceFlattenView,
+  FormsContentClip,
+  FormsScrollContainer,
   FormsStackingContext,
   FormsView,
   Hidden,
@@ -1856,6 +1861,12 @@ struct facebook::react::LinearGradient {
   public bool operator==(const facebook::react::LinearGradient& other) const = default;
   public facebook::react::GradientDirection direction;
   public std::vector<facebook::react::ColorStop> colorStops;
+}
+
+struct facebook::react::MarginValue {
+  public Float value;
+  public bool isPercentage;
+  public bool operator==(const facebook::react::MarginValue& rhs) const noexcept = default;
 }
 
 struct facebook::react::Point {
