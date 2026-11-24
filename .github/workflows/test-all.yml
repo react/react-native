@@ -20,30 +20,6 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  set_release_type:
-    runs-on: ubuntu-latest
-    if: github.repository == 'react/react-native'
-    outputs:
-      RELEASE_TYPE: ${{ steps.set_release_type.outputs.RELEASE_TYPE }}
-    env:
-      EVENT_NAME: ${{ github.event_name }}
-      REF: ${{ github.ref }}
-    steps:
-      - id: set_release_type
-        run: |
-          if [[ $EVENT_NAME == "schedule" ]]; then
-            echo "Setting release type to nightly"
-            echo "RELEASE_TYPE=nightly" >> $GITHUB_OUTPUT
-          elif [[ $EVENT_NAME == "push" && $REF == refs/tags/v* ]]; then
-            echo "Setting release type to release"
-            echo "RELEASE_TYPE=release" >> $GITHUB_OUTPUT
-          else
-            echo "Setting release type to dry-run"
-            echo "RELEASE_TYPE=dry-run" >> $GITHUB_OUTPUT
-          fi
-
-          echo "Should I run E2E tests? ${{ inputs.run-e2e-tests }}"
-
   check_code_changes:
     runs-on: ubuntu-latest
     if: github.repository == 'react/react-native'
@@ -51,6 +27,7 @@ jobs:
       any_code_change: ${{ steps.filter_exclusions.outputs.any_code_change == 'true' || github.event_name != 'pull_request' }}
       should_test_android: ${{ steps.filter_exclusions.outputs.should_test_android == 'true' || github.event_name != 'pull_request' }}
       should_test_ios: ${{ steps.filter_exclusions.outputs.should_test_ios == 'true' || github.event_name != 'pull_request' }}
+      should_test_fantom: ${{ steps.filter_exclusions.outputs.should_test_fantom == 'true' || github.event_name != 'pull_request' }}
       debugger_shell: ${{ steps.filter_inclusions.outputs.debugger_shell }}
     steps:
       - name: Checkout
@@ -65,6 +42,7 @@ jobs:
               - '**'
               - '!**/__docs__/**'
               - '!**/*.md'
+              - '!**/LICENSE'
             should_test_android:
               # Not an isolated iOS change
               - '**'
@@ -88,6 +66,24 @@ jobs:
               - '!packages/react-native/**/*.gradle*'
               - '!packages/react-native-popup-menu-android/**'
               - '!packages/rn-tester/android/**'
+            should_test_fantom:
+              - '**'
+              - '!**/__docs__/**'
+              - '!**/*.md'
+              - '!**/LICENSE'
+              - '!gradle/**'
+              - '!gradle*'
+              - '!packages/gradle-plugin/**'
+              - '!packages/react-native/ReactAndroid/**'
+              - '!packages/react-native/**/*.java'
+              - '!packages/react-native/**/*.kt'
+              - '!packages/react-native/**/*.gradle*'
+              - '!packages/react-native-popup-menu-android/**'
+              - '!packages/react-native/React/**'
+              - '!packages/react-native/ReactApple/**'
+              - '!packages/react-native/**/*.m'
+              - '!packages/react-native/**/*.mm'
+              - '!packages/react-native/**/*.podspec'
       - name: Check for code changes (inclusion patterns)
         uses: dorny/paths-filter@209e61402dbca8aa44f967535da6666b284025ed
         id: filter_inclusions
@@ -109,7 +105,7 @@ jobs:
     uses: ./.github/workflows/prebuild-ios-core.yml
     if: ${{ needs.prebuild_apple_dependencies.result == 'success' }}
     with:
-      use-hermes-prebuilt: ${{ !endsWith(github.ref_name, '-stable') }}
+      use-hermes-prebuilt: ${{ !endsWith(github.base_ref || github.ref_name, '-stable') }}
     secrets: inherit
     needs: [prebuild_apple_dependencies]
 
@@ -127,7 +123,7 @@ jobs:
           flavor: Debug
 
   test_ios_rntester_dynamic_frameworks:
-    runs-on: macos-15-large
+    runs-on: macos-15
     needs: check_code_changes
     if: |
       needs.check_code_changes.outputs.any_code_change == 'true' &&
@@ -147,7 +143,7 @@ jobs:
           run-unit-tests: false # tests for dynamic frameworks are already run in the test_ios_rntester job; this is to just a test build from source (no prebuilds)
 
   test_ios_rntester:
-    runs-on: macos-15-large
+    runs-on: macos-15
     needs: [prebuild_apple_dependencies, prebuild_react_native_core]
     if: ${{ needs.prebuild_react_native_core.result == 'success' }}
     continue-on-error: true
@@ -205,23 +201,66 @@ jobs:
     with:
       platform: ios
 
-  test_e2e_ios_templateapp:
-    needs: [build_npm_package, prebuild_apple_dependencies, check_code_changes]
+  build_ios_templateapp:
+    needs:
+      [
+        build_npm_package,
+        prebuild_apple_dependencies,
+        prebuild_react_native_core,
+        check_code_changes,
+      ]
     if: needs.check_code_changes.outputs.should_test_ios == 'true'
+    uses: ./.github/workflows/build-ios-templateapp.yml
+    secrets: inherit
+
+  build_ios_templateapp_retry_1:
+    needs: build_ios_templateapp
+    if: ${{ !cancelled() && (needs.build_ios_templateapp.outputs.status == 'failure' || needs.build_ios_templateapp.result == 'failure') }}
+    uses: ./.github/workflows/build-ios-templateapp.yml
+    with:
+      flavors: ${{ needs.build_ios_templateapp.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.build_ios_templateapp.outputs.results || '{}' }}
+    secrets: inherit
+
+  build_ios_templateapp_retry_2:
+    needs: build_ios_templateapp_retry_1
+    if: ${{ !cancelled() && (needs.build_ios_templateapp_retry_1.outputs.status == 'failure' || needs.build_ios_templateapp_retry_1.result == 'failure') }}
+    uses: ./.github/workflows/build-ios-templateapp.yml
+    with:
+      flavors: ${{ needs.build_ios_templateapp_retry_1.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.build_ios_templateapp_retry_1.outputs.results || '{}' }}
+      fail-on-error: true
+    secrets: inherit
+
+  test_e2e_ios_templateapp:
+    needs:
+      [
+        build_ios_templateapp,
+        build_ios_templateapp_retry_1,
+        build_ios_templateapp_retry_2,
+      ]
+    if: ${{ !cancelled() && (needs.build_ios_templateapp.outputs.status == 'success' || needs.build_ios_templateapp_retry_1.outputs.status == 'success' || needs.build_ios_templateapp_retry_2.outputs.status == 'success') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     secrets: inherit
 
   test_e2e_ios_templateapp_retry_1:
     needs: test_e2e_ios_templateapp
-    if: ${{ always() && needs.test_e2e_ios_templateapp.outputs.status == 'failure' }}
+    if: ${{ !cancelled() && (needs.test_e2e_ios_templateapp.outputs.status == 'failure' || needs.test_e2e_ios_templateapp.result == 'failure') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
+    with:
+      flavors: ${{ needs.test_e2e_ios_templateapp.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.test_e2e_ios_templateapp.outputs.results || '{}' }}
+      retry-attempt: 1
     secrets: inherit
 
   test_e2e_ios_templateapp_retry_2:
     needs: test_e2e_ios_templateapp_retry_1
-    if: ${{ always() && needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure' }}
+    if: ${{ !cancelled() && (needs.test_e2e_ios_templateapp_retry_1.outputs.status == 'failure' || needs.test_e2e_ios_templateapp_retry_1.result == 'failure') }}
     uses: ./.github/workflows/e2e-ios-templateapp.yml
     with:
+      flavors: ${{ needs.test_e2e_ios_templateapp_retry_1.outputs.failed-flavors || '["Debug", "Release"]' }}
+      previous-results: ${{ needs.test_e2e_ios_templateapp_retry_1.outputs.results || '{}' }}
+      retry-attempt: 2
       fail-on-error: true
     secrets: inherit
 
@@ -290,8 +329,8 @@ jobs:
 
   build_fantom_runner:
     runs-on: 8-core-ubuntu
-    needs: [set_release_type, check_code_changes, lint]
-    if: needs.check_code_changes.outputs.any_code_change == 'true'
+    needs: [check_code_changes, lint]
+    if: needs.check_code_changes.outputs.should_test_fantom == 'true'
     container:
       image: reactnativecommunity/react-native-android:latest
       env:
@@ -309,7 +348,7 @@ jobs:
       - name: Build Fantom Runner
         uses: ./.github/actions/build-fantom-runner
         with:
-          release-type: ${{ needs.set_release_type.outputs.RELEASE_TYPE }}
+          release-type: dry-run
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
   run_fantom_tests:
@@ -333,7 +372,7 @@ jobs:
 
   build_android:
     runs-on: 8-core-ubuntu
-    needs: [set_release_type, check_code_changes]
+    needs: check_code_changes
     if: |
       needs.check_code_changes.outputs.any_code_change == 'true' &&
       needs.check_code_changes.outputs.should_test_android == 'true'
@@ -354,7 +393,7 @@ jobs:
       - name: Build Android
         uses: ./.github/actions/build-android
         with:
-          release-type: ${{ needs.set_release_type.outputs.RELEASE_TYPE }}
+          release-type: dry-run
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
   test_e2e_android_rntester:
@@ -392,7 +431,6 @@ jobs:
     runs-on: 8-core-ubuntu
     needs:
       [
-        set_release_type,
         check_code_changes,
         build_android,
         prebuild_apple_dependencies,
@@ -420,7 +458,7 @@ jobs:
       - name: Build NPM Package
         uses: ./.github/actions/build-npm-package
         with:
-          release-type: ${{ needs.set_release_type.outputs.RELEASE_TYPE }}
+          release-type: dry-run
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
           skip-apple-prebuilts: ${{ needs.check_code_changes.outputs.should_test_ios == 'false' }}
 
