@@ -669,6 +669,18 @@ describe('<View>', () => {
             root.getRenderedOutput({props: ['accessibilityRole']}).toJSX(),
           ).toEqual(<rn-view accessibilityRole="button" />);
         });
+
+        it('does not unflatten view when none', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View accessibilityRole={'none'} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityRole']}).toJSX(),
+          ).toEqual(null);
+        });
       });
 
       describe('role', () => {
@@ -680,6 +692,16 @@ describe('<View>', () => {
           });
 
           expect(root.getRenderedOutput().toJSX()).toEqual(<rn-view />);
+        });
+
+        it('does not unflatten view when none', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View role="none" />);
+          });
+
+          expect(root.getRenderedOutput().toJSX()).toEqual(null);
         });
       });
 

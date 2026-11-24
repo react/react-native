@@ -62,7 +62,9 @@ void ViewShadowNode::initialize() noexcept {
       HostPlatformViewTraitsInitializer::formsStackingContext(viewProps) ||
       !viewProps.accessibilityOrder.empty() ||
       !viewProps.accessibilityLabel.empty() ||
-      !viewProps.accessibilityRole.empty() || viewProps.role.has_value() ||
+      (!viewProps.accessibilityRole.empty() &&
+       viewProps.accessibilityRole != "none") ||
+      viewProps.role.value_or(Role::None) != Role::None ||
       (viewProps.accessibilityState.has_value() &&
        viewProps.accessibilityState->isMeaningful()) ||
       !viewProps.accessibilityActions.empty() ||
