@@ -25,6 +25,7 @@ const {
   blobKey,
   publicUrl,
   reportPrefix,
+  storageLocation,
 } = require('../visual/storage');
 const {SHA_A, SHA_B} = require('./__fixtures__/visual');
 
@@ -79,8 +80,22 @@ describe('visual reports and approval', () => {
           }),
       ],
       [() => approvalKey(1, '../x')],
+      [() => storageLocation({})],
+      [() => storageLocation({bucket: 'gs://rn-visual'})],
     ])('rejects invalid input', build => {
       expect(build).toThrow('Invalid');
+    });
+
+    test('reads the bucket and its public URL from the visual config', () => {
+      expect(storageLocation({bucket: 'rn-visual'})).toEqual({
+        bucket: 'rn-visual',
+        publicBaseUrl: 'https://storage.googleapis.com/rn-visual',
+      });
+      expect(() =>
+        storageLocation(
+          require('../../../packages/rn-tester/visual-tests/config.json'),
+        ),
+      ).not.toThrow();
     });
 
     test('encodes each path segment of public URLs', () => {

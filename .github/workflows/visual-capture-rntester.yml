@@ -22,8 +22,9 @@ env:
   VISUAL_FLOWS: packages/rn-tester/visual-tests/flows
   VISUAL_OUTPUT_DIR: /tmp/visual-capture
   VISUAL_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-  # Read-only, to retake screenshots that differ from the baseline.
-  VISUAL_PUBLIC_BASE_URL: ${{ vars.VISUAL_PUBLIC_BASE_URL }}
+  # Names the bucket that screenshots differing from the baseline are
+  # retaken against. Read-only, over its public URL.
+  VISUAL_CONFIG: packages/rn-tester/visual-tests/config.json
   # New screenshots whose two captures differ, for manifest.js. Outside the
   # output directory, so it isn't uploaded.
   VISUAL_UNSTABLE_PATH: /tmp/visual-unstable.json

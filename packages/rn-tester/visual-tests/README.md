@@ -14,6 +14,8 @@ Only `main` and pull requests into it are compared. Stable branches have no base
 
 The baseline for a PR is the one for the commit it's based on, or the nearest earlier commit on `main` that has one. Baselines are keyed by device environment too (OS image, screen size, density, font scale, locale and so on), so a change to the CI device starts a fresh baseline rather than failing every PR.
 
+Baselines, reports and approvals are stored in the public Google Cloud Storage bucket named by `bucket` in `config.json`. Capture reads it over its public URL. Visual Compare RNTester and Visual Approve RNTester upload to it with the access granted by the repository's `VISUAL_GCP_PROJECT` and `VISUAL_WORKLOAD_IDENTITY_PROVIDER` variables, so moving the bucket means changing both.
+
 ## Adding a test
 
 1. Pick or add an RNTester example, and give its root view a `testID`. Keep the example's content fixed: no dates, random values, network images or animations that are still running when the screenshot is taken.
