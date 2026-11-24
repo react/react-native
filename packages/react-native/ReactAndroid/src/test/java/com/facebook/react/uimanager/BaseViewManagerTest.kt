@@ -396,6 +396,13 @@ class BaseViewManagerTest {
   }
 
   @Test
+  fun testRecycledViewDropsTheNextFocusLeftOfItsPreviousProps() {
+    val recycled = recycleView(JavaOnlyMap.of("nextFocusLeft", 10))
+
+    Assertions.assertThat(recycled.nextFocusLeftId).isEqualTo(View.NO_ID)
+  }
+
+  @Test
   fun testNaNElevationLeavesTheViewUnelevated() {
     val unelevated = createView(JavaOnlyMap.of(ViewProps.ELEVATION, Double.NaN))
 
