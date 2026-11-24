@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {ArrayLike} from '../../utils/ArrayLikeUtils';
 
 import {
@@ -44,6 +42,7 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
     this._length = elements.length;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get length(): number {
     return this._length;
   }
@@ -114,5 +113,4 @@ export const NodeList_public: typeof NodeList =
     throw new TypeError("Failed to construct 'NodeList': Illegal constructor");
   };
 
-// $FlowExpectedError[prop-missing]
 NodeList_public.prototype = NodeList.prototype;

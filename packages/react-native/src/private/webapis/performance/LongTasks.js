@@ -8,7 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
 import type {
   PerformanceEntryInit,
   PerformanceEntryJSON,
@@ -33,7 +32,6 @@ export const TaskAttributionTiming_public: typeof TaskAttributionTiming =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 TaskAttributionTiming_public.prototype = TaskAttributionTiming.prototype;
 
 const EMPTY_ATTRIBUTION: ReadonlyArray<TaskAttributionTiming> =
@@ -46,6 +44,7 @@ export class PerformanceLongTaskTiming extends PerformanceEntry {
     super('longtask', init);
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get attribution(): ReadonlyArray<TaskAttributionTiming> {
     return EMPTY_ATTRIBUTION;
   }
@@ -67,6 +66,5 @@ export const PerformanceLongTaskTiming_public: typeof PerformanceLongTaskTiming 
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceLongTaskTiming_public.prototype =
   PerformanceLongTaskTiming.prototype;

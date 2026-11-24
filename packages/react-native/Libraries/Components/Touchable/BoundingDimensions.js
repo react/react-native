@@ -27,7 +27,6 @@ function BoundingDimensions(width: number, height: number) {
   this.height = height;
 }
 
-// $FlowFixMe[prop-missing]
 // $FlowFixMe[missing-this-annot]
 BoundingDimensions.prototype.destructor = function () {
   this.width = null;

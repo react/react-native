@@ -34,9 +34,7 @@ export function createViewConfig(
     ),
     // $FlowFixMe[incompatible-type]
     validAttributes: composeIndexers(
-      // $FlowFixMe[incompatible-call] `style` property confuses Flow.
       PlatformBaseViewConfig.validAttributes,
-      // $FlowFixMe[incompatible-call] `style` property confuses Flow.
       partialViewConfig.validAttributes,
     ),
   };

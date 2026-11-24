@@ -20,7 +20,6 @@ const {
 const {getCommands} = require('./commands');
 const {getEvents} = require('./events');
 
-// $FlowFixMe[signature-verification-failure] there's no flowtype for AST
 function buildComponentSchema(
   ast: $FlowFixMe,
   parser: Parser,

@@ -30,6 +30,7 @@ export type NativeIntersectionObserverObserveOptions = {
   thresholds: ReadonlyArray<number>,
   rootThresholds?: ?ReadonlyArray<number>,
   rootMargin?: ?string,
+  scrollMargin?: ?string,
 };
 
 export opaque type NativeIntersectionObserverToken = unknown;

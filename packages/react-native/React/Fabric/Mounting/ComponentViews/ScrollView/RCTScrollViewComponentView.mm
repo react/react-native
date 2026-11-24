@@ -10,6 +10,7 @@
 #import <React/RCTAssert.h>
 #import <React/RCTConstants.h>
 #import <React/RCTScrollEvent.h>
+#import <React/RCTUtils.h>
 
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/scrollview/RCTComponentViewHelpers.h>
@@ -33,6 +34,8 @@ static NSString *kOnScrollEvent = @"onScroll";
 static NSString *kOnScrollEndEvent = @"onScrollEnded";
 
 static const CGFloat kClippingLeeway = 44.0;
+// Well past UIKit's fixed-duration `setContentOffset:animated:` animation.
+static const NSTimeInterval kProgrammaticScrollEndFallbackDelay = 1.0;
 
 static UIScrollViewKeyboardDismissMode RCTUIKeyboardDismissModeFromProps(const ScrollViewProps &props)
 {
@@ -94,6 +97,27 @@ static BOOL RCTPadsContentForSafeArea(ContentInsetAdjustmentBehavior contentInse
       contentInsetAdjustmentBehavior == ContentInsetAdjustmentBehavior::Always;
 }
 
+static UIEdgeInsets RCTWindowSafeAreaInsetsInView(UIView *view)
+{
+  UIWindow *window = view.window;
+  if (window == nil) {
+    return UIEdgeInsetsZero;
+  }
+  UIEdgeInsets insets = window.safeAreaInsets;
+  CGRect frame = [view convertRect:view.bounds toView:nil];
+  CGRect bounds = window.bounds;
+  return UIEdgeInsetsMake(
+      MAX(0, insets.top - CGRectGetMinY(frame)),
+      MAX(0, insets.left - CGRectGetMinX(frame)),
+      MAX(0, insets.bottom - (CGRectGetMaxY(bounds) - CGRectGetMaxY(frame))),
+      MAX(0, insets.right - (CGRectGetMaxX(bounds) - CGRectGetMaxX(frame))));
+}
+
+static CGFloat RCTWindowSafeAreaContentInset(CGFloat contentInset, CGFloat windowSafeAreaInset)
+{
+  return RCTRoundPixelValue(contentInset) > RCTRoundPixelValue(windowSafeAreaInset) ? 0 : contentInset;
+}
+
 @interface RCTScrollViewComponentView () <
     UIScrollViewDelegate,
     RCTScrollViewProtocol,
@@ -112,6 +136,11 @@ static BOOL RCTPadsContentForSafeArea(ContentInsetAdjustmentBehavior contentInse
   // This helps to only update state from `scrollViewDidScroll` in case
   // some other part of the system scrolls scroll view.
   BOOL _isUserTriggeredScrolling;
+  // Whether an animated programmatic scroll has dispatched `onMomentumScrollBegin` and still owes
+  // its `onMomentumScrollEnd`.
+  BOOL _isProgrammaticScrollAnimating;
+  // Identifies the latest animated programmatic scroll, so a stale end fallback is ignored.
+  NSUInteger _programmaticScrollGeneration;
   BOOL _shouldUpdateContentInsetAdjustmentBehavior;
   BOOL _automaticallyAdjustKeyboardInsets;
 
@@ -731,6 +760,8 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _shouldUpdateContentInsetAdjustmentBehavior = YES;
   _automaticallyAdjustKeyboardInsets = NO;
   _isUserTriggeredScrolling = NO;
+  _isProgrammaticScrollAnimating = NO;
+  _programmaticScrollGeneration++;
   CGRect oldFrame = self.frame;
   self.frame = CGRectZero;
   self.frame = oldFrame;
@@ -816,10 +847,17 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 {
   [self _forceDispatchNextScrollEvent];
 
+  // A drag interrupts an animated programmatic scroll without `scrollViewDidEndScrollingAnimation`.
+  BOOL interruptedProgrammaticScroll = _isProgrammaticScrollAnimating;
+  _isProgrammaticScrollAnimating = NO;
+
   if (!_eventEmitter) {
     return;
   }
 
+  if (interruptedProgrammaticScroll) {
+    static_cast<const ScrollViewEventEmitter &>(*_eventEmitter).onMomentumScrollEnd([self _scrollViewMetrics]);
+  }
   static_cast<const ScrollViewEventEmitter &>(*_eventEmitter).onScrollBeginDrag([self _scrollViewMetrics]);
   _isUserTriggeredScrolling = YES;
 }
@@ -904,10 +942,14 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 }
 
 /*
- * Hands the content container the safe area to lay its content out clear of: along the scrollable axis, the content
- * inset UIKit adds for the safe area, which point-valued padding counts toward, unless
- * `contentInsetAdjustmentBehavior` is `never`; and across the axis, the pair of insets it pads by, for `automatic`
- * and `always`. Content still scrolls under the system UI along the axis.
+ * Hands the content container the safe area to lay its content out clear of.
+ *
+ * Along the scrollable axis, UIKit adds the safe area as a content inset unless `contentInsetAdjustmentBehavior` is
+ * `never`. On an edge where the window's safe area (the status bar, sensor housing or home indicator) alone makes up
+ * that inset, the content container's padding counts toward it. On an edge where a view controller's navigation bar,
+ * tab bar or toolbar adds to it, the padding adds on top, keeping the content's spacing from that bar.
+ *
+ * Across the axis, for `automatic` and `always`, the content container is padded by the whole safe area.
  */
 - (void)_updateContentViewSafeAreaPadding
 {
@@ -921,12 +963,13 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   if (props.contentInsetAdjustmentBehavior != ContentInsetAdjustmentBehavior::Never) {
     UIEdgeInsets adjusted = scrollView.adjustedContentInset;
     UIEdgeInsets current = scrollView.contentInset;
+    UIEdgeInsets window = RCTWindowSafeAreaInsetsInView(scrollView);
     if (props.horizontal) {
-      contentInset.left = adjusted.left - current.left;
-      contentInset.right = adjusted.right - current.right;
+      contentInset.left = RCTWindowSafeAreaContentInset(adjusted.left - current.left, window.left);
+      contentInset.right = RCTWindowSafeAreaContentInset(adjusted.right - current.right, window.right);
     } else {
-      contentInset.top = adjusted.top - current.top;
-      contentInset.bottom = adjusted.bottom - current.bottom;
+      contentInset.top = RCTWindowSafeAreaContentInset(adjusted.top - current.top, window.top);
+      contentInset.bottom = RCTWindowSafeAreaContentInset(adjusted.bottom - current.bottom, window.bottom);
     }
   }
   if (scrollView.padsContentForSafeArea) {
@@ -945,6 +988,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)_handleScrollEndIfNeeded
 {
   if (_scrollView.isDecelerating || !_scrollView.isTracking) {
+    _isProgrammaticScrollAnimating = NO;
     if (!_eventEmitter) {
       return;
     }
@@ -960,11 +1004,16 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [self _forceDispatchNextScrollEvent];
   [self scrollViewDidScroll:scrollView];
 
+  BOOL finishedProgrammaticScroll = _isProgrammaticScrollAnimating;
+  _isProgrammaticScrollAnimating = NO;
+
   if (!_eventEmitter) {
     return;
   }
 
-  static_cast<const ScrollViewEventEmitter &>(*_eventEmitter).onMomentumScrollEnd([self _scrollViewMetrics]);
+  if (finishedProgrammaticScroll || !ReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS()) {
+    static_cast<const ScrollViewEventEmitter &>(*_eventEmitter).onMomentumScrollEnd([self _scrollViewMetrics]);
+  }
   [self _updateStateWithContentOffset];
 }
 
@@ -1119,11 +1168,53 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   [self _forceDispatchNextScrollEvent];
 
-  [_scrollView setContentOffset:offset animated:animated];
+  if (!ReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS()) {
+    [_scrollView setContentOffset:offset animated:animated];
+    if (!animated) {
+      [self _handleFinishedScrolling:_scrollView];
+    }
+    return;
+  }
 
   if (!animated) {
+    [_scrollView setContentOffset:offset animated:NO];
     // When not animated, the expected workflow in ``scrollViewDidEndScrollingAnimation`` after scrolling is not going
     // to get triggered. We will need to manually execute here.
+    [self _handleFinishedScrolling:_scrollView];
+    return;
+  }
+
+  // Dispatch begin before starting the animation: UIKit can finish it synchronously, and the end event must never
+  // precede its begin event.
+  if (!_isProgrammaticScrollAnimating && _eventEmitter) {
+    static_cast<const ScrollViewEventEmitter &>(*_eventEmitter).onMomentumScrollBegin([self _scrollViewMetrics]);
+  }
+  _isProgrammaticScrollAnimating = YES;
+  NSUInteger generation = ++_programmaticScrollGeneration;
+
+  [_scrollView setContentOffset:offset animated:YES];
+
+  if (_isProgrammaticScrollAnimating &&
+      (self.window == nil || CGPointEqualToPoint(_scrollView.contentOffset, offset))) {
+    // UIKit applied the offset without animating, so ``scrollViewDidEndScrollingAnimation`` will not be called.
+    [self _handleFinishedScrolling:_scrollView];
+    return;
+  }
+
+  // An unmatched begin event makes the JS scroll view capture every touch, so guarantee the end event even if UIKit
+  // stops the animation without calling ``scrollViewDidEndScrollingAnimation``.
+  __weak RCTScrollViewComponentView *weakSelf = self;
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kProgrammaticScrollEndFallbackDelay * NSEC_PER_SEC)),
+      dispatch_get_main_queue(),
+      ^{
+        [weakSelf _finishProgrammaticScrollIfStalled:generation];
+      });
+}
+
+- (void)_finishProgrammaticScrollIfStalled:(NSUInteger)generation
+{
+  if (_isProgrammaticScrollAnimating && generation == _programmaticScrollGeneration) {
     [self _handleFinishedScrolling:_scrollView];
   }
 }

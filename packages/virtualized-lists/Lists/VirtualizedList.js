@@ -612,7 +612,6 @@ class VirtualizedList extends StateSafePureComponent<
     }
 
     if (__DEV__ && !this._hasWarned.flexWrap) {
-      // $FlowFixMe[underconstrained-implicit-instantiation]
       const flatStyles = StyleSheet.flatten(this.props.contentContainerStyle);
       if (flatStyles != null && flatStyles.flexWrap === 'wrap') {
         console.warn(
@@ -1191,7 +1190,6 @@ class VirtualizedList extends StateSafePureComponent<
         ListHeaderComponent
       ) : (
         // $FlowFixMe[not-a-component]
-        // $FlowFixMe[incompatible-type]
         <ListHeaderComponent />
       );
       cells.push(
@@ -1225,7 +1223,6 @@ class VirtualizedList extends StateSafePureComponent<
           ListEmptyComponent
         ) : (
           // $FlowFixMe[not-a-component]
-          // $FlowFixMe[incompatible-type]
           <ListEmptyComponent />
         )
       ) as any;
@@ -1314,7 +1311,6 @@ class VirtualizedList extends StateSafePureComponent<
         ListFooterComponent
       ) : (
         // $FlowFixMe[not-a-component]
-        // $FlowFixMe[incompatible-type]
         <ListFooterComponent />
       );
       cells.push(
@@ -1553,14 +1549,11 @@ class VirtualizedList extends StateSafePureComponent<
           '`',
       );
       return (
-        // $FlowFixMe[prop-missing] Invalid prop usage
-        // $FlowFixMe[incompatible-use]
         <ScrollView
           {...props}
           refreshControl={
             props.refreshControl == null ? (
               <RefreshControl
-                // $FlowFixMe[incompatible-type]
                 refreshing={props.refreshing}
                 onRefresh={onRefresh}
                 progressViewOffset={props.progressViewOffset}
@@ -1572,8 +1565,6 @@ class VirtualizedList extends StateSafePureComponent<
         />
       );
     } else {
-      // $FlowFixMe[prop-missing] Invalid prop usage
-      // $FlowFixMe[incompatible-use]
       return <ScrollView {...props} />;
     }
   };
@@ -1661,6 +1652,7 @@ class VirtualizedList extends StateSafePureComponent<
             this._notifyCrossOrientationChildren();
           }
         },
+        // $FlowFixMe[missing-local-annot]
         error => {
           console.warn(
             "VirtualizedList: Encountered an error while measuring a list's" +

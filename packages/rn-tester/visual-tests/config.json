@@ -1,4 +1,5 @@
 {
+  "bucket": "react-native-visual-testing",
   "defaults": {
     "threshold": 0,
     "includeAA": true,

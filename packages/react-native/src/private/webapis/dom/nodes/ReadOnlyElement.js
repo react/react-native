@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type HTMLCollection from '../oldstylecollections/HTMLCollection';
 
 import DOMRect from '../../geometry/DOMRect';
@@ -23,14 +21,17 @@ import ReadOnlyNode, {getChildNodes} from './ReadOnlyNode';
 import NativeDOM from './specs/NativeDOM';
 
 export default class ReadOnlyElement extends ReadOnlyNode {
+  // $FlowFixMe[unsafe-getters-setters]
   get childElementCount(): number {
     return getChildElements(this).length;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get children(): HTMLCollection<ReadOnlyElement> {
     return createHTMLCollection(getChildElements(this));
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get clientHeight(): number {
     const node = getNativeElementReference(this);
 
@@ -42,6 +43,7 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get clientLeft(): number {
     const node = getNativeElementReference(this);
 
@@ -53,6 +55,7 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get clientTop(): number {
     const node = getNativeElementReference(this);
 
@@ -64,6 +67,7 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get clientWidth(): number {
     const node = getNativeElementReference(this);
 
@@ -75,6 +79,7 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get firstElementChild(): ReadOnlyElement | null {
     const childElements = getChildElements(this);
 
@@ -85,12 +90,14 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return childElements[0];
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get id(): string {
     const props = getCurrentProps(this);
     const id = props.id ?? props.nativeID;
     return typeof id === 'string' ? id : '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get lastElementChild(): ReadOnlyElement | null {
     const childElements = getChildElements(this);
 
@@ -101,28 +108,35 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return childElements[childElements.length - 1];
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get nextElementSibling(): ReadOnlyElement | null {
     return getElementSibling(this, 'next');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeName(): string {
     return this.tagName;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeType(): number {
     return ReadOnlyNode.ELEMENT_NODE;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeValue(): string | null {
     return null;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set nodeValue(value: string): void {}
 
+  // $FlowFixMe[unsafe-getters-setters]
   get previousElementSibling(): ReadOnlyElement | null {
     return getElementSibling(this, 'previous');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get scrollHeight(): number {
     const node = getNativeElementReference(this);
 
@@ -134,6 +148,7 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get scrollLeft(): number {
     const node = getNativeElementReference(this);
 
@@ -145,6 +160,7 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get scrollTop(): number {
     const node = getNativeElementReference(this);
 
@@ -156,6 +172,7 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get scrollWidth(): number {
     const node = getNativeElementReference(this);
 
@@ -167,6 +184,7 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return 0;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get tagName(): string {
     const node = getNativeElementReference(this);
 
@@ -177,6 +195,7 @@ export default class ReadOnlyElement extends ReadOnlyNode {
     return '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get textContent(): string {
     const node = getNativeElementReference(this);
 
@@ -252,5 +271,4 @@ export const ReadOnlyElement_public: typeof ReadOnlyElement =
     throw new TypeError("Failed to construct 'Element': Illegal constructor");
   };
 
-// $FlowExpectedError[prop-missing]
 ReadOnlyElement_public.prototype = ReadOnlyElement.prototype;

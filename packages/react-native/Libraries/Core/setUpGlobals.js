@@ -36,6 +36,5 @@ global.process = global.process || {};
 // $FlowExpectedError[cannot-write] The global isn't writable anywhere but here, where we define it.
 global.process.env = global.process.env || {};
 if (!global.process.env.NODE_ENV) {
-  // $FlowExpectedError[cannot-write] The global isn't writable anywhere but here, where we define it.
   global.process.env.NODE_ENV = __DEV__ ? 'development' : 'production';
 }

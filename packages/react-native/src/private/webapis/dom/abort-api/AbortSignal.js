@@ -27,8 +27,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {EventCallback} from '../events/EventTarget';
 
 import DOMException from '../../errors/DOMException';
@@ -137,6 +135,7 @@ export class AbortSignal extends EventTarget {
   /**
    * Returns `true` if this `AbortSignal`'s `AbortController` has signaled to abort, and `false` otherwise.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get aborted(): boolean {
     const aborted = this[ABORTED_KEY];
     if (typeof aborted !== 'boolean') {
@@ -150,14 +149,17 @@ export class AbortSignal extends EventTarget {
     return aborted;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get reason(): unknown {
     return this[REASON_KEY];
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onabort(): EventCallback | null {
     return getEventHandlerAttribute(this, 'abort');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onabort(listener: ?EventCallback): void {
     setEventHandlerAttribute(this, 'abort', listener);
   }
@@ -223,8 +225,6 @@ export const AbortSignal_public: typeof AbortSignal =
   };
 
 // Copy static properties ('length', 'name', 'prototype', 'abort', 'any', 'timeout') so that callers accessing them via the public constructor (e.g. `AbortSignal.timeout(0)`) still work.
-// $FlowFixMe[unsafe-object-assign]
-// $FlowFixMe[not-an-object]
 Object.getOwnPropertyNames(AbortSignal).forEach(methodName => {
   Object.defineProperty(
     AbortSignal_public,

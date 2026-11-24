@@ -104,7 +104,6 @@ function getTestCasesForProp(
       propName: propName,
       propValue: typeAnnotation.default != null ? typeAnnotation.default : true,
     });
-    // $FlowFixMe[incompatible-type]
     /* $FlowFixMe[invalid-compare] Error discovered during Constant Condition
      * roll out. See https://fburl.com/workplace/4oq3zi07. */
   } else if (typeAnnotation.type === 'IntegerTypeAnnotation') {
@@ -196,7 +195,6 @@ module.exports = {
             const name = `${componentName}Props`;
 
             const imports = getImports(component.props);
-            // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             imports.forEach(allImports.add, allImports);
 
             return generateTestsString(name, component);

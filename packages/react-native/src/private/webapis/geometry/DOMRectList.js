@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {ArrayLike} from '../utils/ArrayLikeUtils';
 import type DOMRectReadOnly from './DOMRectReadOnly';
 
@@ -41,6 +39,7 @@ export default class DOMRectList implements Iterable<DOMRectReadOnly> {
     this.#length = elements.length;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get length(): number {
     return this.#length;
   }
@@ -85,5 +84,4 @@ export const DOMRectList_public: typeof DOMRectList =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 DOMRectList_public.prototype = DOMRectList.prototype;

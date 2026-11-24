@@ -142,8 +142,9 @@ declare interface CustomElementRegistry {
 declare interface ShadowRoot extends DocumentFragment {
   readonly delegatesFocus: boolean;
   readonly host: Element;
-  // flowlint unsafe-getters-setters:off
+  // $FlowFixMe[unsafe-getters-setters]
   get innerHTML(): string;
+  // $FlowFixMe[unsafe-getters-setters]
   set innerHTML(value: string | TrustedHTML): void;
   // flowlint unsafe-getters-setters:error
   readonly mode: ShadowRootMode;
@@ -2823,17 +2824,17 @@ declare class Element extends Node implements Animatable {
   clientTop: number;
   clientWidth: number;
   id: string;
-  // flowlint unsafe-getters-setters:off
+  // $FlowFixMe[unsafe-getters-setters]
   get innerHTML(): string;
+  // $FlowFixMe[unsafe-getters-setters]
   set innerHTML(value: string | TrustedHTML): void;
-  // flowlint unsafe-getters-setters:error
   localName: string;
   namespaceURI: ?string;
   nextElementSibling: ?Element;
-  // flowlint unsafe-getters-setters:off
+  // $FlowFixMe[unsafe-getters-setters]
   get outerHTML(): string;
+  // $FlowFixMe[unsafe-getters-setters]
   set outerHTML(value: string | TrustedHTML): void;
-  // flowlint unsafe-getters-setters:error
   prefix: string | null;
   previousElementSibling: ?Element;
   scrollHeight: number;
@@ -5050,10 +5051,10 @@ declare class HTMLIFrameElement extends HTMLElement {
   scrolling: string;
   sandbox: DOMTokenList;
   src: string;
-  // flowlint unsafe-getters-setters:off
+  // $FlowFixMe[unsafe-getters-setters]
   get srcdoc(): string;
+  // $FlowFixMe[unsafe-getters-setters]
   set srcdoc(value: string | TrustedHTML): void;
-  // flowlint unsafe-getters-setters:error
   width: string;
 }
 
@@ -5589,12 +5590,14 @@ declare class HTMLScriptElement extends HTMLElement {
   charset: string;
   crossOrigin?: string;
   defer: boolean;
-  // flowlint unsafe-getters-setters:off
+  // $FlowFixMe[unsafe-getters-setters]
   get src(): string;
+  // $FlowFixMe[unsafe-getters-setters]
   set src(value: string | TrustedScriptURL): void;
+  // $FlowFixMe[unsafe-getters-setters]
   get text(): string;
+  // $FlowFixMe[unsafe-getters-setters]
   set text(value: string | TrustedScript): void;
-  // flowlint unsafe-getters-setters:error
   type: string;
 }
 

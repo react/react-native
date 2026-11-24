@@ -9,6 +9,7 @@
 #include <cxxreact/TraceSection.h>
 #include <glog/logging.h>
 #include <react/renderer/core/LayoutableShadowNode.h>
+#include <react/renderer/uimanager/consistency/ShadowTreeRevisionProvider.h>
 #include <react/utils/OnScopeExit.h>
 #include <algorithm>
 #include <unordered_set>
@@ -127,10 +128,12 @@ void ResizeObserverManager::connect(
   }
 
   notifyResizeObserversFunction_ = std::move(notifyResizeObserversFunction);
+  runtimeScheduler_ = &runtimeScheduler;
+  pendingWake_ = std::make_shared<std::atomic<bool>>(false);
+  shadowTreeRevisionProvider_ = uiManager.getShadowTreeRevisionProvider();
 
   runtimeScheduler.setResizeObserverDelegate(this);
   uiManager.registerCommitHook(*this);
-  shadowTreeRegistry_ = &uiManager.getShadowTreeRegistry();
   commitHookRegistered_ = true;
 }
 
@@ -145,8 +148,12 @@ void ResizeObserverManager::disconnect(
   }
 
   runtimeScheduler.setResizeObserverDelegate(nullptr);
+  // UIManager holds its hook mutex during dispatch; unregister takes it
+  // exclusively and waits for in-flight calls before these members are reset.
   uiManager.unregisterCommitHook(*this);
-  shadowTreeRegistry_ = nullptr;
+  runtimeScheduler_ = nullptr;
+  pendingWake_.reset();
+  shadowTreeRevisionProvider_ = nullptr;
 
   // May run from inside `broadcastActiveResizeObservations` (a callback can
   // disconnect the last observer), which copies the callable before invoking
@@ -195,9 +202,8 @@ void ResizeObserverManager::shadowTreeDidCommit(
         affectedLayoutableNodes) noexcept {
   TraceSection s{"ResizeObserverManager::shadowTreeDidCommit"};
 
-  // Runs on the commit hook (any thread), so it only collects which observed
-  // targets went dirty; it must not compute observations or notify JS.
-  // `runResizeObservations` (JS thread) does that against the latest tree.
+  // The commit hook only collects dirty families. Sizes are computed by the
+  // resize-observation rendering step on the JS thread.
   auto surfaceId = shadowTree.getSurfaceId();
 
   std::unordered_set<const ShadowNodeFamily*> observedFamilies;
@@ -223,13 +229,23 @@ void ResizeObserverManager::shadowTreeDidCommit(
     }
   }
 
-  std::unique_lock lock(dirtyFamiliesMutex_);
-  // Record the commit even with no dirty family, so `runResizeObservations`
-  // re-checks for removed targets (they aren't in `affectedLayoutableNodes`).
-  committedSurfaceIds_.insert(surfaceId);
-  if (!newlyDirtyFamilies.empty()) {
+  {
+    std::unique_lock lock(dirtyFamiliesMutex_);
+    // Record the commit even with no dirty family, so `runResizeObservations`
+    // re-checks for removed targets (they aren't in `affectedLayoutableNodes`).
+    committedSurfaceIds_.insert(surfaceId);
+    if (newlyDirtyFamilies.empty()) {
+      return;
+    }
+
     auto& dirtyFamilies = dirtyFamiliesBySurfaceId_[surfaceId];
     dirtyFamilies.insert(newlyDirtyFamilies.begin(), newlyDirtyFamilies.end());
+  }
+
+  auto pendingWake = pendingWake_;
+  if (!pendingWake->exchange(true)) {
+    runtimeScheduler_->scheduleWork(
+        [pendingWake](jsi::Runtime&) { pendingWake->store(false); });
   }
 }
 
@@ -316,15 +332,13 @@ ResizeObserverManager::gatherActiveResizeObservations(size_t depth) {
   GatherResult gatherResult;
 
   // Null once `disconnect` ran; nothing left to observe against.
-  if (candidateSurfaceIds.empty() || shadowTreeRegistry_ == nullptr) {
+  if (candidateSurfaceIds.empty() || shadowTreeRevisionProvider_ == nullptr) {
     return gatherResult;
   }
 
   for (auto surfaceId : candidateSurfaceIds) {
-    auto rootShadowNode = std::shared_ptr<const RootShadowNode>();
-    shadowTreeRegistry_->visit(surfaceId, [&](const auto& shadowTree) {
-      rootShadowNode = shadowTree.getCurrentRevision().rootShadowNode;
-    });
+    auto rootShadowNode =
+        shadowTreeRevisionProvider_->getCurrentRevision(surfaceId);
 
     if (rootShadowNode == nullptr) {
       // The surface was stopped, so its families are dead and can never report

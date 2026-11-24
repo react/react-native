@@ -214,7 +214,6 @@ export component SectionList_scrollable() {
 
   const ref = useRef<?SectionList<SectionBase<any>>>(null);
   const scrollToLocation = (sectionIndex: number, itemIndex: number) => {
-    // $FlowFixMe[method-unbinding] added when improving typing for this parameters
     if (ref != null && ref.current?.scrollToLocation != null) {
       ref.current.scrollToLocation({sectionIndex, itemIndex});
     }
@@ -318,7 +317,6 @@ export component SectionList_scrollable() {
           )
         }
         onEndReachedThreshold={0}
-        // $FlowFixMe[incompatible-type] - incompatible redenerItem type
         sections={filteredSectionData}
         style={styles.list}
         viewabilityConfig={VIEWABILITY_CONFIG}

@@ -67,6 +67,11 @@ class FabricMountingManager final {
    *
    * In the pull model (`synchronous` = true) the batch is
    * applied immediately on the calling (UI) thread.
+   *
+   * The mount items built here reference the ShadowViews in `transaction`'s
+   * mutations instead of copying them. The caller must keep `transaction`
+   * alive and unmodified until the IntBufferBatchMountItem is created, which
+   * today happens before this call returns.
    */
   void executeMount(const MountingTransaction &transaction, bool synchronous = false);
 

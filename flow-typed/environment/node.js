@@ -426,7 +426,7 @@ type child_process$spawnSyncRet<T extends string | Buffer> = Readonly<{
   // TODO: subprocess.status may be null in case of error or signal
   status: number,
   signal: string | null,
-  error: Error | void,
+  error: Error | undefined,
 }>;
 
 type child_process$spawnSyncOpts = Readonly<{
@@ -539,9 +539,9 @@ declare module 'child_process' {
         ? StreamForChannel<FD>
         : E extends string
           ? null
-          : E[FD] extends child_process$StdioPipe
+          : NonNullable<E>[FD] extends child_process$StdioPipe
             ? StreamForChannel<FD>
-            : E[FD] extends string | number
+            : NonNullable<E>[FD] extends string | number
               ? null
               : null | StreamForChannel<FD>
       : PipeByDefault extends true
@@ -1674,7 +1674,7 @@ declare module 'fs' {
      * When `true`, exceptions will be ignored if `path` does not exist.
      * @default false
      */
-    force?: boolean | void,
+    force?: boolean | undefined,
     /**
      * If an `EBUSY`, `EMFILE`, `ENFILE`, `ENOTEMPTY`, or
      * `EPERM` error is encountered, Node.js will retry the operation with a linear
@@ -1683,19 +1683,19 @@ declare module 'fs' {
      * `true`.
      * @default 0
      */
-    maxRetries?: number | void,
+    maxRetries?: number | undefined,
     /**
      * If `true`, perform a recursive directory removal. In
      * recursive mode, operations are retried on failure.
      * @default false
      */
-    recursive?: boolean | void,
+    recursive?: boolean | undefined,
     /**
      * The amount of time in milliseconds to wait between retries.
      * This option is ignored if the `recursive` option is not `true`.
      * @default 100
      */
-    retryDelay?: number | void,
+    retryDelay?: number | undefined,
   };
 
   /**
@@ -5612,6 +5612,26 @@ type process$CPUUsage = {
   ...
 };
 
+type process$ResourceUsage = {
+  fsRead: number,
+  fsWrite: number,
+  involuntaryContextSwitches: number,
+  ipcReceived: number,
+  ipcSent: number,
+  majorPageFault: number,
+  maxRSS: number,
+  minorPageFault: number,
+  sharedMemorySize: number,
+  signalsCount: number,
+  swappedOut: number,
+  systemCPUTime: number,
+  unsharedDataSize: number,
+  unsharedStackSize: number,
+  userCPUTime: number,
+  voluntaryContextSwitches: number,
+  ...
+};
+
 declare class Process extends events$EventEmitter {
   abort(): void;
   allowedNodeEnvironmentFlags: Set<string>;
@@ -5624,7 +5644,7 @@ declare class Process extends events$EventEmitter {
   cwd(): string;
   disconnect?: () => void;
   domain?: domain$Domain;
-  env: {[key: string]: string | void, ...};
+  env: {[key: string]: string | undefined, ...};
   emitWarning(warning: string | Error): void;
   emitWarning(
     warning: string,
@@ -5680,6 +5700,7 @@ declare class Process extends events$EventEmitter {
     libUrl: string,
     ...
   };
+  resourceUsage(): process$ResourceUsage;
   send?: (
     message: any,
     sendHandleOrCallback?: net$Socket | net$Server | any,

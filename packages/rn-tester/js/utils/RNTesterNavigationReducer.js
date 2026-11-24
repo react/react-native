@@ -33,8 +33,7 @@ const getUpdatedRecentlyUsed = ({
 }) => {
   const updatedRecentlyUsed = recentlyUsed
     ? {...recentlyUsed}
-    : // $FlowFixMe[missing-empty-array-annot]
-      {components: [], apis: []};
+    : {components: [], apis: []};
 
   if (!exampleType || !key) {
     return updatedRecentlyUsed;
@@ -45,7 +44,6 @@ const getUpdatedRecentlyUsed = ({
   if (existingKeys.includes(key)) {
     existingKeys = existingKeys.filter(k => k !== key);
   }
-  // $FlowFixMe[incompatible-type]
   existingKeys.unshift(key);
 
   updatedRecentlyUsed[exampleType] = existingKeys.slice(0, 5);
@@ -95,7 +93,6 @@ export const RNTesterNavigationReducer = (
         activeModuleTitle: title,
         activeModuleExampleKey: null,
         hadDeepLink: false,
-        // $FlowFixMe[incompatible-return]
         recentlyUsed: getUpdatedRecentlyUsed({
           exampleType: exampleType,
           key: key,

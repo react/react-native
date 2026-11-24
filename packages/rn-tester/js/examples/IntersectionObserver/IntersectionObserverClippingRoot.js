@@ -32,13 +32,9 @@ function roundRect(rect: unknown): ?{
   if (rect == null || typeof rect !== 'object') {
     return null;
   }
-  // $FlowFixMe[prop-missing]
   const x = rect.x;
-  // $FlowFixMe[prop-missing]
   const y = rect.y;
-  // $FlowFixMe[prop-missing]
   const width = rect.width;
-  // $FlowFixMe[prop-missing]
   const height = rect.height;
 
   if (
@@ -95,7 +91,6 @@ component IntersectionObserverClippingRootExample() {
     observer.current = new IntersectionObserver(onObserve, {
       // $FlowFixMe[incompatible-type] React Native host instances implement the global Element interface.
       root: rootNode,
-      // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
       rootMargin: rootMarginValue,
     });
     // $FlowFixMe[incompatible-type]

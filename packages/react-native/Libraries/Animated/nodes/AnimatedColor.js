@@ -119,7 +119,6 @@ export function getRgbaValueAndNativeColor(
   nativeColor?: NativeColorValue,
 }> {
   const processedColor: RgbaValue | NativeColorValue =
-    // $FlowFixMe[incompatible-type] - Type is verified above
     processColor(value as ColorValue | RgbaValue) ?? defaultColor;
   if (isRgbaValue(processedColor)) {
     // $FlowFixMe[incompatible-type] - Type is verified above

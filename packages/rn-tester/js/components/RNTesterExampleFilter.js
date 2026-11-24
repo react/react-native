@@ -30,6 +30,7 @@ type Props<T> = {
   disableSearch?: boolean,
   testID?: string,
   hideFilterPills?: boolean,
+  bottomInset?: number,
   page: 'examples_page' | 'components_page',
   sections: ReadonlyArray<SectionData<T>>,
   ...
@@ -91,6 +92,14 @@ class RNTesterExampleFilter<T> extends React.Component<Props<T>, State> {
     if (this.props.page === 'examples_page') {
       return (
         <ScrollView
+          contentContainerStyle={
+            this.props.bottomInset != null
+              ? {paddingBottom: this.props.bottomInset}
+              : undefined
+          }
+          automaticallyAdjustContentInsets={
+            this.props.bottomInset != null ? false : undefined
+          }
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive">
           {this.props.render({filteredSections})}

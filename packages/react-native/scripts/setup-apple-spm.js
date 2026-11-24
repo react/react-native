@@ -376,7 +376,6 @@ function promptYesNo(
   question /*: string */,
   defaultYes /*: boolean */,
 ) /*: Promise<boolean> */ {
-  // $FlowFixMe[prop-missing] process.stdin.isTTY not in Flow stubs
   if (process.stdin.isTTY !== true) {
     return Promise.resolve(true);
   }
@@ -488,7 +487,6 @@ function determineVersion(
     );
     return pinned;
   }
-  // $FlowFixMe[incompatible-type] JSON.parse returns any
   const pkgJson /*: {version: string} */ = JSON.parse(
     fs.readFileSync(path.join(reactNativeRoot, 'package.json'), 'utf8'),
   );
@@ -841,7 +839,6 @@ function resolveInjectionTarget(
   } catch {}
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;
-    // $FlowFixMe[incompatible-type] Dirent.name is string|Buffer in Flow stubs
     const name /*: string */ = entry.name;
     if (name.endsWith('.xcodeproj')) {
       names.push(name);
@@ -1216,6 +1213,7 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
     log('Generating autolinking.json (CLI config)...');
     autolinkingConfigResult = generateAutolinkingConfigOrFailClosed({
       projectRoot,
+      // $FlowFixMe[incompatible-type] `void` is not `undefined` under experimental.ts_void
       configCommand: resolveExplicitConfigCommand(args, appRoot),
     });
     if (autolinkingConfigResult == null) {

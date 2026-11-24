@@ -31,6 +31,7 @@ function ToggleAnimatingActivityIndicator() {
     setToggleTimeout();
 
     return () => {
+      // $FlowFixMe[incompatible-type] `void` is not `undefined` under experimental.ts_void
       clearTimeout(timer.current);
     };
   }, [timer, setToggleTimeout]);

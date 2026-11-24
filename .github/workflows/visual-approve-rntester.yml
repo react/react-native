@@ -17,8 +17,7 @@ concurrency:
 
 env:
   OUT_DIR: /tmp/visual-approval
-  VISUAL_BUCKET: ${{ vars.VISUAL_BUCKET }}
-  VISUAL_PUBLIC_BASE_URL: ${{ vars.VISUAL_PUBLIC_BASE_URL }}
+  VISUAL_CONFIG: packages/rn-tester/visual-tests/config.json
 
 jobs:
   approve:
@@ -64,7 +63,9 @@ jobs:
         uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
       - name: Record approval
         if: steps.staged.outputs.upload == 'true'
-        run: gcloud storage cp --recursive --no-clobber "$OUT_DIR/upload/*" "gs://$VISUAL_BUCKET/"
+        run: |
+          VISUAL_BUCKET=$(jq -er .bucket "$VISUAL_CONFIG")
+          gcloud storage cp --recursive --no-clobber "$OUT_DIR/upload/*" "gs://$VISUAL_BUCKET/"
       - name: Update gate
         env:
           GITHUB_TOKEN: ${{ github.token }}

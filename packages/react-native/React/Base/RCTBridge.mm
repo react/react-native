@@ -30,8 +30,22 @@
 #if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 static NSMutableArray<Class> *RCTModuleClasses;
 static dispatch_queue_t RCTModuleClassesSyncQueue;
+
+// RCTGetModuleClasses may run before (or without) any RCTRegisterModule call, e.g. in
+// apps that register no legacy modules, so both entry points must initialize the registry.
+static void RCTEnsureModuleClassesRegistry()
+{
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    RCTModuleClasses = [NSMutableArray new];
+    RCTModuleClassesSyncQueue =
+        dispatch_queue_create("com.facebook.react.ModuleClassesSyncQueue", DISPATCH_QUEUE_CONCURRENT);
+  });
+}
+
 NSArray<Class> *RCTGetModuleClasses(void)
 {
+  RCTEnsureModuleClassesRegistry();
   __block NSArray<Class> *result;
   dispatch_sync(RCTModuleClassesSyncQueue, ^{
     result = [RCTModuleClasses copy];
@@ -141,12 +155,7 @@ void RCTRegisterModule(Class moduleClass)
   if (RCTAreLegacyLogsEnabled() && ![getCoreModuleClasses() containsObject:[moduleClass description]]) {
     addModuleLoadedWithOldArch([moduleClass description]);
   }
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    RCTModuleClasses = [NSMutableArray new];
-    RCTModuleClassesSyncQueue =
-        dispatch_queue_create("com.facebook.react.ModuleClassesSyncQueue", DISPATCH_QUEUE_CONCURRENT);
-  });
+  RCTEnsureModuleClassesRegistry();
 
   RCTAssert(
       [moduleClass conformsToProtocol:@protocol(RCTBridgeModule)],

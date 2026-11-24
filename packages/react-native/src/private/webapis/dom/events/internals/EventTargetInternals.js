@@ -52,7 +52,6 @@ const EVENT_DISPATCH_PARENT_CACHE_KEY = Symbol(
 export function getEventTargetParent(target: EventTarget): EventTarget | null {
   // The slot is `undefined` until populated; a populated slot may hold
   // `null` (no parent), so check against `undefined` rather than nullishness.
-  // $FlowExpectedError[prop-missing] symbol-keyed slot
   const cached: EventTarget | null | void =
     // $FlowExpectedError[prop-missing] symbol-keyed slot
     target[EVENT_DISPATCH_PARENT_CACHE_KEY];

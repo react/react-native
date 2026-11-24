@@ -60,7 +60,7 @@ describe('IntersectionObserver', () => {
     });
   });
 
-  describe('constructor(callback, {root, rootMargin, threshold, rnRootThreshold})', () => {
+  describe('constructor(callback, {root, rootMargin, scrollMargin, threshold, rnRootThreshold})', () => {
     it('should throw if `callback` is not provided', () => {
       expect(() => {
         // $FlowExpectedError[incompatible-type]
@@ -81,17 +81,14 @@ describe('IntersectionObserver', () => {
 
     it('should accept valid `rootMargin` values', () => {
       expect(() => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         return new IntersectionObserver(() => {}, {rootMargin: '10px'});
       }).not.toThrow();
 
       expect(() => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         return new IntersectionObserver(() => {}, {rootMargin: '10px 20px'});
       }).not.toThrow();
 
       expect(() => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         return new IntersectionObserver(() => {}, {
           rootMargin: '10px 20px 30px 40px',
         });
@@ -100,13 +97,11 @@ describe('IntersectionObserver', () => {
 
     describe('rootMargin', () => {
       it('should parse single value rootMargin', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {rootMargin: '10px'});
         expect(observer.rootMargin).toBe('10px 10px 10px 10px');
       });
 
       it('should parse two value rootMargin', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {
           rootMargin: '10px 20px',
         });
@@ -114,7 +109,6 @@ describe('IntersectionObserver', () => {
       });
 
       it('should parse three value rootMargin', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {
           rootMargin: '10px 20px 30px',
         });
@@ -122,7 +116,6 @@ describe('IntersectionObserver', () => {
       });
 
       it('should parse four value rootMargin', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {
           rootMargin: '10px 20px 30px 40px',
         });
@@ -130,7 +123,6 @@ describe('IntersectionObserver', () => {
       });
 
       it('should handle negative rootMargin values', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {
           rootMargin: '-10px -20px',
         });
@@ -138,7 +130,6 @@ describe('IntersectionObserver', () => {
       });
 
       it('should handle percentage rootMargin values', () => {
-        // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
         observer = new IntersectionObserver(() => {}, {
           rootMargin: '10% 20%',
         });
@@ -152,7 +143,6 @@ describe('IntersectionObserver', () => {
         });
 
         it('should default to "0px 0px 0px 0px" when rootMargin is undefined', () => {
-          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
           observer = new IntersectionObserver(() => {}, {
             rootMargin: undefined,
           });
@@ -160,7 +150,6 @@ describe('IntersectionObserver', () => {
         });
 
         it('should default to "0px 0px 0px 0px" when rootMargin is empty string', () => {
-          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
           observer = new IntersectionObserver(() => {}, {rootMargin: ''});
           expect(observer.rootMargin).toBe('0px 0px 0px 0px');
         });
@@ -169,7 +158,6 @@ describe('IntersectionObserver', () => {
       describe('parsing failures', () => {
         it('should throw when rootMargin is not a string', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             // $FlowExpectedError[incompatible-type]
             return new IntersectionObserver(() => {}, {rootMargin: 123});
           }).toThrow(
@@ -179,7 +167,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin has too many values', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {
               rootMargin: '10px 20px 30px 40px 50px',
             });
@@ -190,7 +177,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin value is missing unit', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {rootMargin: '10'});
           }).toThrow(
             "Failed to construct 'IntersectionObserver': Failed to parse rootMargin: '10' is not a valid length. Only 'px' and '%' units are allowed.",
@@ -199,7 +185,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin value has invalid unit', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {rootMargin: '10em'});
           }).toThrow(
             "Failed to construct 'IntersectionObserver': Failed to parse rootMargin: '10em' is not a valid length. Only 'px' and '%' units are allowed.",
@@ -208,7 +193,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin value has invalid format', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {
               rootMargin: 'invalid',
             });
@@ -219,7 +203,6 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin has mixed valid and invalid values', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {
               rootMargin: '10px invalid',
             });
@@ -230,10 +213,127 @@ describe('IntersectionObserver', () => {
 
         it('should throw when rootMargin value is only a unit', () => {
           expect(() => {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             return new IntersectionObserver(() => {}, {rootMargin: 'px'});
           }).toThrow(
             "Failed to construct 'IntersectionObserver': Failed to parse rootMargin: 'px' is not a valid length. Only 'px' and '%' units are allowed.",
+          );
+        });
+      });
+    });
+
+    describe('scrollMargin', () => {
+      it('should parse single value scrollMargin', () => {
+        observer = new IntersectionObserver(() => {}, {scrollMargin: '10px'});
+        expect(observer.scrollMargin).toBe('10px 10px 10px 10px');
+      });
+
+      it('should parse two value scrollMargin', () => {
+        observer = new IntersectionObserver(() => {}, {
+          scrollMargin: '10px 20px',
+        });
+        expect(observer.scrollMargin).toBe('10px 20px 10px 20px');
+      });
+
+      it('should parse three value scrollMargin', () => {
+        observer = new IntersectionObserver(() => {}, {
+          scrollMargin: '10px 20px 30px',
+        });
+        expect(observer.scrollMargin).toBe('10px 20px 30px 20px');
+      });
+
+      it('should parse four value scrollMargin', () => {
+        observer = new IntersectionObserver(() => {}, {
+          scrollMargin: '10px 20px 30px 40px',
+        });
+        expect(observer.scrollMargin).toBe('10px 20px 30px 40px');
+      });
+
+      it('should handle negative scrollMargin values', () => {
+        observer = new IntersectionObserver(() => {}, {
+          scrollMargin: '-10px -20px',
+        });
+        expect(observer.scrollMargin).toBe('-10px -20px -10px -20px');
+      });
+
+      it('should handle percentage scrollMargin values', () => {
+        observer = new IntersectionObserver(() => {}, {
+          scrollMargin: '10% 20%',
+        });
+        expect(observer.scrollMargin).toBe('10% 20% 10% 20%');
+      });
+
+      it('should be independent from rootMargin', () => {
+        observer = new IntersectionObserver(() => {}, {
+          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
+          rootMargin: '5px',
+          scrollMargin: '10px',
+        });
+        expect(observer.rootMargin).toBe('5px 5px 5px 5px');
+        expect(observer.scrollMargin).toBe('10px 10px 10px 10px');
+      });
+
+      describe('default values', () => {
+        it('should default to "0px 0px 0px 0px" when scrollMargin is not provided', () => {
+          observer = new IntersectionObserver(() => {});
+          expect(observer.scrollMargin).toBe('0px 0px 0px 0px');
+        });
+
+        it('should default to "0px 0px 0px 0px" when scrollMargin is undefined', () => {
+          observer = new IntersectionObserver(() => {}, {
+            scrollMargin: undefined,
+          });
+          expect(observer.scrollMargin).toBe('0px 0px 0px 0px');
+        });
+
+        it('should default to "0px 0px 0px 0px" when scrollMargin is empty string', () => {
+          observer = new IntersectionObserver(() => {}, {scrollMargin: ''});
+          expect(observer.scrollMargin).toBe('0px 0px 0px 0px');
+        });
+      });
+
+      describe('parsing failures', () => {
+        it('should throw when scrollMargin is not a string', () => {
+          expect(() => {
+            // $FlowExpectedError[incompatible-type]
+            return new IntersectionObserver(() => {}, {scrollMargin: 123});
+          }).toThrow(
+            "Failed to construct 'IntersectionObserver': Failed to read the 'scrollMargin' property from 'IntersectionObserverInit': The provided value is not of type 'string'.",
+          );
+        });
+
+        it('should throw when scrollMargin has too many values', () => {
+          expect(() => {
+            return new IntersectionObserver(() => {}, {
+              scrollMargin: '10px 20px 30px 40px 50px',
+            });
+          }).toThrow(
+            "Failed to construct 'IntersectionObserver': Failed to parse scrollMargin: Too many values (expected 1-4).",
+          );
+        });
+
+        it('should throw when scrollMargin value is missing unit', () => {
+          expect(() => {
+            return new IntersectionObserver(() => {}, {scrollMargin: '10'});
+          }).toThrow(
+            "Failed to construct 'IntersectionObserver': Failed to parse scrollMargin: '10' is not a valid length. Only 'px' and '%' units are allowed.",
+          );
+        });
+
+        it('should throw when scrollMargin value has invalid unit', () => {
+          expect(() => {
+            return new IntersectionObserver(() => {}, {scrollMargin: '10em'});
+          }).toThrow(
+            "Failed to construct 'IntersectionObserver': Failed to parse scrollMargin: '10em' is not a valid length. Only 'px' and '%' units are allowed.",
+          );
+        });
+
+        it('should throw when scrollMargin has mixed valid and invalid values', () => {
+          expect(() => {
+            return new IntersectionObserver(() => {}, {
+              scrollMargin: '10px invalid',
+            });
+          }).toThrow(
+            "Failed to construct 'IntersectionObserver': Failed to parse scrollMargin: 'invalid' is not a valid length. Only 'px' and '%' units are allowed.",
           );
         });
       });
@@ -355,7 +455,6 @@ describe('IntersectionObserver', () => {
     it('should throw if rnRootThreshold is set to an invalid value', () => {
       expect(() => {
         return new IntersectionObserver(() => {}, {
-          // $FlowExpectedError[incompatible-call]
           rnRootThreshold: 2,
         });
       }).toThrow(
@@ -477,25 +576,14 @@ describe('IntersectionObserver', () => {
     describe('unsupported options', () => {
       it('should throw if `delay` option is specified', () => {
         expect(() => {
-          // $FlowExpectedError[prop-missing] delay is not defined in Flow.
           return new IntersectionObserver(() => {}, {delay: 100});
         }).toThrow(
           "Failed to construct 'IntersectionObserver': The 'delay' option is not supported.",
         );
       });
 
-      it('should throw if `scrollMargin` option is specified', () => {
-        expect(() => {
-          // $FlowExpectedError[prop-missing] scrollMargin is not defined in Flow.
-          return new IntersectionObserver(() => {}, {scrollMargin: '10px'});
-        }).toThrow(
-          "Failed to construct 'IntersectionObserver': The 'scrollMargin' option is not supported.",
-        );
-      });
-
       it('should throw if `trackVisibility` option is specified', () => {
         expect(() => {
-          // $FlowExpectedError[prop-missing] trackVisibility is not defined in Flow.
           return new IntersectionObserver(() => {}, {trackVisibility: true});
         }).toThrow(
           "Failed to construct 'IntersectionObserver': The 'trackVisibility' option is not supported.",
@@ -504,19 +592,9 @@ describe('IntersectionObserver', () => {
 
       it('should throw if `delay` option is set to undefined explicitly', () => {
         expect(() => {
-          // $FlowExpectedError[prop-missing] delay is not defined in Flow.
           return new IntersectionObserver(() => {}, {delay: undefined});
         }).toThrow(
           "Failed to construct 'IntersectionObserver': The 'delay' option is not supported.",
-        );
-      });
-
-      it('should throw if `scrollMargin` option is set to null explicitly', () => {
-        expect(() => {
-          // $FlowExpectedError[prop-missing] scrollMargin is not defined in Flow.
-          return new IntersectionObserver(() => {}, {scrollMargin: null});
-        }).toThrow(
-          "Failed to construct 'IntersectionObserver': The 'scrollMargin' option is not supported.",
         );
       });
 
@@ -531,7 +609,6 @@ describe('IntersectionObserver', () => {
 
       it('should throw if multiple unsupported options are specified', () => {
         expect(() => {
-          // $FlowExpectedError[prop-missing] delay and trackVisibility are not defined in Flow.
           return new IntersectionObserver(() => {}, {
             delay: 100,
             trackVisibility: true,
@@ -549,15 +626,6 @@ describe('IntersectionObserver', () => {
           return observer.delay;
         }).toThrow(
           "Failed to read the 'delay' property from 'IntersectionObserver': This property is not supported.",
-        );
-      });
-
-      it('should throw when accessing scrollMargin getter', () => {
-        observer = new IntersectionObserver(() => {});
-        expect(() => {
-          return observer.scrollMargin;
-        }).toThrow(
-          "Failed to read the 'scrollMargin' property from 'IntersectionObserver': This property is not supported.",
         );
       });
 
@@ -1771,7 +1839,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
             });
             observer.observe(node);
@@ -1833,7 +1900,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: rootNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px 0px 0px 0px',
               threshold: 1,
             });
@@ -1892,7 +1958,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
               threshold: 1,
               rnRootThreshold: 0.5,
@@ -1960,7 +2025,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
               root: rootNode,
               threshold: 1,
@@ -2024,7 +2088,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
               threshold: 1,
             });
@@ -2083,7 +2146,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
               threshold: 0.5,
             });
@@ -2142,7 +2204,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '50px',
             });
             observer.observe(node);
@@ -2204,7 +2265,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: scrollNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '0px 0px 100px 0px',
             });
             observer.observe(node);
@@ -2249,7 +2309,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: scrollNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-50px',
             });
             observer.observe(node);
@@ -2310,7 +2369,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: customRoot,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-40px',
               threshold: 0.3,
             });
@@ -2369,7 +2427,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-50px',
             });
             observer.observe(node);
@@ -2425,7 +2482,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-100px',
             });
             observer.observe(node);
@@ -2484,7 +2540,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-100px 0px 0px 0px',
               threshold: 1,
             });
@@ -2543,7 +2598,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-150px',
             });
             observer.observe(node);
@@ -2605,7 +2659,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: rootNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-50px',
             });
             observer.observe(node);
@@ -2667,7 +2720,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: scrollNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-50px',
             });
             observer.observe(node);
@@ -2728,7 +2780,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '5%',
             });
             observer.observe(node);
@@ -2782,7 +2833,6 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
               root: scrollNode,
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-25%',
             });
             observer.observe(node);
@@ -2840,7 +2890,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '10% 0px 0px 0px',
             });
             observer.observe(node);
@@ -2894,7 +2943,6 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             observer = new IntersectionObserver(intersectionObserverCallback, {
-              // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
               rootMargin: '-10%',
             });
             observer.observe(node);
@@ -2943,7 +2991,6 @@ describe('IntersectionObserver', () => {
 
         Fantom.runTask(() => {
           observer = new IntersectionObserver(intersectionObserverCallback, {
-            // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
             rootMargin: '50px',
           });
           observer.observe(node);
@@ -3914,7 +3961,6 @@ describe('IntersectionObserver', () => {
       Fantom.runTask(() => {
         observer = new IntersectionObserver(intersectionObserverCallback, {
           root: scrollNode,
-          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
           rootMargin: '0px 0px 150px 0px',
           threshold: [0.01],
         });
@@ -3963,7 +4009,6 @@ describe('IntersectionObserver', () => {
 
       Fantom.runTask(() => {
         observer = new IntersectionObserver(intersectionObserverCallback, {
-          // $FlowExpectedError[prop-missing] rootMargin is not even defined in Flow.
           rootMargin: '0px 0px 150px 0px',
           threshold: [0.01],
         });
@@ -3975,6 +4020,797 @@ describe('IntersectionObserver', () => {
       expect(entries.length).toBe(1);
       expect(entries[0].isIntersecting).toBe(false);
       expect(entries[0].intersectionRatio).toBe(0);
+    });
+
+    describe('targets fully clipped by an intermediate ScrollView', () => {
+      // The target (150..200) is inside the 1000x1000 viewport but entirely
+      // clipped by the 100x100 ScrollView. With a threshold of 0, even an
+      // edge-adjacent intersection would count, so this checks that a fully
+      // clipped target is not mistaken for one.
+      function renderFullyClippedTarget(): HostInstance {
+        const nodeRef = React.createRef<HostInstance>();
+
+        const root = Fantom.createRoot({
+          viewportWidth: 1000,
+          viewportHeight: 1000,
+        });
+        Fantom.runTask(() => {
+          root.render(
+            <ScrollView style={{width: 100, height: 100, flexGrow: 0}}>
+              <View
+                style={{width: 50, height: 50, marginTop: 150}}
+                ref={nodeRef}
+              />
+            </ScrollView>,
+          );
+        });
+
+        return nullthrows(nodeRef.current);
+      }
+
+      it('should not report them as intersecting with the default threshold', () => {
+        const node = renderFullyClippedTarget();
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback);
+          observer.observe(node);
+        });
+
+        expect(intersectionObserverCallback).toHaveBeenCalledTimes(1);
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries.length).toBe(1);
+        expect(entries[0].isIntersecting).toBe(false);
+        expect(entries[0].intersectionRatio).toBe(0);
+      });
+
+      it('should not report them as intersecting with rootMargin', () => {
+        const node = renderFullyClippedTarget();
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback, {
+            rootMargin: '500px 0px',
+          });
+          observer.observe(node);
+        });
+
+        expect(intersectionObserverCallback).toHaveBeenCalledTimes(1);
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries.length).toBe(1);
+        expect(entries[0].isIntersecting).toBe(false);
+        expect(entries[0].intersectionRatio).toBe(0);
+      });
+    });
+
+    describe('scrollMargin', () => {
+      // Same layout as the `rootMargin` cases above: a 100x100 ScrollView
+      // clipping a 50x50 target that sits 150px down, entirely below the fold.
+      // `rootMargin` cannot reach past an intermediate clipper, `scrollMargin`
+      // can.
+      function renderTargetBelowTheFoldOfAScrollView(
+        marginTop: number = 150,
+        scale: number = 1,
+      ) {
+        const nodeRef = React.createRef<HostInstance>();
+
+        const root = Fantom.createRoot({
+          viewportWidth: 1000,
+          viewportHeight: 1000,
+        });
+        Fantom.runTask(() => {
+          root.render(
+            <ScrollView
+              style={{
+                width: 100,
+                height: 100,
+                flexGrow: 0,
+                margin: scale === 1 ? 0 : 100,
+                transform: [{scale}],
+              }}>
+              <View style={{width: 50, height: 50, marginTop}} ref={nodeRef} />
+            </ScrollView>,
+          );
+        });
+
+        return nullthrows(nodeRef.current);
+      }
+
+      it('should see past an intermediate ScrollView', () => {
+        const node = renderTargetBelowTheFoldOfAScrollView();
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback, {
+            scrollMargin: '0px 0px 150px 0px',
+            threshold: [0.01],
+          });
+          observer.observe(node);
+        });
+
+        expect(intersectionObserverCallback).toHaveBeenCalledTimes(1);
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries.length).toBe(1);
+        expect(entries[0].isIntersecting).toBe(true);
+        expect(entries[0].intersectionRatio).toBe(1);
+        expectRectEquals(entries[0].intersectionRect, {
+          x: 0,
+          y: 150,
+          width: 50,
+          height: 50,
+        });
+        // Unlike `rootMargin`, `scrollMargin` must not affect `rootBounds`.
+        expectRectEquals(entries[0].rootBounds, {
+          x: 0,
+          y: 0,
+          width: 1000,
+          height: 1000,
+        });
+      });
+
+      it('should partially reveal a target when the margin does not fully cover it', () => {
+        const node = renderTargetBelowTheFoldOfAScrollView();
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback, {
+            // Expands the scrollport's clip to 0..175, revealing the first
+            // 25px of the target (which spans 150..200).
+            scrollMargin: '0px 0px 75px 0px',
+            threshold: [0.01],
+          });
+          observer.observe(node);
+        });
+
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries[0].isIntersecting).toBe(true);
+        expect(entries[0].intersectionRatio).toBe(0.5);
+        expectRectEquals(entries[0].intersectionRect, {
+          x: 0,
+          y: 150,
+          width: 50,
+          height: 25,
+        });
+      });
+
+      for (const scale of [0.5, 2]) {
+        for (const {scrollMargin, marginTop, expectedRatio} of [
+          {
+            scrollMargin: '0px 0px 75px 0px',
+            marginTop: 150,
+            expectedRatio: 0.5,
+          },
+          {scrollMargin: '0% 0% 75% 0%', marginTop: 150, expectedRatio: 0.5},
+          {
+            scrollMargin: '0px 0px -20px 0px',
+            marginTop: 60,
+            expectedRatio: 0.4,
+          },
+          {scrollMargin: '0% 0% -20% 0%', marginTop: 60, expectedRatio: 0.4},
+        ]) {
+          it(`should apply ${scrollMargin} in scrollport coordinates at scale ${scale}`, () => {
+            const node = renderTargetBelowTheFoldOfAScrollView(
+              marginTop,
+              scale,
+            );
+            const entry = observeAndGetEntry(node, {scrollMargin});
+
+            expect(entry.isIntersecting).toBe(true);
+            expect(entry.intersectionRatio).toBe(expectedRatio);
+          });
+        }
+      }
+
+      it('should not reveal a target still beyond the expanded clip', () => {
+        const node = renderTargetBelowTheFoldOfAScrollView();
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback, {
+            // Expands the clip to 0..125, still short of the target at 150.
+            scrollMargin: '0px 0px 25px 0px',
+            threshold: [0.01],
+          });
+          observer.observe(node);
+        });
+
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries[0].isIntersecting).toBe(false);
+        expect(entries[0].intersectionRatio).toBe(0);
+      });
+
+      it('should resolve percentages against the scrollport, not the root', () => {
+        const node = renderTargetBelowTheFoldOfAScrollView();
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback, {
+            // 60% of the 100px scrollport is 60px, expanding its clip to
+            // 0..160 and revealing 10px of the target. Were this resolved
+            // against the 1000px viewport it would reveal the target entirely.
+            scrollMargin: '0% 0% 60% 0%',
+            threshold: [0.01],
+          });
+          observer.observe(node);
+        });
+
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries[0].isIntersecting).toBe(true);
+        expect(entries[0].intersectionRatio).toBe(0.2);
+        expectRectEquals(entries[0].intersectionRect, {
+          x: 0,
+          y: 150,
+          width: 50,
+          height: 10,
+        });
+      });
+
+      it('should contract the scrollport clip with negative values', () => {
+        // Target spans 60..110, so the unmodified scrollport clips it to
+        // 60..100 (80% visible).
+        const node = renderTargetBelowTheFoldOfAScrollView(60);
+
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback, {
+            // Contracts the clip to 0..80, leaving only 60..80 visible.
+            scrollMargin: '0px 0px -20px 0px',
+            threshold: [0.01],
+          });
+          observer.observe(node);
+        });
+
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries[0].isIntersecting).toBe(true);
+        expect(entries[0].intersectionRatio).toBe(0.4);
+        expectRectEquals(entries[0].intersectionRect, {
+          x: 0,
+          y: 60,
+          width: 50,
+          height: 20,
+        });
+      });
+
+      function observeAndGetEntry(
+        target: HostInstance,
+        options: {
+          root?: HostInstance,
+          rootMargin?: string,
+          scrollMargin?: string,
+        },
+      ): {
+        readonly isIntersecting: boolean,
+        readonly intersectionRatio: number,
+        readonly intersectionRect: DOMRectReadOnly,
+        readonly rootBounds: ?DOMRectReadOnly,
+        ...
+      } {
+        const intersectionObserverCallback = jest.fn();
+
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(intersectionObserverCallback, {
+            threshold: [0.01],
+            ...options,
+          });
+          observer.observe(target);
+        });
+
+        expect(intersectionObserverCallback).toHaveBeenCalledTimes(1);
+        const [entries] = intersectionObserverCallback.mock.lastCall;
+        expect(entries.length).toBe(1);
+        return entries[0];
+      }
+
+      describe('non-scroll containers', () => {
+        it('should not apply negative values to the clip of `overflow: visible` ancestors', () => {
+          const nodeRef = React.createRef<HostInstance>();
+
+          const root = Fantom.createRoot({
+            viewportWidth: 1000,
+            viewportHeight: 1000,
+          });
+          Fantom.runTask(() => {
+            root.render(
+              <View style={{width: 200, height: 200}}>
+                <View
+                  style={{width: 50, height: 50, marginTop: 20, marginLeft: 20}}
+                  ref={nodeRef}
+                />
+              </View>,
+            );
+          });
+
+          // There are no scroll containers between the target and the root,
+          // so per spec `scrollMargin` must have no effect at all.
+          const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+            scrollMargin: '-10px',
+          });
+
+          expect(entry.isIntersecting).toBe(true);
+          expect(entry.intersectionRatio).toBe(1);
+          expectRectEquals(entry.intersectionRect, {
+            x: 20,
+            y: 20,
+            width: 50,
+            height: 50,
+          });
+        });
+
+        it('should not apply negative values to `overflow: visible` ancestors inside a scroll container', () => {
+          const nodeRef = React.createRef<HostInstance>();
+
+          const root = Fantom.createRoot({
+            viewportWidth: 1000,
+            viewportHeight: 1000,
+          });
+          Fantom.runTask(() => {
+            root.render(
+              <ScrollView style={{width: 100, height: 100, flexGrow: 0}}>
+                <View style={{width: 50, height: 50, marginTop: 20}}>
+                  <View style={{width: 50, height: 50}} ref={nodeRef} />
+                </View>
+              </ScrollView>,
+            );
+          });
+
+          // Contracts only the scrollport's clip to 10..100, which still
+          // contains the target at 20..70. The wrapping view is not a scroll
+          // container and must not be contracted.
+          const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+            scrollMargin: '-10px 0px 0px 0px',
+          });
+
+          expect(entry.isIntersecting).toBe(true);
+          expect(entry.intersectionRatio).toBe(1);
+          expectRectEquals(entry.intersectionRect, {
+            x: 0,
+            y: 20,
+            width: 50,
+            height: 50,
+          });
+        });
+
+        it('should not apply to the target itself, even if it is a scroll container', () => {
+          const nodeRef = React.createRef<HostInstance>();
+
+          const root = Fantom.createRoot({
+            viewportWidth: 1000,
+            viewportHeight: 1000,
+          });
+          Fantom.runTask(() => {
+            root.render(
+              <ScrollView
+                style={{
+                  width: 50,
+                  height: 50,
+                  flexGrow: 0,
+                  marginTop: 20,
+                  marginLeft: 20,
+                  overflow: 'hidden',
+                }}
+                ref={nodeRef}
+              />,
+            );
+          });
+
+          // The spec starts the clipping walk at the target's containing
+          // block, so the target's own clip is never dilated.
+          const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+            scrollMargin: '-10px',
+          });
+
+          expect(entry.isIntersecting).toBe(true);
+          expect(entry.intersectionRatio).toBe(1);
+          expectRectEquals(entry.intersectionRect, {
+            x: 20,
+            y: 20,
+            width: 50,
+            height: 50,
+          });
+        });
+
+        it('should not dilate non-scrollable `overflow: hidden` ancestors', () => {
+          const nodeRef = React.createRef<HostInstance>();
+
+          const root = Fantom.createRoot({
+            viewportWidth: 1000,
+            viewportHeight: 1000,
+          });
+          Fantom.runTask(() => {
+            root.render(
+              <View style={{width: 100, height: 100, overflow: 'hidden'}}>
+                <View
+                  style={{width: 50, height: 50, marginTop: 150}}
+                  ref={nodeRef}
+                />
+              </View>,
+            );
+          });
+
+          const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+            scrollMargin: '0px 0px 75px 0px',
+          });
+
+          expect(entry.isIntersecting).toBe(false);
+          expect(entry.intersectionRatio).toBe(0);
+          expectRectEquals(entry.intersectionRect, {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+          });
+        });
+
+        it('should keep a non-scrollable hidden clip unchanged with negative scrollMargin', () => {
+          const nodeRef = React.createRef<HostInstance>();
+          const root = Fantom.createRoot({
+            viewportWidth: 1000,
+            viewportHeight: 1000,
+          });
+          Fantom.runTask(() => {
+            root.render(
+              <View style={{width: 100, height: 100, overflow: 'hidden'}}>
+                <View
+                  style={{width: 50, height: 50, marginTop: 60}}
+                  ref={nodeRef}
+                />
+              </View>,
+            );
+          });
+
+          const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+            scrollMargin: '0px 0px -20px 0px',
+          });
+
+          expect(entry.isIntersecting).toBe(true);
+          expect(entry.intersectionRatio).toBe(0.8);
+          expectRectEquals(entry.intersectionRect, {
+            x: 0,
+            y: 60,
+            width: 50,
+            height: 40,
+          });
+        });
+
+        it('should update clipping when an ancestor changes its overflow', () => {
+          const nodeRef = React.createRef<HostInstance>();
+          const root = Fantom.createRoot({
+            viewportWidth: 1000,
+            viewportHeight: 1000,
+          });
+          const render = (overflow: 'visible' | 'hidden') => {
+            Fantom.runTask(() => {
+              root.render(
+                <View style={{width: 100, height: 100, overflow}}>
+                  <View
+                    style={{width: 50, height: 50, marginTop: 150}}
+                    ref={nodeRef}
+                  />
+                </View>,
+              );
+            });
+          };
+          render('hidden');
+          const callback = jest.fn();
+          Fantom.runTask(() => {
+            observer = new IntersectionObserver(callback, {
+              scrollMargin: '500px',
+            });
+            observer.observe(nullthrows(nodeRef.current));
+          });
+          expect(callback).toHaveBeenCalledTimes(1);
+          expect(callback.mock.lastCall[0][0].isIntersecting).toBe(false);
+
+          render('visible');
+          expect(callback).toHaveBeenCalledTimes(2);
+          expect(callback.mock.lastCall[0][0].isIntersecting).toBe(true);
+          expect(callback.mock.lastCall[0][0].intersectionRatio).toBe(1);
+
+          render('hidden');
+          expect(callback).toHaveBeenCalledTimes(3);
+          expect(callback.mock.lastCall[0][0].isIntersecting).toBe(false);
+        });
+      });
+
+      describe('explicit root', () => {
+        function renderTargetBelowTheFoldOfAScrollViewRoot(): {
+          scrollNode: HostInstance,
+          node: HostInstance,
+        } {
+          const scrollNodeRef = React.createRef<HostInstance>();
+          const nodeRef = React.createRef<HostInstance>();
+
+          const root = Fantom.createRoot({
+            viewportWidth: 1000,
+            viewportHeight: 1000,
+          });
+          Fantom.runTask(() => {
+            root.render(
+              <ScrollView
+                style={{width: 100, height: 100, flexGrow: 0}}
+                ref={scrollNodeRef}>
+                <View
+                  style={{width: 50, height: 50, marginTop: 150}}
+                  ref={nodeRef}
+                />
+              </ScrollView>,
+            );
+          });
+
+          return {
+            scrollNode: nullthrows(scrollNodeRef.current),
+            node: nullthrows(nodeRef.current),
+          };
+        }
+
+        it('should apply to a scrollable root', () => {
+          const {scrollNode, node} =
+            renderTargetBelowTheFoldOfAScrollViewRoot();
+
+          // Per spec, both `rootMargin` and `scrollMargin` apply to a
+          // scrollable root. Expands the root's clip to 0..175.
+          const entry = observeAndGetEntry(node, {
+            root: scrollNode,
+            scrollMargin: '0px 0px 75px 0px',
+          });
+
+          expect(entry.isIntersecting).toBe(true);
+          expect(entry.intersectionRatio).toBe(0.5);
+          expectRectEquals(entry.intersectionRect, {
+            x: 0,
+            y: 150,
+            width: 50,
+            height: 25,
+          });
+          // `rootBounds` is the root intersection rectangle, which only
+          // `rootMargin` dilates.
+          expectRectEquals(nullthrows(entry.rootBounds), {
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+          });
+        });
+
+        it('should combine with rootMargin on a scrollable root, resolving both against the undilated root', () => {
+          const {scrollNode, node} =
+            renderTargetBelowTheFoldOfAScrollViewRoot();
+
+          // rootMargin adds 40px and scrollMargin 25% of the undilated 100px
+          // root (25px), so the clip is 0..165. Resolving the percentage
+          // against the rootMargin-dilated root (140px) would give 0..175.
+          const entry = observeAndGetEntry(node, {
+            root: scrollNode,
+            rootMargin: '0px 0px 40px 0px',
+            scrollMargin: '0% 0% 25% 0%',
+          });
+
+          expect(entry.isIntersecting).toBe(true);
+          expect(entry.intersectionRatio).toBe(0.3);
+          expectRectEquals(entry.intersectionRect, {
+            x: 0,
+            y: 150,
+            width: 50,
+            height: 15,
+          });
+          expectRectEquals(nullthrows(entry.rootBounds), {
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 140,
+          });
+        });
+
+        it('should not apply to a non-scrollable clipping root', () => {
+          const rootNodeRef = React.createRef<HostInstance>();
+          const nodeRef = React.createRef<HostInstance>();
+
+          const root = Fantom.createRoot({
+            viewportWidth: 1000,
+            viewportHeight: 1000,
+          });
+          Fantom.runTask(() => {
+            root.render(
+              <View
+                style={{width: 100, height: 100, overflow: 'hidden'}}
+                ref={rootNodeRef}>
+                <View
+                  style={{width: 50, height: 50, marginTop: 150}}
+                  ref={nodeRef}
+                />
+              </View>,
+            );
+          });
+
+          const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+            root: nullthrows(rootNodeRef.current),
+            scrollMargin: '0px 0px 75px 0px',
+          });
+
+          expect(entry.isIntersecting).toBe(false);
+          expect(entry.intersectionRatio).toBe(0);
+        });
+      });
+
+      it('should apply to every scroll container between the root and the target', () => {
+        const nodeRef = React.createRef<HostInstance>();
+
+        const root = Fantom.createRoot({
+          viewportWidth: 1000,
+          viewportHeight: 1000,
+        });
+        Fantom.runTask(() => {
+          root.render(
+            <ScrollView style={{width: 100, height: 100, flexGrow: 0}}>
+              <ScrollView style={{width: 100, height: 100, flexGrow: 0}}>
+                <View
+                  style={{width: 50, height: 50, marginTop: 150}}
+                  ref={nodeRef}
+                />
+              </ScrollView>
+            </ScrollView>,
+          );
+        });
+
+        // Both scrollports span 0..100. Each must expand to 0..175 for the
+        // target to be revealed: if either were not dilated, its 0..100 clip
+        // would hide the target entirely.
+        const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+          scrollMargin: '0px 0px 75px 0px',
+        });
+
+        expect(entry.isIntersecting).toBe(true);
+        expect(entry.intersectionRatio).toBe(0.5);
+        expectRectEquals(entry.intersectionRect, {
+          x: 0,
+          y: 150,
+          width: 50,
+          height: 25,
+        });
+      });
+
+      it('should preserve scroll-container behavior through prop updates and disabled user scrolling', () => {
+        const nodeRef = React.createRef<HostInstance>();
+        const root = Fantom.createRoot({
+          viewportWidth: 1000,
+          viewportHeight: 1000,
+        });
+
+        for (const scrollEnabled of [true, false]) {
+          Fantom.runTask(() => {
+            root.render(
+              <ScrollView
+                scrollEnabled={scrollEnabled}
+                style={{width: 100, height: 100, flexGrow: 0}}>
+                <View
+                  style={{width: 50, height: 50, marginTop: 150}}
+                  ref={nodeRef}
+                />
+              </ScrollView>,
+            );
+          });
+          const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+            scrollMargin: '0px 0px 75px 0px',
+          });
+          expect(entry.isIntersecting).toBe(true);
+          expect(entry.intersectionRatio).toBe(0.5);
+          observer.disconnect();
+        }
+      });
+
+      it('should apply to the horizontal edges', () => {
+        const nodeRef = React.createRef<HostInstance>();
+
+        const root = Fantom.createRoot({
+          viewportWidth: 1000,
+          viewportHeight: 1000,
+        });
+        Fantom.runTask(() => {
+          root.render(
+            <ScrollView
+              horizontal
+              style={{width: 100, height: 100, flexGrow: 0}}>
+              <View
+                style={{width: 50, height: 50, marginLeft: 150}}
+                ref={nodeRef}
+              />
+            </ScrollView>,
+          );
+        });
+
+        // Expands the scrollport's clip to 0..175 horizontally.
+        const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+          scrollMargin: '0px 75px 0px 0px',
+        });
+
+        expect(entry.isIntersecting).toBe(true);
+        expect(entry.intersectionRatio).toBe(0.5);
+        expectRectEquals(entry.intersectionRect, {
+          x: 150,
+          y: 0,
+          width: 25,
+          height: 50,
+        });
+      });
+
+      it('should reveal a target scrolled above the scrollport through the top edge', () => {
+        const scrollNodeRef = React.createRef<HostInstance>();
+        const nodeRef = React.createRef<HostInstance>();
+
+        const root = Fantom.createRoot({
+          viewportWidth: 1000,
+          viewportHeight: 1000,
+        });
+        Fantom.runTask(() => {
+          root.render(
+            <ScrollView
+              style={{width: 100, height: 100, flexGrow: 0, marginTop: 100}}
+              ref={scrollNodeRef}>
+              <View
+                style={{width: 50, height: 50, marginTop: 150}}
+                ref={nodeRef}
+              />
+              <View style={{height: 500}} />
+            </ScrollView>,
+          );
+        });
+
+        // The scrollport spans 100..200 in the viewport. Scrolling by 200
+        // moves the target (150..200 in the content) to 50..100, just above
+        // it.
+        Fantom.scrollTo(nullthrows(scrollNodeRef.current), {
+          x: 0,
+          y: 200,
+        });
+
+        // Expands the scrollport's clip to 75..200.
+        const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+          scrollMargin: '25px 0px 0px 0px',
+        });
+
+        expect(entry.isIntersecting).toBe(true);
+        expect(entry.intersectionRatio).toBe(0.5);
+        expectRectEquals(entry.intersectionRect, {
+          x: 0,
+          y: 75,
+          width: 50,
+          height: 25,
+        });
+      });
+
+      it('should compose with rootMargin on the implicit root', () => {
+        const node = renderTargetBelowTheFoldOfAScrollView();
+
+        // scrollMargin expands the scrollport's clip to 0..250, revealing the
+        // whole target (150..200), but rootMargin contracts the root to
+        // 0..160, so only 150..160 is intersecting.
+        const entry = observeAndGetEntry(node, {
+          rootMargin: '0px 0px -840px 0px',
+          scrollMargin: '0px 0px 150px 0px',
+        });
+
+        expect(entry.isIntersecting).toBe(true);
+        expect(entry.intersectionRatio).toBe(0.2);
+        expectRectEquals(entry.intersectionRect, {
+          x: 0,
+          y: 150,
+          width: 50,
+          height: 10,
+        });
+        expectRectEquals(nullthrows(entry.rootBounds), {
+          x: 0,
+          y: 0,
+          width: 1000,
+          height: 160,
+        });
+      });
     });
   });
 

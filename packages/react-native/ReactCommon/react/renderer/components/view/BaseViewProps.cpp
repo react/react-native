@@ -105,6 +105,9 @@ BaseViewProps::BaseViewProps(
               .block = "borderBlockColor",
               .blockEnd = "borderBlockEndColor",
               .blockStart = "borderBlockStartColor",
+              .inline_ = "borderInlineColor",
+              .inlineEnd = "borderInlineEndColor",
+              .inlineStart = "borderInlineStartColor",
               .all = "borderColor"},
           sourceProps.borderColors,
           {})),
@@ -142,6 +145,9 @@ BaseViewProps::BaseViewProps(
               .block = "borderBlockStyle",
               .blockEnd = "borderBlockEndStyle",
               .blockStart = "borderBlockStartStyle",
+              .inline_ = "borderInlineStyle",
+              .inlineEnd = "borderInlineEndStyle",
+              .inlineStart = "borderInlineStartStyle",
               .all = "borderStyle"},
           sourceProps.borderStyles,
           {})),
@@ -513,18 +519,23 @@ static BorderRadii radiiPercentToPoint(
 }
 
 CascadedBorderWidths BaseViewProps::getBorderWidths() const {
+  auto pick = [](const yoga::Style::Length& value,
+                 const yoga::Style::Length& fallback) {
+    return optionalFloatFromYogaValue(value.isDefined() ? value : fallback);
+  };
+
   return CascadedBorderWidths{
       .left = optionalFloatFromYogaValue(yogaStyle.border(yoga::Edge::Left)),
-      .top = optionalFloatFromYogaValue(yogaStyle.border(yoga::Edge::Top)),
+      .top = pick(yogaStyle.border(yoga::Edge::Top), borderBlockStartWidth),
       .right = optionalFloatFromYogaValue(yogaStyle.border(yoga::Edge::Right)),
-      .bottom =
-          optionalFloatFromYogaValue(yogaStyle.border(yoga::Edge::Bottom)),
-      .start = optionalFloatFromYogaValue(yogaStyle.border(yoga::Edge::Start)),
-      .end = optionalFloatFromYogaValue(yogaStyle.border(yoga::Edge::End)),
+      .bottom = pick(yogaStyle.border(yoga::Edge::Bottom), borderBlockEndWidth),
+      .start =
+          pick(borderInlineStartWidth, yogaStyle.border(yoga::Edge::Start)),
+      .end = pick(borderInlineEndWidth, yogaStyle.border(yoga::Edge::End)),
       .horizontal =
-          optionalFloatFromYogaValue(yogaStyle.border(yoga::Edge::Horizontal)),
+          pick(borderInlineWidth, yogaStyle.border(yoga::Edge::Horizontal)),
       .vertical =
-          optionalFloatFromYogaValue(yogaStyle.border(yoga::Edge::Vertical)),
+          pick(borderBlockWidth, yogaStyle.border(yoga::Edge::Vertical)),
       .all = optionalFloatFromYogaValue(yogaStyle.border(yoga::Edge::All)),
   };
 }

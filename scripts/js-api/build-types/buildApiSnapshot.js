@@ -17,11 +17,7 @@ const {API_EXTRACTOR_CONFIG_FILE, TYPES_OUTPUT_DIR} = require('../config');
 const apiSnapshotTemplate = require('./templates/ReactNativeApi.d.ts-template.js');
 const applyBabelTransformsSeq = require('./utils/applyBabelTransformsSeq');
 const resolveCyclicImportsInDefinition = require('./utils/resolveCyclicImportsInDefinition');
-const {
-  Extractor,
-  ExtractorConfig,
-  // $FlowFixMe[cannot-resolve-module]
-} = require('@microsoft/api-extractor');
+const {Extractor, ExtractorConfig} = require('@microsoft/api-extractor');
 const {diff} = require('jest-diff');
 const {promises: fs} = require('node:fs');
 const path = require('node:path');

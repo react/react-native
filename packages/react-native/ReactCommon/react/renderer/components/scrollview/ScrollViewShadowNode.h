@@ -27,6 +27,13 @@ class ScrollViewShadowNode final
  public:
   using ConcreteViewShadowNode::ConcreteViewShadowNode;
 
+  static constexpr ShadowNodeTraits BaseTraits()
+  {
+    auto traits = ConcreteViewShadowNode::BaseTraits();
+    traits.set(ShadowNodeTraits::Trait::FormsScrollContainer);
+    return traits;
+  }
+
   static ScrollViewState initialStateData(
       const Props::Shared &props,
       const ShadowNodeFamily::Shared &family,

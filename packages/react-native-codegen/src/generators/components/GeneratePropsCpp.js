@@ -356,7 +356,6 @@ module.exports = {
             );
 
             const imports = getImports(component.props);
-            // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             imports.forEach(allImports.add, allImports);
 
             const replacedTemplate = ComponentTemplate({

@@ -175,6 +175,7 @@ export function observe({
     thresholds: registeredObserver.observer.thresholds,
     rootThresholds: registeredObserver.observer.rnRootThresholds,
     rootMargin: registeredObserver.observer.rootMargin,
+    scrollMargin: registeredObserver.observer.scrollMargin,
   });
   targetToTokenMap.set(target, token);
 

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c129d87ae4a503699e961bbefd90ff47>>
+ * @generated SignedSource<<99c0c14cf6e3eca24e7bf1c7eaf64d07>>
  */
 
 /**
@@ -401,6 +401,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = accessor.fixMappingOfEventPrioritiesBetweenFabricAndReact()
+
+  /**
+   * Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.
+   */
+  @JvmStatic
+  public fun fixProgrammaticScrollMomentumEventsIOS(): Boolean = accessor.fixProgrammaticScrollMomentumEventsIOS()
 
   /**
    * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.

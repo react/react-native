@@ -12,11 +12,11 @@
 #include <jsi/jsi.h>
 #include <react/renderer/core/ShadowNodeFamily.h>
 #include <react/renderer/mounting/ShadowTree.h>
-#include <react/renderer/mounting/ShadowTreeRegistry.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #include <react/renderer/runtimescheduler/RuntimeSchedulerResizeObserverDelegate.h>
 #include <react/renderer/uimanager/UIManager.h>
 #include <react/renderer/uimanager/UIManagerCommitHook.h>
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -28,6 +28,8 @@
 #include "ResizeObserver.h"
 
 namespace facebook::react {
+
+class ShadowTreeRevisionProvider;
 
 class ResizeObserverManager final : public UIManagerCommitHook, public RuntimeSchedulerResizeObserverDelegate {
  public:
@@ -112,6 +114,8 @@ class ResizeObserverManager final : public UIManagerCommitHook, public RuntimeSc
   std::mutex dirtyFamiliesMutex_;
 
   std::function<void(jsi::Runtime &, bool)> notifyResizeObserversFunction_;
+  RuntimeScheduler *runtimeScheduler_{nullptr};
+  std::shared_ptr<std::atomic<bool>> pendingWake_;
   bool commitHookRegistered_{};
 
   // Set for the duration of `runResizeObservations`. The broadcast runs JS,
@@ -123,7 +127,7 @@ class ResizeObserverManager final : public UIManagerCommitHook, public RuntimeSc
   // tick, so it is safe to retain it as a raw pointer.
   // We need to retain it here because the RuntimeScheduler does not provide
   // it when calling `runResizeObservations`.
-  const ShadowTreeRegistry *shadowTreeRegistry_{nullptr};
+  ShadowTreeRevisionProvider *shadowTreeRevisionProvider_{nullptr};
 
   mutable std::vector<ResizeObserverEntry> pendingEntries_;
   mutable std::mutex pendingEntriesMutex_;

@@ -120,7 +120,6 @@ export function createCompositeKeyForProps(
     if (allowlist == null || hasOwn(allowlist, key)) {
       let compositeKeyComponent;
       if (key === 'style') {
-        // $FlowFixMe[incompatible-call] - `style` is a valid argument.
         // $FlowFixMe[incompatible-type] - `flattenStyle` returns an object.
         const flatStyle: ?{[key: string]: unknown} = flattenStyle(value);
         if (flatStyle != null) {
@@ -354,10 +353,8 @@ function areCompositeKeyComponentsEqual(
 
 // Supported versions of JSC do not implement the newer Object.hasOwn. Remove
 // this shim when they do.
-// $FlowFixMe[method-unbinding]
 const _hasOwnProp = Object.prototype.hasOwnProperty;
 const hasOwn: (obj: Readonly<{...}>, prop: string) => boolean =
-  // $FlowFixMe[method-unbinding]
   /* $FlowFixMe[invalid-this-arg] Error exposed after fixing this typing
    * unsoundness in flow */
   Object.hasOwn ?? ((obj, prop) => _hasOwnProp.call(obj, prop));

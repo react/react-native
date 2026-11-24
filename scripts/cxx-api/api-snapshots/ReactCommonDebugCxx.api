@@ -99,6 +99,7 @@ using facebook::react::ComponentHandle = int64_t;
 using facebook::react::ComponentName = const char*;
 using facebook::react::CornerInsets = facebook::react::RectangleCorners<Float>;
 using facebook::react::EdgeInsets = facebook::react::RectangleEdges<Float>;
+using facebook::react::EdgeMargins = facebook::react::RectangleEdges<facebook::react::MarginValue>;
 using facebook::react::EventListener = std::function<bool(const facebook::react::RawEvent& event)>;
 using facebook::react::EventPipe = std::function<void(facebook::jsi::Runtime& runtime, facebook::react::EventTarget* eventTarget, const std::string& type, facebook::react::ReactEventPriority priority, const facebook::react::EventPayload& payload, facebook::react::HighResTimeStamp eventTimestamp)>;
 using facebook::react::EventPipeConclusion = std::function<void(facebook::jsi::Runtime& runtime)>;
@@ -166,6 +167,7 @@ facebook::jsi::Value facebook::react::createPromiseAsJSIValue(facebook::jsi::Run
 facebook::react::ColorComponents facebook::react::colorComponentsFromColor(facebook::react::SharedColor color);
 facebook::react::ColorSpace facebook::react::getDefaultColorSpace();
 facebook::react::DisplayType facebook::react::displayTypeFromYGDisplay(YGDisplay display);
+facebook::react::EdgeInsets facebook::react::resolveEdgeMargins(const facebook::react::EdgeMargins& margins, const facebook::react::Size& size) noexcept;
 facebook::react::LayoutMetrics facebook::react::layoutMetricsFromYogaNode(facebook::yoga::Node& yogaNode);
 facebook::react::Rect facebook::react::insetBy(const facebook::react::Rect& rect, const facebook::react::EdgeInsets& insets) noexcept;
 facebook::react::Rect facebook::react::outsetBy(const facebook::react::Rect& rect, const facebook::react::EdgeInsets& outsets) noexcept;
@@ -859,6 +861,7 @@ struct facebook::react::LayoutableShadowNode::LayoutInspectingPolicy {
   public bool enableOverflowClipping;
   public bool includeTransform;
   public bool includeViewportOffset;
+  public std::optional<facebook::react::EdgeMargins> clipMargin;
 }
 
 class facebook::react::LongLivedObject {
@@ -1111,6 +1114,8 @@ enum facebook::react::ShadowNodeTraits::Trait : int32_t {
   ChildrenFormStackingContext,
   DirtyYogaNode,
   ForceFlattenView,
+  FormsContentClip,
+  FormsScrollContainer,
   FormsStackingContext,
   FormsView,
   Hidden,
@@ -1244,6 +1249,12 @@ class facebook::react::YogaStylableProps : public facebook::react::Props {
   public YogaStylableProps() = default;
   public YogaStylableProps(const facebook::react::PropsParserContext& context, const facebook::react::YogaStylableProps& sourceProps, const facebook::react::RawProps& rawProps, const std::function<bool(const std::string&)>& filterObjectKeys = nullptr);
   public facebook::yoga::Style yogaStyle;
+  public facebook::yoga::Style::Length borderBlockEndWidth;
+  public facebook::yoga::Style::Length borderBlockStartWidth;
+  public facebook::yoga::Style::Length borderBlockWidth;
+  public facebook::yoga::Style::Length borderInlineEndWidth;
+  public facebook::yoga::Style::Length borderInlineStartWidth;
+  public facebook::yoga::Style::Length borderInlineWidth;
   public facebook::yoga::Style::Length insetBlockEnd;
   public facebook::yoga::Style::Length insetBlockStart;
   public facebook::yoga::Style::Length insetInlineEnd;
@@ -1852,6 +1863,12 @@ struct facebook::react::LinearGradient {
   public std::vector<facebook::react::ColorStop> colorStops;
 }
 
+struct facebook::react::MarginValue {
+  public Float value;
+  public bool isPercentage;
+  public bool operator==(const facebook::react::MarginValue& rhs) const noexcept = default;
+}
+
 struct facebook::react::Point {
   public Float x;
   public Float y;
@@ -2293,6 +2310,9 @@ struct facebook::react::CascadedRectangleEdges {
   public facebook::react::CascadedRectangleEdges::OptionalT bottom;
   public facebook::react::CascadedRectangleEdges::OptionalT end;
   public facebook::react::CascadedRectangleEdges::OptionalT horizontal;
+  public facebook::react::CascadedRectangleEdges::OptionalT inlineEnd;
+  public facebook::react::CascadedRectangleEdges::OptionalT inlineStart;
+  public facebook::react::CascadedRectangleEdges::OptionalT inline_;
   public facebook::react::CascadedRectangleEdges::OptionalT left;
   public facebook::react::CascadedRectangleEdges::OptionalT right;
   public facebook::react::CascadedRectangleEdges::OptionalT start;
@@ -2569,7 +2589,7 @@ decltype(facebook::react::Bridging<facebook::react::bridging::remove_cvref_t<Ret
 template <typename ReturnT, typename JSArgT>
 decltype(facebook::react::Bridging<facebook::react::bridging::remove_cvref_t<ReturnT>>::fromJs(rt, facebook::react::bridging::convert(rt, std::forward<JSArgT>(value)), jsInvoker)) facebook::react::bridging::fromJs(facebook::jsi::Runtime& rt, JSArgT&& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
 template <typename ReturnT, typename JSArgT>
-decltype(static_cast<ReturnT>(std::move(facebook::react::bridging::convert(rt, std::forward<JSArgT>(value))))) facebook::react::bridging::fromJs(facebook::jsi::Runtime& rt, JSArgT&& value, const std::shared_ptr<facebook::react::CallInvoker>&);
+facebook::react::bridging::remove_cvref_t<decltype(static_cast<ReturnT>(std::move(facebook::react::bridging::convert(rt, std::forward<JSArgT>(value)))))> facebook::react::bridging::fromJs(facebook::jsi::Runtime& rt, JSArgT&& value, const std::shared_ptr<facebook::react::CallInvoker>&);
 template <typename ReturnT, typename... ArgsT>
 constexpr size_t facebook::react::bridging::getParameterCount(ReturnT(*)(ArgsT...));
 template <typename T, std::enable_if_t<is_jsi_v<T>, int> = 0>

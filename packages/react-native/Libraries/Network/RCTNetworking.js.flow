@@ -18,7 +18,6 @@ import type {NativeResponseType} from './XMLHttpRequest';
 declare const RCTNetworking: interface {
   addListener<K extends keyof RCTNetworkingEventDefinitions>(
     eventType: K,
-    // $FlowFixMe[invalid-computed-prop]
     listener: (...rest: RCTNetworkingEventDefinitions[K]) => unknown,
     context?: unknown,
   ): EventSubscription,

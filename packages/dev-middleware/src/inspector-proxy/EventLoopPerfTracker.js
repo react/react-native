@@ -8,7 +8,6 @@
  * @format
  */
 
-// $FlowFixMe[cannot-resolve-module] libdef missing in RN OSS
 import type {DebuggerSessionIDs} from '../types/EventReporter';
 
 import {monitorEventLoopDelay, performance} from 'node:perf_hooks';

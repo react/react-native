@@ -233,7 +233,6 @@ describe('console.table(data, rows)', () => {
         {third: 7, fourth: 8},
         {fifth: 9},
       ],
-      // $FlowExpectedError[extra-arg]
       ['first', 'fifth'],
     );
     expect(logFn).toHaveBeenCalledTimes(1);
@@ -257,7 +256,6 @@ describe('console.table(data, rows)', () => {
         c: {third: 7, fourth: 8},
         d: {fifth: 9},
       },
-      // $FlowExpectedError[extra-arg]
       ['first', 'fifth'],
     );
     expect(logFn).toHaveBeenCalledTimes(1);

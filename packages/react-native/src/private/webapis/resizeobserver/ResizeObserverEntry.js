@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type ReactNativeElement from '../dom/nodes/ReactNativeElement';
 import type {NativeResizeObserverEntry} from './specs/NativeResizeObserver';
 
@@ -47,6 +45,7 @@ export default class ResizeObserverEntry {
   /**
    * The `ReactNativeElement` whose size has changed.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get target(): ReactNativeElement {
     return this._target;
   }
@@ -58,6 +57,7 @@ export default class ResizeObserverEntry {
    * In React Native, this is the content rect of the observed target (the
    * bounds of its content box).
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get contentRect(): DOMRectReadOnly {
     if (this._contentRect == null) {
       const contentRect = this._nativeEntry.contentRect;
@@ -77,6 +77,7 @@ export default class ResizeObserverEntry {
    * Note: React Native does not support fragments, so this array will
    * always contain a single value.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get borderBoxSize(): ReadonlyArray<ResizeObserverSize> {
     if (this._borderBoxSize == null) {
       const borderBoxSize = this._nativeEntry.borderBoxSize;
@@ -93,6 +94,7 @@ export default class ResizeObserverEntry {
    * Note: React Native does not support fragments, so this array will
    * always contain a single value.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get contentBoxSize(): ReadonlyArray<ResizeObserverSize> {
     if (this._contentBoxSize == null) {
       const contentBoxSize = this._nativeEntry.contentBoxSize;
@@ -109,6 +111,7 @@ export default class ResizeObserverEntry {
    * Note: React Native does not support fragments, so this array will
    * always contain a single value.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get devicePixelContentBoxSize(): ReadonlyArray<ResizeObserverSize> {
     if (this._devicePixelContentBoxSize == null) {
       const devicePixelContentBoxSize =
@@ -142,5 +145,4 @@ export const ResizeObserverEntry_public: typeof ResizeObserverEntry =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ResizeObserverEntry_public.prototype = ResizeObserverEntry.prototype;

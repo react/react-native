@@ -184,6 +184,22 @@ class Root {
     return NativeFantom.takeMountingManagerLogs(this.#surfaceId);
   }
 
+  /**
+   * Changes the root's native surface constraints without rendering React,
+   * updating Dimensions, or flushing pending work.
+   */
+  updateSurfaceConstraints(width: number, height: number): void {
+    if (this.#destroyed) {
+      throw new Error('Cannot resize a destroyed root.');
+    }
+    NativeFantom.updateSurfaceConstraints(
+      this.#surfaceId,
+      width,
+      height,
+      this.#devicePixelRatio,
+    );
+  }
+
   destroy() {
     // TODO: check for leaks.
     NativeFantom.stopSurface(this.#surfaceId);
@@ -356,7 +372,6 @@ export function getDefinedEventHandlers(
     return [];
   }
   // WARNING: This uses React private API (fiber internals).
-  // $FlowExpectedError[incompatible-type]
   const memoizedProps = (
     instanceHandle as {memoizedProps?: {[key: string]: unknown}}
   ).memoizedProps;

@@ -16,7 +16,6 @@ import {build as buildHermesCompiler} from '../executables/hermesc';
 import {build as buildFantomTester} from '../executables/tester';
 import {NATIVE_BUILD_OUTPUT_PATH} from '../paths';
 import {HermesVariant} from '../utils';
-// $FlowExpectedError[untyped-import]
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';

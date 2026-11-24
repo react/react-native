@@ -14,8 +14,6 @@ import type {TouchHistory} from './ResponderTouchHistoryStore';
 
 import LegacySyntheticEvent from './LegacySyntheticEvent';
 
-// flowlint unsafe-getters-setters:off
-
 /**
  * Event class for responder system events. Extends LegacySyntheticEvent with
  * a `touchHistory` field that tracks active touch positions.
@@ -34,6 +32,7 @@ export default class ResponderEvent extends LegacySyntheticEvent {
     this._touchHistory = touchHistory;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get touchHistory(): TouchHistory {
     return this._touchHistory;
   }

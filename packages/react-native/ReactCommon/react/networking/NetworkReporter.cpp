@@ -15,6 +15,8 @@
 #include <jsinspector-modern/network/HttpUtils.h>
 #include <react/performance/timeline/PerformanceEntryReporter.h>
 
+#include <algorithm>
+
 namespace facebook::react {
 
 NetworkReporter& NetworkReporter::getInstance() {
@@ -185,6 +187,7 @@ void NetworkReporter::reportResponseEnd(
     const std::string& requestId,
     int encodedDataLength) {
   auto now = HighResTimeStamp::now();
+  [[maybe_unused]] int decodedBodyLength = 0;
 
   // All builds: Report PerformanceResourceTiming event
   {
@@ -204,6 +207,10 @@ void NetworkReporter::reportResponseEnd(
           eventData.contentType,
           eventData.encodedBodySize,
           eventData.decodedBodySize);
+      // Read before the erase. -1 if the content length is unknown.
+      if (eventData.contentType.starts_with("image/")) {
+        decodedBodyLength = std::max(0, eventData.decodedBodySize);
+      }
       perfTimingsBuffer_.erase(requestId);
     }
   }
@@ -214,26 +221,20 @@ void NetworkReporter::reportResponseEnd(
       requestId, encodedDataLength);
 
   // Debugger enabled: Add trace event to Performance timeline
-  {
-    int decodedBodyLength = 0;
-
-    std::lock_guard<std::mutex> lock(perfTimingsMutex_);
-    auto it = perfTimingsBuffer_.find(requestId);
-    if (it != perfTimingsBuffer_.end() &&
-        it->second.contentType.starts_with("image/")) {
-      decodedBodyLength = it->second.decodedBodySize;
-    }
-
-    jsinspector_modern::tracing::PerformanceTracer::getInstance()
-        .reportResourceFinish(
-            requestId, now, encodedDataLength, decodedBodyLength);
-  }
+  jsinspector_modern::tracing::PerformanceTracer::getInstance()
+      .reportResourceFinish(
+          requestId, now, encodedDataLength, decodedBodyLength);
 #endif
 }
 
 void NetworkReporter::reportRequestFailed(
     const std::string& requestId,
-    bool cancelled) const {
+    bool cancelled) {
+  {
+    std::lock_guard<std::mutex> lock(perfTimingsMutex_);
+    perfTimingsBuffer_.erase(requestId);
+  }
+
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
   // Debugger enabled: CDP event handling
   jsinspector_modern::NetworkHandler::getInstance().onLoadingFailed(

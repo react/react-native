@@ -12,6 +12,7 @@
 #include <array>
 #include <cmath>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <React/Debug.h>
@@ -42,12 +43,19 @@ class LayoutableShadowNode : public ShadowNode {
   struct LayoutInspectingPolicy {
     bool includeTransform{true};
     bool includeViewportOffset{false};
+    // Clip against every node with the FormsContentClip trait on the way up
+    // from the measured node.
     bool enableOverflowClipping{false};
     // When enableOverflowClipping is true, also clip against the ancestor
     // passed as the reference node. IntersectionObserver sets this false:
     // the spec clips ancestors *until* the root, then intersects with the
     // rootMargin-expanded root intersection rectangle.
     bool clipSpecifiedAncestor{true};
+    // When enableOverflowClipping is true, expand the clip rect of every
+    // scroll container ancestor (FormsScrollContainer) by these margins
+    // before clipping (not the measured node's own clip). Percentages resolve
+    // against each clip rect. This is IntersectionObserver's `scrollMargin`.
+    std::optional<EdgeMargins> clipMargin{};
   };
 
   using UnsharedList = std::vector<LayoutableShadowNode *>;
