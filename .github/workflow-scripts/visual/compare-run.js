@@ -44,6 +44,7 @@ const {
   findBaseline,
   publicUrl,
   reportPrefix,
+  storageLocation,
 } = require('./storage');
 const {validateCapture} = require('./validate');
 const fs = require('node:fs');
@@ -59,6 +60,10 @@ function requireEnv(name) {
     throw new Error(`${name} is required`);
   }
   return value;
+}
+
+function readConfig() {
+  return JSON.parse(fs.readFileSync(requireEnv('VISUAL_CONFIG'), 'utf8'));
 }
 
 function writeFile(filePath, contents) {
@@ -283,10 +288,8 @@ async function prepare() {
   const github = createGitHubClient();
   const artifactsDir = requireEnv('VISUAL_ARTIFACTS_DIR');
   const outDir = requireEnv('OUT_DIR');
-  const publicBaseUrl = requireEnv('VISUAL_PUBLIC_BASE_URL');
-  const config = JSON.parse(
-    fs.readFileSync(requireEnv('VISUAL_CONFIG'), 'utf8'),
-  );
+  const config = readConfig();
+  const {publicBaseUrl} = storageLocation(config);
 
   const context = await resolveContext(github);
   if (context == null) {
@@ -381,7 +384,7 @@ function platformConclusion(platform) {
 async function report() {
   const github = createGitHubClient();
   const outDir = requireEnv('OUT_DIR');
-  const publicBaseUrl = requireEnv('VISUAL_PUBLIC_BASE_URL');
+  const {publicBaseUrl} = storageLocation(readConfig());
   const state = JSON.parse(
     fs.readFileSync(path.join(outDir, 'state.json'), 'utf8'),
   );

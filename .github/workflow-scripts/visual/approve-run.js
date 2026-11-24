@@ -31,6 +31,7 @@ const {
   fetchJsonOrNull,
   listPrefixes,
   publicUrl,
+  storageLocation,
 } = require('./storage');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -41,6 +42,12 @@ function requireEnv(name) {
     throw new Error(`${name} is required`);
   }
   return value;
+}
+
+function readStorageLocation() {
+  return storageLocation(
+    JSON.parse(fs.readFileSync(requireEnv('VISUAL_CONFIG'), 'utf8')),
+  );
 }
 
 /** The results of the most recent comparison for a PR head, or null. */
@@ -83,9 +90,10 @@ async function prepare() {
 
   const prNumber = event.pull_request.number;
   const headSha = event.pull_request.head.sha;
+  const {bucket, publicBaseUrl} = readStorageLocation();
   const results = await latestResults({
-    bucket: requireEnv('VISUAL_BUCKET'),
-    publicBaseUrl: requireEnv('VISUAL_PUBLIC_BASE_URL'),
+    bucket,
+    publicBaseUrl,
     prNumber,
     headSha,
   });
@@ -149,7 +157,7 @@ async function report() {
       ? null
       : await fetchJsonOrNull(
           publicUrl(
-            requireEnv('VISUAL_PUBLIC_BASE_URL'),
+            readStorageLocation().publicBaseUrl,
             approvalKey(prNumber, fingerprint),
           ),
         );

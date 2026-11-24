@@ -10,7 +10,7 @@
 const {run, sleep, log} = require('./utils.js');
 const {verifyPublishedPackage} = require('./verifyPublishedPackage.js');
 const REACT_NATIVE_NPM_PKG = 'react-native';
-const MAX_RETRIES = 3 * 6; // 18 attempts. Waiting between attempt: 10 s. Total time: 3 mins.
+const MAX_RETRIES = 15 * 6; // 90 attempts. Waiting between attempt: 10 s. Total time: 15 mins.
 /**
  * Will verify that @latest, @next and the @<version> have been published.
  *
