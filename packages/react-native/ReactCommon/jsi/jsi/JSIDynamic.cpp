@@ -125,11 +125,19 @@ Value valueFromDynamic(Runtime& runtime, const folly::dynamic& dynInput) {
 namespace {
 
 struct FromValue {
+#ifndef NDEBUG
+  FromValue(folly::dynamic* dynArg, Object objArg, size_t depthArg)
+      : dyn(dynArg), obj(std::move(objArg)), depth(depthArg) {}
+#else
   FromValue(folly::dynamic* dynArg, Object objArg)
       : dyn(dynArg), obj(std::move(objArg)) {}
+#endif
 
   folly::dynamic* dyn;
   Object obj;
+#ifndef NDEBUG
+  size_t depth;
+#endif
 };
 
 // This converts one element.  If it's a collection, it gets pushed
@@ -140,7 +148,12 @@ void dynamicFromValueShallow(
     Runtime& runtime,
     std::vector<FromValue>& stack,
     const jsi::Value& value,
+#ifndef NDEBUG
+    folly::dynamic& output,
+    size_t depth) {
+#else
     folly::dynamic& output) {
+#endif
   if (value.isUndefined() || value.isNull()) {
     output = nullptr;
   } else if (value.isBool()) {
@@ -158,7 +171,11 @@ void dynamicFromValueShallow(
     } else {
       output = folly::dynamic::object();
     }
+#ifndef NDEBUG
+    stack.emplace_back(&output, std::move(obj), depth);
+#else
     stack.emplace_back(&output, std::move(obj));
+#endif
   } else if (value.isBigInt()) {
     throw JSError(runtime, "JS BigInts are not convertible to dynamic");
   } else if (value.isSymbol()) {
@@ -175,13 +192,32 @@ folly::dynamic dynamicFromValue(
     const Value& valueInput,
     const std::function<bool(const std::string&)>& filterObjectKeys) {
   std::vector<FromValue> stack;
+#ifndef NDEBUG
+  std::vector<FromValue> ancestors;
+#endif
   folly::dynamic ret;
 
+#ifndef NDEBUG
+  dynamicFromValueShallow(runtime, stack, valueInput, ret, 0);
+#else
   dynamicFromValueShallow(runtime, stack, valueInput, ret);
+#endif
 
   while (!stack.empty()) {
     auto top = std::move(stack.back());
     stack.pop_back();
+
+#ifndef NDEBUG
+    // Detect cycles with Brent's algorithm: compare each object with its
+    // nearest ancestor saved at depth 0, 1, 2, 4, 8, ...
+    while (!ancestors.empty() && ancestors.back().depth >= top.depth) {
+      ancestors.pop_back();
+    }
+    if (!ancestors.empty() &&
+        Object::strictEquals(runtime, ancestors.back().obj, top.obj)) {
+      throw JSError(runtime, "Cyclic JS values are not convertible to dynamic");
+    }
+#endif
 
     if (top.obj.isArray(runtime)) {
       // Inserting into a dyn can invalidate references into it, so we
@@ -194,8 +230,17 @@ folly::dynamic dynamicFromValue(
         top.dyn->push_back(nullptr);
       }
       for (size_t i = 0; i < arraySize; ++i) {
+#ifndef NDEBUG
+        dynamicFromValueShallow(
+            runtime,
+            stack,
+            array.getValueAtIndex(runtime, i),
+            top.dyn->at(i),
+            top.depth + 1);
+#else
         dynamicFromValueShallow(
             runtime, stack, array.getValueAtIndex(runtime, i), top.dyn->at(i));
+#endif
       }
     } else {
       Array names = top.obj.getPropertyNames(runtime);
@@ -220,10 +265,21 @@ folly::dynamic dynamicFromValue(
         top.dyn->insert(props.back().first, nullptr);
       }
       for (const auto& prop : props) {
+#ifndef NDEBUG
+        dynamicFromValueShallow(
+            runtime, stack, prop.second, (*top.dyn)[prop.first], top.depth + 1);
+#else
         dynamicFromValueShallow(
             runtime, stack, prop.second, (*top.dyn)[prop.first]);
+#endif
       }
     }
+
+#ifndef NDEBUG
+    if ((top.depth & (top.depth - 1)) == 0) {
+      ancestors.push_back(std::move(top));
+    }
+#endif
   }
 
   return ret;
