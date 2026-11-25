@@ -1,0 +1,117 @@
+
+*** Dumping AST Record Layout
+         0 | struct __NSConstantString_tag
+         0 |   const int * isa
+         8 |   int flags
+        16 |   const char * str
+        24 |   long length
+           | [sizeof=32, dsize=32, align=8,
+           |  nvsize=32, nvalign=8]
+
+*** Dumping AST Record Layout
+         0 | union facebook::react::Point::(unnamed at /Users/ci/react-native-0.87.1/Headers/react/Sample.h:3:33)
+         0 |   int i
+         0 |   float f
+           | [sizeof=4, dsize=4, align=4,
+           |  nvsize=4, nvalign=4]
+
+*** Dumping AST Record Layout
+         0 | struct facebook::react::Point
+         0 |   int x
+         8 |   double y
+        16 |   union facebook::react::Point::(unnamed at /Users/ci/react-native-0.87.1/Headers/react/Sample.h:3:33) u
+        16 |     int i
+        16 |     float f
+           | [sizeof=24, dsize=24, align=8,
+           |  nvsize=24, nvalign=8]
+
+*** Dumping AST Record Layout
+         0 | class facebook::react::Shape
+         0 |   (Shape vtable pointer)
+         8 |   int id
+           | [sizeof=16, dsize=12, align=8,
+           |  nvsize=12, nvalign=8]
+
+*** Dumping AST Record Layout
+         0 | struct other::Outside
+         0 |   int a
+           | [sizeof=4, dsize=4, align=4,
+           |  nvsize=4, nvalign=4]
+
+*** Dumping AST Record Layout
+         0 | class other::Poly
+         0 |   (Poly vtable pointer)
+           | [sizeof=8, dsize=8, align=8,
+           |  nvsize=8, nvalign=8]
+
+*** Dumping IRgen Record Layout
+Record: CXXRecordDecl 0x784f230700 </Users/ci/react-native-0.87.1/Headers/react/Sample.h:4:1, col:78> col:7 referenced class Shape definition
+|-DefinitionData polymorphic has_constexpr_non_copy_move_ctor
+| |-DefaultConstructor exists non_trivial constexpr needs_implicit defaulted_is_constexpr
+| |-CopyConstructor simple non_trivial has_const_param needs_implicit implicit_has_const_param
+| |-MoveConstructor
+| |-CopyAssignment simple non_trivial has_const_param implicit_has_const_param
+| |-MoveAssignment
+| `-Destructor non_trivial user_declared
+|-CXXRecordDecl 0x784f230818 <col:1, col:7> col:7 implicit referenced class Shape
+|-AccessSpecDecl 0x784f2308a8 <col:15, col:21> col:15 public
+|-CXXDestructorDecl 0x784f2309b0 <col:23, col:38> col:31 used ~Shape 'void () noexcept' virtual
+|-CXXMethodDecl 0x784f230b38 <col:41, col:63> col:56 area 'double () const' virtual
+|-FieldDecl 0x784f230bf8 <col:70, col:74> col:74 id 'int'
+`-CXXMethodDecl 0x784f230d10 <col:7> col:7 implicit constexpr operator= 'Shape &(const Shape &)' inline default noexcept-unevaluated 0x784f230d10
+  `-ParmVarDecl 0x784f230e40 <col:7> col:7 'const Shape &'
+
+Layout: <CGRecordLayout
+  LLVMType:%"class.facebook::react::Shape" = type <{ ptr, i32, [4 x i8] }>
+  NonVirtualBaseLLVMType:%"class.facebook::react::Shape.base" = type <{ ptr, i32 }>
+  IsZeroInitializable:1
+  BitFields:[
+]>
+Original map
+Vtable for 'facebook::react::Shape' (5 entries).
+   0 | offset_to_top (0)
+   1 | facebook::react::Shape RTTI
+       -- (facebook::react::Shape, 0) vtable address --
+   2 | facebook::react::Shape::~Shape() [complete]
+   3 | facebook::react::Shape::~Shape() [deleting]
+   4 | double facebook::react::Shape::area() const
+
+VTable indices for 'facebook::react::Shape' (3 entries).
+   0 | facebook::react::Shape::~Shape() [complete]
+   1 | facebook::react::Shape::~Shape() [deleting]
+   2 | double facebook::react::Shape::area() const
+
+
+*** Dumping IRgen Record Layout
+Record: CXXRecordDecl 0x784f233550 </Users/ci/react-native-0.87.1/Headers/react/Sample.h:7:46, col:84> col:52 referenced class Poly definition
+|-DefinitionData polymorphic has_constexpr_non_copy_move_ctor can_const_default_init
+| |-DefaultConstructor exists non_trivial constexpr needs_implicit defaulted_is_constexpr
+| |-CopyConstructor simple non_trivial has_const_param needs_implicit implicit_has_const_param
+| |-MoveConstructor
+| |-CopyAssignment simple non_trivial has_const_param implicit_has_const_param
+| |-MoveAssignment
+| `-Destructor non_trivial user_declared
+|-CXXRecordDecl 0x784f233668 <col:46, col:52> col:52 implicit referenced class Poly
+|-AccessSpecDecl 0x784f2336f8 <col:59, col:65> col:59 public
+|-CXXDestructorDecl 0x784f2337c8 <col:67, col:81> col:75 used ~Poly 'void () noexcept' virtual
+`-CXXMethodDecl 0x784f233980 <col:52> col:52 implicit constexpr operator= 'Poly &(const Poly &)' inline default noexcept-unevaluated 0x784f233980
+  `-ParmVarDecl 0x784f233ab0 <col:52> col:52 'const Poly &'
+
+Layout: <CGRecordLayout
+  LLVMType:%"class.other::Poly" = type { ptr }
+  NonVirtualBaseLLVMType:%"class.other::Poly" = type { ptr }
+  IsZeroInitializable:1
+  BitFields:[
+]>
+Original map
+Vtable for 'other::Poly' (4 entries).
+   0 | offset_to_top (0)
+   1 | other::Poly RTTI
+       -- (other::Poly, 0) vtable address --
+   2 | other::Poly::~Poly() [complete]
+   3 | other::Poly::~Poly() [deleting]
+
+VTable indices for 'other::Poly' (2 entries).
+   0 | other::Poly::~Poly() [complete]
+   1 | other::Poly::~Poly() [deleting]
+

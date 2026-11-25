@@ -1,0 +1,6 @@
+[versions]
+fbjni = "0.7.0"
+folly = "2024.11.18.00"
+
+[libraries]
+fbjni = { module = "com.facebook.fbjni:fbjni", version.ref = "fbjni" }
