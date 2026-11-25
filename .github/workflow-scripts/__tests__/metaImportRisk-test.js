@@ -66,24 +66,25 @@ function assess(files, fetchImpl, overrideContext = context) {
 }
 
 describe('sensitivePaths', () => {
-  test('catches manifests, native core, Yoga and Hermes integration', () => {
+  test('only forces manifests and lockfiles', () => {
     const paths = [
       'package.json',
       'packages/react-native/package.json',
       'yarn.lock',
-      'packages/react-native/ReactCommon/yoga/yoga/YGNode.cpp',
-      'packages/react-native/ReactAndroid/src/main/java/Module.java',
-      'packages/react-native/ReactApple/React/Foo.mm',
-      'packages/react-native/sdks/hermes-engine/version.properties',
-      'packages/react-native/scripts/hermes/hermes-utils.js',
     ];
     expect(sensitivePaths(paths.map(path => file(path)))).toEqual(paths);
   });
 
-  test('does not force ordinary JS, Markdown or workflow-only changes', () => {
+  test('does not force native, Yoga, Hermes, JS, Markdown or workflow-only changes', () => {
     expect(
       sensitivePaths(
         [
+          'packages/react-native/ReactAndroid/src/main/java/Module.java',
+          'packages/react-native/ReactApple/React/Foo.mm',
+          'packages/react-native/ReactCommon/react/renderer/core/ShadowNode.cpp',
+          'packages/react-native/ReactCommon/yoga/yoga/YGNode.cpp',
+          'packages/react-native/ReactCommon/hermes/executor/HermesExecutorFactory.cpp',
+          'packages/react-native/sdks/hermes-engine/version.properties',
           'packages/react-native/Libraries/Text/Text.js',
           'packages/react-native/ReactCommon/__docs__/README.md',
           '.github/workflows/test-all.yml',
@@ -142,6 +143,45 @@ describe('assessPullRequest', () => {
     );
   });
 
+  test('does not force a native-core typo when the AI sees no behavior change', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(modelResponse(false));
+    const path = 'packages/react-native/ReactAndroid/src/main/java/Module.java';
+    expect(
+      await assess(
+        [
+          file(path, {
+            patch: '@@ -1 +1 @@\n-// Lyaout\n+// Layout',
+            changes: 2,
+          }),
+        ],
+        fetchImpl,
+      ),
+    ).toMatchObject({status: 'low', aiComplete: true});
+    expect(
+      JSON.parse(fetchImpl.mock.calls[0][1].body).input[1].content,
+    ).toContain('// Layout');
+  });
+
+  test('can escalate behavioral native-core edits based on the AI assessment', async () => {
+    const path =
+      'packages/react-native/ReactCommon/react/renderer/core/ShadowNode.cpp';
+    expect(
+      await assess([file(path)], async () => modelResponse(true, [path])),
+    ).toMatchObject({status: 'high', aiComplete: true});
+  });
+
+  test('assesses Yoga and Hermes edits instead of forcing the label', async () => {
+    const yoga = 'packages/react-native/ReactCommon/yoga/yoga/YGNode.cpp';
+    const hermes =
+      'packages/react-native/ReactCommon/hermes/executor/HermesExecutorFactory.cpp';
+    expect(
+      await assess([file(yoga)], async () => modelResponse(false)),
+    ).toMatchObject({status: 'low', aiComplete: true});
+    expect(
+      await assess([file(hermes)], async () => modelResponse(true, [hermes])),
+    ).toMatchObject({status: 'high', aiComplete: true});
+  });
+
   test('can escalate a workflow-only change when the model finds a concrete risk', async () => {
     const path = '.github/workflows/test-all.yml';
     expect(
@@ -151,9 +191,8 @@ describe('assessPullRequest', () => {
 
   test('never downgrades a sensitive path based on model output', async () => {
     expect(
-      await assess(
-        [file('packages/react-native/ReactCommon/yoga/yoga/YGNode.cpp')],
-        async () => modelResponse(false),
+      await assess([file('packages/react-native/package.json')], async () =>
+        modelResponse(false),
       ),
     ).toMatchObject({status: 'high', aiComplete: true});
   });
