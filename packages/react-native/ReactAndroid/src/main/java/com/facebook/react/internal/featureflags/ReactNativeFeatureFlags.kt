@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<99c0c14cf6e3eca24e7bf1c7eaf64d07>>
+ * @generated SignedSource<<0128ee1e6f9a35114e76a548f1ccc8ab>>
  */
 
 /**
@@ -527,6 +527,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun skipActivityIdentityAssertionOnHostPause(): Boolean = accessor.skipActivityIdentityAssertionOnHostPause()
+
+  /**
+   * Skip native prop metadata generation on Android for view managers with custom delegates. Requires their components to use static view configs.
+   */
+  @JvmStatic
+  public fun skipNativePropsForViewManagerWithDelegateAndroid(): Boolean = accessor.skipNativePropsForViewManagerWithDelegateAndroid()
 
   /**
    * When a node changes, the differ leaves out its children that are unchanged in both trees instead of describing and comparing them.

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<23d1a2b0fa50a9a8d138dc1b06288b24>>
+ * @generated SignedSource<<c3300a3944904f5129031e9159d17307>>
  */
 
 /**
@@ -203,6 +203,8 @@ class NativeReactNativeFeatureFlags
   bool shouldTriggerResponderTransferOnScrollAndroid(jsi::Runtime& runtime);
 
   bool skipActivityIdentityAssertionOnHostPause(jsi::Runtime& runtime);
+
+  bool skipNativePropsForViewManagerWithDelegateAndroid(jsi::Runtime& runtime);
 
   bool skipUnchangedChildrenInDifferentiator(jsi::Runtime& runtime);
 
