@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b55b34f3fc791153a15e3dd6e99042bd>>
+ * @generated SignedSource<<8aafec6ecc2bf7bb739eb7f7c8d39943>>
  */
 
 /**
@@ -405,6 +405,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableInteractableResponderViews();
+  }
+
+  bool enableInteractiveInlineButtons() override {
+    auto value = values_["enableInteractiveInlineButtons"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableInteractiveInlineButtons();
   }
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS() override {

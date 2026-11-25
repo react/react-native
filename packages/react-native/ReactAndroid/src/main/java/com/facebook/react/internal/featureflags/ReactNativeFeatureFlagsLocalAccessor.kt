@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<321b02641c9bf5763b31577b2afd6d5b>>
+ * @generated SignedSource<<b0ad6c04e9a2494e7cd6fe37f2df3974>>
  */
 
 /**
@@ -64,6 +64,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableImperativeEventsCache: Boolean? = null
   private var enableImperativeFocusCache: Boolean? = null
   private var enableInteractableResponderViewsCache: Boolean? = null
+  private var enableInteractiveInlineButtonsCache: Boolean? = null
   private var enableInteropViewManagerClassLookUpOptimizationIOSCache: Boolean? = null
   private var enableIntersectionObserverByDefaultCache: Boolean? = null
   private var enableKeyEventsCache: Boolean? = null
@@ -523,6 +524,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableInteractableResponderViews()
       accessedFeatureFlags.add("enableInteractableResponderViews")
       enableInteractableResponderViewsCache = cached
+    }
+    return cached
+  }
+
+  override fun enableInteractiveInlineButtons(): Boolean {
+    var cached = enableInteractiveInlineButtonsCache
+    if (cached == null) {
+      cached = currentProvider.enableInteractiveInlineButtons()
+      accessedFeatureFlags.add("enableInteractiveInlineButtons")
+      enableInteractiveInlineButtonsCache = cached
     }
     return cached
   }

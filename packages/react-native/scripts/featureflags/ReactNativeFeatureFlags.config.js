@@ -482,6 +482,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableInteractiveInlineButtons: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-30',
+        description:
+          'When enabled, inline text with a button role produces a ClickableSpan (like a link).',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableInteropViewManagerClassLookUpOptimizationIOS: {
       defaultValue: false,
       metadata: {

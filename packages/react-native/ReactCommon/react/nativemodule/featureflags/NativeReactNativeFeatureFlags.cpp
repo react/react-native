@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b00a15e37591a6aa7ce86946daa9d366>>
+ * @generated SignedSource<<064763dca795082aea67c88bab7c089f>>
  */
 
 /**
@@ -242,6 +242,11 @@ bool NativeReactNativeFeatureFlags::enableImperativeFocus(
 bool NativeReactNativeFeatureFlags::enableInteractableResponderViews(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableInteractableResponderViews();
+}
+
+bool NativeReactNativeFeatureFlags::enableInteractiveInlineButtons(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableInteractiveInlineButtons();
 }
 
 bool NativeReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS(

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<26307ecb6ec5105c55e92a273c24c885>>
+ * @generated SignedSource<<4c16a25bbb894b5f666085f71b0c0193>>
  * @flow strict
  * @noformat
  */
@@ -88,6 +88,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableImperativeEvents: Getter<boolean>,
   enableImperativeFocus: Getter<boolean>,
   enableInteractableResponderViews: Getter<boolean>,
+  enableInteractiveInlineButtons: Getter<boolean>,
   enableInteropViewManagerClassLookUpOptimizationIOS: Getter<boolean>,
   enableIntersectionObserverByDefault: Getter<boolean>,
   enableKeyEvents: Getter<boolean>,
@@ -381,6 +382,10 @@ export const enableImperativeFocus: Getter<boolean> = createNativeFlagGetter('en
  * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
  */
 export const enableInteractableResponderViews: Getter<boolean> = createNativeFlagGetter('enableInteractableResponderViews', false);
+/**
+ * When enabled, inline text with a button role produces a ClickableSpan (like a link).
+ */
+export const enableInteractiveInlineButtons: Getter<boolean> = createNativeFlagGetter('enableInteractiveInlineButtons', false);
 /**
  * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
  */
