@@ -185,7 +185,8 @@ static Class<RCTComponentViewProtocol> RCTComponentViewClassWithName(const char 
     // main queue (a view manager that requires main queue setup), which may itself be waiting
     // for this lock in -createComponentViewWithComponentHandle:.
     _providerRegistry.add(provider);
-    auto classDescriptor = [self _componentViewClassDescriptorFromClass:[RCTLegacyViewManagerInteropComponentView class]];
+    auto classDescriptor =
+        [self _componentViewClassDescriptorFromClass:[RCTLegacyViewManagerInteropComponentView class]];
     {
       std::unique_lock lock(_mutex);
       _componentViewClasses[componentHandle] = classDescriptor;
