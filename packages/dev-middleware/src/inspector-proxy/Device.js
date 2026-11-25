@@ -601,71 +601,31 @@ export default class Device {
       // TODO(moti): Handle null case explicitly, e.g. swallow disconnect events
       // for unknown pages.
       const page: ?Page = this.#pages.get(pageId);
+      const debuggerConnection = this.#debuggerConnections.get(sessionId);
 
       if (page != null && this.#pageHasCapability(page, 'nativePageReloads')) {
-        for (const [sid, debuggerConnection] of this.#debuggerConnections) {
-          if (
-            sessionId != null
-              ? sid === sessionId
-              : debuggerConnection.pageId === pageId
-          ) {
-            this.#debuggerConnections.delete(sid);
-            debuggerConnection.socket.close(
-              WS_CLOSURE_CODE.NORMAL,
-              WS_CLOSE_REASON.PAGE_REMOVED,
-            );
-          }
+        if (debuggerConnection != null) {
+          this.#debuggerConnections.delete(sessionId);
+          debuggerConnection.socket.close(
+            WS_CLOSURE_CODE.NORMAL,
+            WS_CLOSE_REASON.PAGE_REMOVED,
+          );
         }
         return;
       }
 
-      // Find the debugger connection(s) for this page
-      if (sessionId != null) {
-        // Disconnect specific session
-        const debuggerConnection = this.#debuggerConnections.get(sessionId);
-        if (
-          debuggerConnection &&
-          debuggerConnection.socket.readyState === WS.OPEN
-        ) {
-          if (debuggerConnection.pageId !== REACT_NATIVE_RELOADABLE_PAGE_ID) {
-            debug(
-              `Legacy page ${pageId} is reloading (sessionId: ${sessionId}).`,
-            );
-            debuggerConnection.socket.send(JSON.stringify({method: 'reload'}));
-          }
-        }
-      } else {
-        // Legacy mode: send to all connected debuggers for this page
-        for (const debuggerConnection of this.#debuggerConnections.values()) {
-          if (
-            debuggerConnection.pageId !== REACT_NATIVE_RELOADABLE_PAGE_ID &&
-            debuggerConnection.socket.readyState === WS.OPEN
-          ) {
-            debug(`Legacy page ${pageId} is reloading.`);
-            debuggerConnection.socket.send(JSON.stringify({method: 'reload'}));
-          }
-        }
+      if (
+        debuggerConnection &&
+        debuggerConnection.socket.readyState === WS.OPEN &&
+        debuggerConnection.pageId !== REACT_NATIVE_RELOADABLE_PAGE_ID
+      ) {
+        debug(`Legacy page ${pageId} is reloading (sessionId: ${sessionId}).`);
+        debuggerConnection.socket.send(JSON.stringify({method: 'reload'}));
       }
     } else if (message.event === 'wrappedEvent') {
-      const sessionId = message.payload.sessionId;
-
-      // Route message to the correct debugger connection by sessionId
-      let debuggerConnection: ?DebuggerConnection = null;
-      if (sessionId != null) {
-        debuggerConnection = this.#debuggerConnections.get(sessionId);
-      } else {
-        // Legacy mode: route to the first (and only) debugger connection
-        // ASSERT: In legacy mode, there should be at most one debugger connected.
-        if (this.#debuggerConnections.size > 1) {
-          debug(
-            'WARNING: Device sent message without sessionId but multiple debuggers are connected. ' +
-              'This indicates a device/proxy version mismatch.',
-          );
-        }
-        debuggerConnection =
-          this.#debuggerConnections.values().next().value ?? null;
-      }
-
+      const debuggerConnection = this.#debuggerConnections.get(
+        message.payload.sessionId,
+      );
       if (debuggerConnection == null) {
         return;
       }
