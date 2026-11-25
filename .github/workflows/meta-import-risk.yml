@@ -80,7 +80,7 @@ jobs:
               try {
                 await github.rest.issues.createLabel({
                   owner, repo, name: 'Meta Review Required', color: 'b60205',
-                  description: 'This PR needs review before its Meta import.',
+                  description: 'This PR is considered risky and requires Meta to import it to do more testing before merging.',
                 });
               } catch (createError) {
                 // A concurrent PR may have created the same label.
