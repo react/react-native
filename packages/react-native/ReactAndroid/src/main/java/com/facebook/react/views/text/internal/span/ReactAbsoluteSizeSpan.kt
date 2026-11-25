@@ -7,7 +7,15 @@
 
 package com.facebook.react.views.text.internal.span
 
-import android.text.style.AbsoluteSizeSpan
+import android.text.TextPaint
+import android.text.style.MetricAffectingSpan
 
-/** Wraps [AbsoluteSizeSpan] as a [ReactSpan]. */
-internal class ReactAbsoluteSizeSpan(size: Int) : AbsoluteSizeSpan(size), ReactSpan
+internal class ReactAbsoluteSizeSpan(val size: Int) : MetricAffectingSpan(), ReactSpan {
+  override fun updateDrawState(textPaint: TextPaint) {
+    textPaint.textSize = size.toFloat()
+  }
+
+  override fun updateMeasureState(textPaint: TextPaint) {
+    textPaint.textSize = size.toFloat()
+  }
+}
