@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1a71fb4528797b171985c1f778c00741>>
+ * @generated SignedSource<<e98d16ac238223dc0d7d89136655185f>>
  */
 
 /**
@@ -86,6 +86,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableAccumulatedUpdatesInRawPropsAndroid() override {
+    return false;
+  }
+
+  bool enableAliasedTextRoleInheritance() override {
     return false;
   }
 
