@@ -328,9 +328,7 @@ public class TextAttributeProps private constructor() {
 
   public var textShadowRadius: Float = 0f
     private set(value) {
-      if (value != field) {
-        field = value
-      }
+      field = toPixelFromDIP(value)
     }
 
   public var textShadowColor: Int = DEFAULT_TEXT_SHADOW_COLOR

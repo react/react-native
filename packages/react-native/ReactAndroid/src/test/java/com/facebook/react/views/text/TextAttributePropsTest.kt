@@ -206,6 +206,23 @@ class TextAttributePropsTest {
     assertThat(textDecorationLine("underline-strikethrough")).isEqualTo(true to true)
   }
 
+  @Test
+  fun mapBufferConvertsTextShadowRadiusFromDIP() {
+    setFontScale(1f)
+
+    val textAttributes =
+        TextAttributeProps.fromMapBuffer(
+            WritableMapBuffer()
+                .put(TextAttributeProps.TA_KEY_TEXT_SHADOW_RADIUS, 8.0)
+                .put(TextAttributeProps.TA_KEY_TEXT_SHADOW_OFFSET_DX, 4.0)
+                .put(TextAttributeProps.TA_KEY_TEXT_SHADOW_OFFSET_DY, 2.0),
+        )
+
+    assertThat(textAttributes.textShadowRadius).isCloseTo(8f * DENSITY, within(0.001f))
+    assertThat(textAttributes.textShadowOffsetDx).isCloseTo(4f * DENSITY, within(0.001f))
+    assertThat(textAttributes.textShadowOffsetDy).isCloseTo(2f * DENSITY, within(0.001f))
+  }
+
   /** Returns whether underline and line-through are set for the given textDecorationLine. */
   private fun textDecorationLine(value: String): Pair<Boolean, Boolean> {
     val textAttributes =
