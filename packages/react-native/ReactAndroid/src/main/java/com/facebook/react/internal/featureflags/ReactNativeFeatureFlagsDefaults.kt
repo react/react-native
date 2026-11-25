@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<49d72918b9b9df7d50b7baa9fa4aa85b>>
+ * @generated SignedSource<<e7a8119570c3b5ae5926df154c50a253>>
  */
 
 /**
@@ -52,6 +52,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableAccessibilityOrder(): Boolean = false
 
   override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = false
+
+  override fun enableAliasedTextRoleInheritance(): Boolean = false
 
   override fun enableAndroidTextMeasurementOptimizations(): Boolean = true
 
