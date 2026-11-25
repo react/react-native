@@ -26,7 +26,7 @@ describe('inspector proxy concurrent sessions', () => {
   const autoCleanup = withAbortSignalForEachTest();
 
   describe('enableStandaloneFuseboxShell experiment disabled', () => {
-    test('page reporting supportsMultipleDebuggers:true is treated as false', async () => {
+    test('connecting a second debugger disconnects the first', async () => {
       // Create a server with the experiment disabled
       const {server} = await createServer({
         logger: undefined,
@@ -39,7 +39,6 @@ describe('inspector proxy concurrent sessions', () => {
 
       let device, debugger1, debugger2;
       try {
-        // Connect a device with a page that explicitly reports supportsMultipleDebuggers: true
         device = await createDeviceMock(
           `${serverBaseWsUrl}/inspector/device?device=device1&name=foo&app=bar`,
           autoCleanup.signal,
@@ -50,9 +49,6 @@ describe('inspector proxy concurrent sessions', () => {
             app: 'bar-app',
             title: 'bar-title',
             vm: 'bar-vm',
-            capabilities: {
-              supportsMultipleDebuggers: true,
-            },
           },
         ]);
 
@@ -65,11 +61,6 @@ describe('inspector proxy concurrent sessions', () => {
           )) as any;
           expect(pageList).toHaveLength(1);
         });
-
-        // Verify the capability is reported as false in the page list
-        expect(
-          pageList[0].reactNative?.capabilities?.supportsMultipleDebuggers,
-        ).toBe(false);
 
         const webSocketDebuggerUrl = pageList[0].webSocketDebuggerUrl;
 

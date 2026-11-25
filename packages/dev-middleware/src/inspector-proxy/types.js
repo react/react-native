@@ -30,16 +30,6 @@ export type TargetCapabilityFlags = Readonly<{
    * In the proxy, this disables source fetching emulation and host rewrites.
    */
   nativeSourceCodeFetching?: boolean,
-
-  /**
-   * The target supports multiple concurrent debugger connections.
-   *
-   * When true, the proxy allows multiple debuggers to connect to the same
-   * page simultaneously, each identified by a unique session ID.
-   * When false (default/legacy), connecting a new debugger disconnects
-   * any existing debugger connection to that page.
-   */
-  supportsMultipleDebuggers?: boolean,
 }>;
 
 // Page information received from the device. New page is created for
