@@ -361,7 +361,14 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
             }
           }
     }
-    return super.onTouchEvent(ev)
+    return try {
+      super.onTouchEvent(ev)
+    } catch (e: IndexOutOfBoundsException) {
+      // AOSP Editor can query a stale Layout line when the text shrinks during a cursor or
+      // selection handle drag (e.g. Editor.performCursorDrag -> DynamicLayout.getLineStart).
+      logSoftException(TAG, e)
+      true
+    }
   }
 
   private fun canScrollInGestureDirection(deltaX: Float, deltaY: Float): Boolean {
