@@ -26,7 +26,7 @@ internal class I18nManagerModule(context: ReactApplicationContext?) :
 
     return mapOf(
         "isRTL" to I18nUtil.instance.isRTL(context),
-        "localeIdentifier" to locale.toLanguageTag(),
+        "localeIdentifier" to locale.toString(),
     )
   }
 

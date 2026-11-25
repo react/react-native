@@ -222,7 +222,6 @@ const NativeModules = {
     forceRTL: jest.fn(() => false) as JestMockFn<$FlowFixMe, $FlowFixMe>,
     getConstants: (): $FlowFixMe => ({
       isRTL: false,
-      localeIdentifier: 'en-US',
     }),
   },
 };

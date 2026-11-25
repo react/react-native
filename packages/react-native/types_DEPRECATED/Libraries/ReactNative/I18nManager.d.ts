@@ -15,7 +15,7 @@ export interface I18nManagerStatic {
      */
     doLeftAndRightSwapInRTL: boolean;
     isRTL: boolean;
-    localeIdentifier: string;
+    localeIdentifier?: string | null | undefined;
   };
   /**
    * @deprecated Has no effect. Set `RCTSupportsRTL` to `true` in Info.plist on

@@ -18,13 +18,12 @@ type I18nManagerConstants = {
    */
   doLeftAndRightSwapInRTL: boolean,
   isRTL: boolean,
-  localeIdentifier: string,
+  localeIdentifier?: ?string,
 };
 
 let i18nConstants: I18nManagerConstants = {
   doLeftAndRightSwapInRTL: false,
   isRTL: false,
-  localeIdentifier: 'en-US',
   ...NativeI18nManager?.getConstants(),
 };
 

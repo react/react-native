@@ -14,7 +14,7 @@ import * as TurboModuleRegistry from '../../../../Libraries/TurboModule/TurboMod
 
 export type I18nManagerConstants = {
   isRTL: boolean,
-  localeIdentifier: string,
+  localeIdentifier?: ?string,
 };
 
 export interface Spec extends TurboModule {

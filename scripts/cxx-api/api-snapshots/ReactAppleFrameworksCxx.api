@@ -13771,7 +13771,7 @@ struct JS::NativeI18nManager::Constants::Builder {
 }
 
 struct JS::NativeI18nManager::Constants::Builder::Input {
-  protected RCTRequired<NSString*> localeIdentifier;
+  protected NSString* localeIdentifier;
   protected RCTRequired<bool> isRTL;
 }
 

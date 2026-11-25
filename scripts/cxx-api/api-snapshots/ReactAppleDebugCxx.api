@@ -6624,7 +6624,7 @@ struct facebook::react::NativeI18nManagerI18nManagerConstantsBridging {
   public static T types;
   public static bool isRTLToJs(facebook::jsi::Runtime& rt, decltype(types.isRTL) value);
   public static facebook::jsi::Object toJs(facebook::jsi::Runtime& rt, const T& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
-  public static facebook::jsi::String localeIdentifierToJs(facebook::jsi::Runtime& rt, decltype(types.localeIdentifier) value);
+  public static std::optional<facebook::jsi::String> localeIdentifierToJs(facebook::jsi::Runtime& rt, decltype(types.localeIdentifier) value);
 }
 
 template <typename T>
@@ -9281,7 +9281,7 @@ struct JS::NativeI18nManager::Constants::Builder {
 }
 
 struct JS::NativeI18nManager::Constants::Builder::Input {
-  protected RCTRequired<NSString*> localeIdentifier;
+  protected NSString* localeIdentifier;
   protected RCTRequired<bool> isRTL;
 }
 

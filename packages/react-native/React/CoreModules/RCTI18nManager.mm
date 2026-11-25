@@ -60,24 +60,7 @@ RCT_EXPORT_MODULE()
 {
   return @{
     @"isRTL" : @([[RCTI18nUtil sharedInstance] isRTL]),
-    @"localeIdentifier" : [self _localeIdentifier],
   };
-}
-
-// BCP 47 language tag (e.g. "en-US", "zh-Hans-CN"), the same format as Android and the web
-- (NSString *)_localeIdentifier
-{
-  NSLocale *locale = [NSLocale currentLocale];
-  NSMutableArray<NSString *> *subtags = [NSMutableArray arrayWithObject:locale.languageCode];
-
-  if (locale.scriptCode != nil) {
-    [subtags addObject:locale.scriptCode];
-  }
-  if (locale.countryCode != nil) {
-    [subtags addObject:locale.countryCode];
-  }
-
-  return [subtags componentsJoinedByString:@"-"];
 }
 
 - (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params

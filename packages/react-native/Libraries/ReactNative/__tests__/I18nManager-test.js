@@ -14,7 +14,6 @@ import type {I18nManagerConstants} from '../NativeI18nManager';
 
 const nativeConstants: I18nManagerConstants = {
   isRTL: false,
-  localeIdentifier: 'en-US',
 };
 
 const nativeModule = {
@@ -40,7 +39,6 @@ describe('I18nManager', () => {
     expect(I18nManager.getConstants()).toEqual({
       doLeftAndRightSwapInRTL: false,
       isRTL: true,
-      localeIdentifier: 'en-US',
     });
   });
 });
