@@ -11,6 +11,7 @@
 
 #include <React/Debug.h>
 #include <React/RendererCore.h>
+#include <react/renderer/components/iostextinput/conversions.h>
 #include <react/renderer/components/iostextinput/primitives.h>
 
 namespace facebook::react {

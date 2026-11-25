@@ -58,6 +58,7 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
         headerPatterns: ['react/renderer/animated/**/*.h'],
         excludePatterns: ['react/renderer/animated/tests'],
         headerDir: 'react/renderer/animated',
+        preservePaths: ['react/renderer/animated/**/*.h'],
       },
 
       {
@@ -203,6 +204,7 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
         headerPatterns: ['react/renderer/mounting/**/*.h'],
         excludePatterns: ['react/renderer/mounting/tests'],
         headerDir: 'react/renderer/mounting',
+        preservePaths: ['react/renderer/mounting/**/*.h'],
       },
 
       {
@@ -214,6 +216,24 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
             headerPatterns: ['react/renderer/observers/events/**/*.h'],
             excludePatterns: ['react/renderer/observers/events/tests'],
             headerDir: 'react/renderer/observers/events',
+          },
+          {
+            name: 'intersection',
+            headerPatterns: ['react/renderer/observers/intersection/**/*.h'],
+            excludePatterns: ['react/renderer/observers/intersection/tests'],
+            headerDir: 'react/renderer/observers/intersection',
+          },
+          {
+            name: 'mutation',
+            headerPatterns: ['react/renderer/observers/mutation/**/*.h'],
+            excludePatterns: ['react/renderer/observers/mutation/tests'],
+            headerDir: 'react/renderer/observers/mutation',
+          },
+          {
+            name: 'resize',
+            headerPatterns: ['react/renderer/observers/resize/**/*.h'],
+            excludePatterns: ['react/renderer/observers/resize/tests'],
+            headerDir: 'react/renderer/observers/resize',
           },
         ],
       },
@@ -430,6 +450,9 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
           {
             name: 'textinput',
             headerPatterns: ['react/renderer/components/textinput/**/*.h'],
+            excludePatterns: [
+              'react/renderer/components/textinput/platform/android',
+            ],
             headerDir: 'react/renderer/components/textinput',
           },
 

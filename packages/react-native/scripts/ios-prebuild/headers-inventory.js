@@ -311,7 +311,7 @@ function classifyExternal(
   }
   // RN's own include namespace but absent from the shipped set: either a
   // genuinely unshipped header or a header_dir-flattening mismatch (headers.js
-  // ships <dir>/<basename>, dropping inner subdirs like mounting/stubs/).
+  // ships <dir>/<basename>, dropping inner subdirs unless preservePaths keeps them).
   if (
     ownNamespaces.has(first) ||
     fs.existsSync(path.join(rootFolder, 'ReactCommon', token))
