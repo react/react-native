@@ -1669,6 +1669,10 @@ class VirtualizedList extends StateSafePureComponent<
   }
 
   _onLayout = (e: LayoutChangeEvent) => {
+    this._listMetrics.notifyListLayout({
+      layout: e.nativeEvent.layout,
+      orientation: this._orientation(),
+    });
     this._scrollMetrics.crossAxisLength = this._selectCrossAxisLength(
       e.nativeEvent.layout,
     );
