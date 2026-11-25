@@ -16,6 +16,7 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.uimanager.DisplayMetricsHolder
+import com.facebook.react.views.text.internal.span.CustomLineHeightSpan
 import com.facebook.react.views.text.internal.span.ReactAbsoluteSizeSpan
 import com.facebook.yoga.YogaMeasureMode
 import org.assertj.core.api.Assertions.assertThat
@@ -62,6 +63,30 @@ class TextLayoutManagerFontSizeToFitPixelHeightTest {
     assertThat(fontSize(text)).isLessThan(FONT_SIZE)
   }
 
+  @Test
+  fun `line heights rounded up to whole pixels still fit the height of their lines`() {
+    for (lineCount in 1..2) {
+      val text = spannableWithLineHeight(FRACTIONAL_LINE_HEIGHT, lineCount)
+      adjustToFitHeight(text, lineCount * FRACTIONAL_LINE_HEIGHT)
+
+      assertThat(fontSize(text)).isEqualTo(FONT_SIZE)
+    }
+  }
+
+  @Test
+  fun `line heights that do not fit the height of their lines shrink the font`() {
+    val text = spannableWithLineHeight(FRACTIONAL_LINE_HEIGHT, lineCount = 2)
+    adjustToFitHeight(text, 2 * FRACTIONAL_LINE_HEIGHT - 1f)
+
+    assertThat(fontSize(text)).isLessThan(FONT_SIZE)
+  }
+
+  private fun spannableWithLineHeight(lineHeight: Float, lineCount: Int): SpannableString =
+      SpannableString(List(lineCount) { "Add payment method" }.joinToString("\n")).apply {
+        setSpan(ReactAbsoluteSizeSpan(FONT_SIZE), 0, length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+        setSpan(CustomLineHeightSpan(lineHeight), 0, length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+      }
+
   private fun spannableWithFontSize(fontSize: Int): SpannableString =
       SpannableString("Add payment method").apply {
         setSpan(ReactAbsoluteSizeSpan(fontSize), 0, length, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
@@ -102,6 +127,7 @@ class TextLayoutManagerFontSizeToFitPixelHeightTest {
 
   private companion object {
     const val FONT_SIZE = 40
+    const val FRACTIONAL_LINE_HEIGHT = 52.5f
     const val WIDTH = 1000f
   }
 }
