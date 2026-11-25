@@ -40,7 +40,12 @@
 
 - (void)send:(id)data
 {
-  [_socket sendData:data error:nil];
+  // SRWebSocket's sendData: calls -bytes, which NSString does not implement.
+  if ([data isKindOfClass:[NSString class]]) {
+    [_socket sendString:data error:nil];
+  } else {
+    [_socket sendData:data error:nil];
+  }
 }
 
 - (void)start
