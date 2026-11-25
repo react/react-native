@@ -5504,6 +5504,8 @@ public class com/facebook/react/views/scroll/ReactHorizontalScrollView : android
 	public fun fling (I)V
 	public fun focusSearch (Landroid/view/View;I)Landroid/view/View;
 	public fun getChildVisibleRect (Landroid/view/View;Landroid/graphics/Rect;Landroid/graphics/Point;)Z
+	public fun getClipBounds ()Landroid/graphics/Rect;
+	public fun getClipBounds (Landroid/graphics/Rect;)Z
 	public fun getClippingRect (Landroid/graphics/Rect;)V
 	public fun getFadingEdgeLengthEnd ()I
 	public fun getFadingEdgeLengthStart ()I
@@ -5654,6 +5656,8 @@ public class com/facebook/react/views/scroll/ReactScrollView : android/widget/Sc
 	public fun focusSearch (Landroid/view/View;I)Landroid/view/View;
 	protected fun getBottomFadingEdgeStrength ()F
 	public fun getChildVisibleRect (Landroid/view/View;Landroid/graphics/Rect;Landroid/graphics/Point;)Z
+	public fun getClipBounds ()Landroid/graphics/Rect;
+	public fun getClipBounds (Landroid/graphics/Rect;)Z
 	public fun getClippingRect (Landroid/graphics/Rect;)V
 	public fun getFadingEdgeLengthEnd ()I
 	public fun getFadingEdgeLengthStart ()I

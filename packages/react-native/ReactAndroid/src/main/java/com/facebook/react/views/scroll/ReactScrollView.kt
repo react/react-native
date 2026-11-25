@@ -794,6 +794,33 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   }
 
   /**
+   * Returns the padding box when overflow is not visible, so that systems querying
+   * [View.getClipBounds] can determine this view's clipping region. The rect is not offset by the
+   * scroll position: scrolling only translates children, not this view's own clip.
+   */
+  override fun getClipBounds(): Rect? {
+    if (
+        ReactNativeFeatureFlags.syncAndroidClipBoundsWithOverflow() && _overflow != Overflow.VISIBLE
+    ) {
+      val rect = Rect()
+      BackgroundStyleApplicator.getPaddingBoxRect(this, rect)
+      return rect
+    }
+    return super.getClipBounds()
+  }
+
+  /** See [getClipBounds]. */
+  override fun getClipBounds(outRect: Rect): Boolean {
+    if (
+        ReactNativeFeatureFlags.syncAndroidClipBoundsWithOverflow() && _overflow != Overflow.VISIBLE
+    ) {
+      BackgroundStyleApplicator.getPaddingBoxRect(this, outRect)
+      return true
+    }
+    return super.getClipBounds(outRect)
+  }
+
+  /**
    * This handles any sort of scrolling that may occur after a touch is finished. This may be
    * momentum scrolling (fling) or because you have pagingEnabled on the scroll view. Because we
    * don't get any events from Android about this lifecycle, we do all our detection by creating a
