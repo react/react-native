@@ -131,9 +131,9 @@ static AttributedString styledText(bool highlightFirst, bool split = true)
   [component updateState:initial oldState:nullptr];
 
   NSTextStorage *storage = textView.textStorage;
+  [textView setSelectedRange:NSMakeRange(2, 3)];
   [storage addAttribute:@"EventEmitter" value:@1 range:NSMakeRange(0, 5)];
   NSAttributedString *snapshot = [storage copy];
-  [textView setSelectedRange:NSMakeRange(2, 3)];
 
   // The second native range has the same rendered style but a different React event target.
   text.getFragments().back().parentShadowView.componentHandle = 1;
@@ -144,18 +144,60 @@ static AttributedString styledText(bool highlightFirst, bool split = true)
   XCTAssertTrue(NSEqualRanges(textView.selectedRange, NSMakeRange(2, 3)));
 }
 
+- (void)testMultilineStyleUpdateAfterNativeTextEchoWithFallback
+{
+  RCTTextInputComponentView *component = multilineInput();
+  RCTUITextView *textView = (RCTUITextView *)component.accessibilityElement;
+  auto text = styledText(false, false);
+  text.getFragments().pop_back();
+  auto initial = textState(text);
+  [component updateState:initial oldState:nullptr];
+
+  NSMutableAttributedString *nativeText = [textView.attributedText mutableCopy];
+  [nativeText appendAttributedString:[[NSAttributedString alloc] initWithString:@" ✅ world"
+                                                                     attributes:[nativeText attributesAtIndex:0
+                                                                                               effectiveRange:NULL]]];
+  textView.attributedText = nativeText;
+  object_setClass(textView, [RCTTextInputFontFallbackView class]);
+  XCTAssertNotNil([textView.attributedText attribute:@"NSOriginalFont" atIndex:6 effectiveRange:NULL]);
+
+  auto echo = textState(styledText(false, false), initial, 1);
+  [component updateState:echo oldState:initial];
+  auto updated = textState(styledText(true, false), echo, 1);
+  [component updateState:updated oldState:echo];
+
+  XCTAssertEqualObjects(
+      [textView.textStorage attribute:NSForegroundColorAttributeName atIndex:0 effectiveRange:NULL], UIColor.redColor);
+}
+
 - (void)testMultilineStyleUpdateIgnoresStaleState
 {
   RCTTextInputComponentView *component = multilineInput();
   RCTUITextView *textView = (RCTUITextView *)component.accessibilityElement;
-  auto initial = textState(styledText(false), nullptr, 1);
+  TextAttributes attributes;
+  attributes.foregroundColor = blackColor();
+  AttributedString text;
+  text.appendFragment({.string = "Hello world", .textAttributes = attributes});
+  auto initial = textState(text, nullptr, 1);
   [component updateState:initial oldState:nullptr];
 
   NSAttributedString *snapshot = [textView.attributedText copy];
-  auto stale = textState(styledText(true), initial);
+  auto &fragment = text.getFragments().front();
+  fragment.textAttributes.foregroundColor = colorFromRGBA(255, 0, 0, 255);
+  auto stale = textState(text, initial, 0);
   [component updateState:stale oldState:initial];
 
   XCTAssertEqualObjects(textView.attributedText, snapshot);
+
+  fragment.textAttributes.textDecorationLineType = TextDecorationLineType::Underline;
+  auto updated = textState(text, stale, 1);
+  [component updateState:updated oldState:stale];
+
+  NSTextStorage *storage = textView.textStorage;
+  XCTAssertEqualObjects(
+      [storage attribute:NSForegroundColorAttributeName atIndex:0 effectiveRange:NULL], UIColor.redColor);
+  XCTAssertEqualObjects(
+      [storage attribute:NSUnderlineStyleAttributeName atIndex:0 effectiveRange:NULL], @(NSUnderlineStyleSingle));
 }
 
 @end
