@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<53efcbcc0b7fb4f8da094449e96e1584>>
+ * @generated SignedSource<<e288dffdcecee598f9675c9f50844e53>>
  */
 
 /**
@@ -138,6 +138,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableAsyncDiskCacheCheckInMultiSourceImageAndroid");
+    return method(javaProvider_);
+  }
+
+  bool enableAsyncSettingsManagerUpdatesIOS() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableAsyncSettingsManagerUpdatesIOS");
     return method(javaProvider_);
   }
 
@@ -728,6 +734,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableAsyncDiskCacheCheckInMultiSourceI
   return ReactNativeFeatureFlags::enableAsyncDiskCacheCheckInMultiSourceImageAndroid();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableAsyncSettingsManagerUpdatesIOS(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableAsyncSettingsManagerUpdatesIOS();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableBridgelessArchitecture(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableBridgelessArchitecture();
@@ -1225,6 +1236,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableAsyncDiskCacheCheckInMultiSourceImageAndroid",
         JReactNativeFeatureFlagsCxxInterop::enableAsyncDiskCacheCheckInMultiSourceImageAndroid),
+      makeNativeMethod(
+        "enableAsyncSettingsManagerUpdatesIOS",
+        JReactNativeFeatureFlagsCxxInterop::enableAsyncSettingsManagerUpdatesIOS),
       makeNativeMethod(
         "enableBridgelessArchitecture",
         JReactNativeFeatureFlagsCxxInterop::enableBridgelessArchitecture),

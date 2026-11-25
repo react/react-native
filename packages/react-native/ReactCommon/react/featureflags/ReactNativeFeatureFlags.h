@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f20f175d0628995e9659684d0803f997>>
+ * @generated SignedSource<<d71d568e09a167bc737adecf7f5cab71>>
  */
 
 /**
@@ -125,6 +125,11 @@ class ReactNativeFeatureFlags {
    * Runs multi-source image disk-cache checks asynchronously on Android.
    */
   RN_EXPORT static bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid();
+
+  /**
+   * Process SettingsManager defaults notifications on a dedicated serial queue on iOS.
+   */
+  RN_EXPORT static bool enableAsyncSettingsManagerUpdatesIOS();
 
   /**
    * Feature flag to enable the new bridgeless architecture.

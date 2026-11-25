@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<99c0c14cf6e3eca24e7bf1c7eaf64d07>>
+ * @generated SignedSource<<457f2b8def3b45dc194745e9807e9ca1>>
  */
 
 /**
@@ -131,6 +131,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean = accessor.enableAsyncDiskCacheCheckInMultiSourceImageAndroid()
+
+  /**
+   * Process SettingsManager defaults notifications on a dedicated serial queue on iOS.
+   */
+  @JvmStatic
+  public fun enableAsyncSettingsManagerUpdatesIOS(): Boolean = accessor.enableAsyncSettingsManagerUpdatesIOS()
 
   /**
    * Feature flag to enable the new bridgeless architecture.
