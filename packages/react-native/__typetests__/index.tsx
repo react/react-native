@@ -1897,27 +1897,23 @@ DynamicColorIOS({
 const OpaqueTest1 = () => (
   <View
     // @ts-expect-error
-    style={{
-      backgroundColor: {
-        resource_paths: ['?attr/colorControlNormal'],
-      },
-    }}
+    style={{backgroundColor: {resource_paths: ['?attr/colorControlNormal']}}}
   />
 );
 
+const opaqueStyle2 = {
+  backgroundColor: {
+    semantic: 'string',
+    dynamic: {
+      light: 'light',
+      dark: 'dark',
+    },
+  },
+};
+
 const OpaqueTest2 = () => (
-  <View
-    // @ts-expect-error
-    style={{
-      backgroundColor: {
-        semantic: 'string',
-        dynamic: {
-          light: 'light',
-          dark: 'dark',
-        },
-      },
-    }}
-  />
+  // @ts-expect-error
+  <View style={opaqueStyle2} />
 );
 
 // Test you cannot amend opaque type
