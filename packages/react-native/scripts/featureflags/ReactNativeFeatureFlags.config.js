@@ -245,6 +245,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'stable',
     },
+    enableConditionalStyleValues: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-24',
+        description:
+          'Enable conditional style values, such as `@media (prefers-color-scheme: dark)`.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
+    },
     enableCppPropsIteratorSetter: {
       dangerouslyExposeInPublicCppHeaders: true,
       defaultValue: false,

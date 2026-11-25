@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f20f5ce06d72bb7256dbc280dbe8b76f>>
+ * @generated SignedSource<<8b9aa4b6ba25b39a69bf253028fe8c6f>>
  */
 
 /**
@@ -42,6 +42,7 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
   private var enableAndroidTextMeasurementOptimizationsCache: Boolean? = null
   private var enableAsyncDiskCacheCheckInMultiSourceImageAndroidCache: Boolean? = null
   private var enableBridgelessArchitectureCache: Boolean? = null
+  private var enableConditionalStyleValuesCache: Boolean? = null
   private var enableCppPropsIteratorSetterCache: Boolean? = null
   private var enableCustomFocusSearchOnClippedElementsAndroidCache: Boolean? = null
   private var enableDestroyShadowTreeRevisionAsyncCache: Boolean? = null
@@ -301,6 +302,16 @@ internal class ReactNativeFeatureFlagsLocalAccessor : ReactNativeFeatureFlagsAcc
       cached = currentProvider.enableBridgelessArchitecture()
       accessedFeatureFlags.add("enableBridgelessArchitecture")
       enableBridgelessArchitectureCache = cached
+    }
+    return cached
+  }
+
+  override fun enableConditionalStyleValues(): Boolean {
+    var cached = enableConditionalStyleValuesCache
+    if (cached == null) {
+      cached = currentProvider.enableConditionalStyleValues()
+      accessedFeatureFlags.add("enableConditionalStyleValues")
+      enableConditionalStyleValuesCache = cached
     }
     return cached
   }

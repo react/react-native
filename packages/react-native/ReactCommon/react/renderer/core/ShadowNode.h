@@ -142,6 +142,12 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
    */
   ShadowNodeTraits getTraits() const;
 
+  /*
+   * Whether this node or a descendant can have conditional values. False means
+   * that none has them.
+   */
+  bool subtreeHasConditionalValues() const;
+
   const Props::Shared &getProps() const;
   const std::vector<std::shared_ptr<const ShadowNode>> &getChildren() const;
   const SharedEventEmitter &getEventEmitter() const;

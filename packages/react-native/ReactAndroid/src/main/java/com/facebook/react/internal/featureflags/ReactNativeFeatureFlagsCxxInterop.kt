@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ef7526b6b18e20db71fe54d43218ab69>>
+ * @generated SignedSource<<bd1cdfb7bfe7e95b03beab6ab42a57df>>
  */
 
 /**
@@ -63,6 +63,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableAsyncDiskCacheCheckInMultiSourceImageAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableBridgelessArchitecture(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableConditionalStyleValues(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableCppPropsIteratorSetter(): Boolean
 

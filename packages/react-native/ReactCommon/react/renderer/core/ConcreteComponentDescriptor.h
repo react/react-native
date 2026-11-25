@@ -16,6 +16,7 @@
 #include <React/Graphics.h>
 #include <react/featureflags/ReactNativePublicFeatureFlags.h>
 #include <react/renderer/core/ComponentDescriptor.h>
+#include <react/renderer/core/ConditionalValues.h>
 #include <react/renderer/core/EventDispatcher.h>
 #include <react/renderer/core/Props.h>
 #include <react/renderer/core/PropsParserContext.h>
@@ -125,6 +126,11 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
       ShadowNodeT::filterRawProps(rawProps);
     }
 
+    // Use the descriptor's container: when `ShadowNode::clone` applies the
+    // `setNativeProps` props again, `context` has an empty one.
+    auto conditionalValues = resolveConditionalValues(props.get(), rawProps, contextContainer_.get());
+    auto &resolvedRawProps = conditionalValues ? conditionalValues->rawProps : rawProps;
+
     // Two construction paths:
     //  - Iterator-setter (only available when `ConcreteProps` satisfies
     //    `HasIteratorSetterCtor` AND the runtime flag is on): copy-construct
@@ -146,8 +152,11 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
       }
     }
     if (!useIteratorSetter) {
-      rawProps.parse(rawPropsParser_);
-      shadowNodeProps = ShadowNodeT::Props(context, rawProps, props);
+      resolvedRawProps.parse(rawPropsParser_);
+      shadowNodeProps = ShadowNodeT::Props(context, resolvedRawProps, props);
+    }
+    if (conditionalValues) {
+      shadowNodeProps->conditionalValues = std::move(conditionalValues->conditionalValues);
     }
 
 #ifdef RN_SERIALIZABLE_STATE
@@ -166,13 +175,13 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
       }
     }
     if (fallbackToDynamicRawPropsAccumulation) {
-      ShadowNodeT::initializeDynamicProps(shadowNodeProps, rawProps, props);
+      ShadowNodeT::initializeDynamicProps(shadowNodeProps, resolvedRawProps, props);
     }
 #endif
 
     if constexpr (kSupportsIteratorSetter) {
       if (useIteratorSetter) {
-        rawProps.forEachItem([&](std::string_view name, const RawValue &value) {
+        resolvedRawProps.forEachItem([&](std::string_view name, const RawValue &value) {
           shadowNodeProps->setProp(context, RAW_PROPS_KEY_HASH(name), name.data(), value);
         });
       }

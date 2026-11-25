@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<efc3269aad4b903c9b26333e69742c53>>
+ * @generated SignedSource<<2cade89ffb3be2db0373c23399fcedc9>>
  * @flow strict
  * @noformat
  */
@@ -66,6 +66,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
+  enableConditionalStyleValues: Getter<boolean>,
   enableCppPropsIteratorSetter: Getter<boolean>,
   enableCustomFocusSearchOnClippedElementsAndroid: Getter<boolean>,
   enableDestroyShadowTreeRevisionAsync: Getter<boolean>,
@@ -291,6 +292,10 @@ export const enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean>
  * Feature flag to enable the new bridgeless architecture.
  */
 export const enableBridgelessArchitecture: Getter<boolean> = createNativeFlagGetter('enableBridgelessArchitecture', true);
+/**
+ * Enable conditional style values, such as `@media (prefers-color-scheme: dark)`.
+ */
+export const enableConditionalStyleValues: Getter<boolean> = createNativeFlagGetter('enableConditionalStyleValues', false);
 /**
  * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).
  */

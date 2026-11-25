@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<53efcbcc0b7fb4f8da094449e96e1584>>
+ * @generated SignedSource<<0bee72e7632a17c7e4b28df2a42670d7>>
  */
 
 /**
@@ -144,6 +144,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableBridgelessArchitecture() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableBridgelessArchitecture");
+    return method(javaProvider_);
+  }
+
+  bool enableConditionalStyleValues() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableConditionalStyleValues");
     return method(javaProvider_);
   }
 
@@ -733,6 +739,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableBridgelessArchitecture(
   return ReactNativeFeatureFlags::enableBridgelessArchitecture();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableConditionalStyleValues(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableConditionalStyleValues();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableCppPropsIteratorSetter(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableCppPropsIteratorSetter();
@@ -1228,6 +1239,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableBridgelessArchitecture",
         JReactNativeFeatureFlagsCxxInterop::enableBridgelessArchitecture),
+      makeNativeMethod(
+        "enableConditionalStyleValues",
+        JReactNativeFeatureFlagsCxxInterop::enableConditionalStyleValues),
       makeNativeMethod(
         "enableCppPropsIteratorSetter",
         JReactNativeFeatureFlagsCxxInterop::enableCppPropsIteratorSetter),

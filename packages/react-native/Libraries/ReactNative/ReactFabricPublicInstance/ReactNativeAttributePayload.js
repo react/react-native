@@ -8,9 +8,22 @@
  * @format
  */
 
-import type {AttributeConfiguration} from '../../Renderer/shims/ReactNativeTypes';
+import type {
+  AnyAttributeType,
+  AttributeConfiguration,
+} from '../../Renderer/shims/ReactNativeTypes';
+import type {
+  CompiledConditionalValue,
+  StyleObject,
+} from '../../StyleSheet/processStyleConditions';
 
+import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
+import ReactNativeStyleAttributes from '../../Components/View/ReactNativeStyleAttributes';
 import flattenStyle from '../../StyleSheet/flattenStyle';
+import {
+  compileConditionalValue,
+  isConditionalValue,
+} from '../../StyleSheet/processStyleConditions';
 import deepDiffer from '../../Utilities/differ/deepDiffer';
 
 const emptyObject = {};
@@ -33,6 +46,76 @@ let removedKeyCount = 0;
 const deepDifferOptions = {
   unsafelyIgnoreFunctions: true,
 };
+
+// Native reads a conditional value under its own prop as
+// `{$conditionalValue: {default, conditions}}`.
+const CONDITIONAL_VALUE_KEY = '$conditionalValue';
+
+// Tells native that the payload has a conditional value, so that other
+// payloads skip the search.
+const HAS_CONDITIONAL_VALUES_KEY = '$hasConditionalValues';
+
+let hasConditionalValues = false;
+
+function isStyleConditionValue(
+  value: unknown,
+  validAttributes: AttributeConfiguration,
+): implies value is StyleObject {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (validAttributes as unknown) === ReactNativeStyleAttributes &&
+    ReactNativeFeatureFlags.enableConditionalStyleValues() &&
+    isConditionalValue(value)
+  );
+}
+
+function processStyleConditionValue(
+  value: StyleObject,
+  attributeConfig: ?AnyAttributeType,
+  propKey: string,
+): unknown {
+  const compiled = compileConditionalValue(value, propKey);
+  if (compiled == null) {
+    return null;
+  }
+  const process =
+    attributeConfig != null && attributeConfig !== true
+      ? attributeConfig.process
+      : null;
+  // `process` returns undefined for an invalid value.
+  const processValue = (item: unknown) =>
+    item == null || process == null ? (item ?? null) : (process(item) ?? null);
+  const defaultValue = processValue(compiled.default);
+  if (compiled.conditions.length === 0) {
+    return defaultValue;
+  }
+  hasConditionalValues = true;
+  const conditionalValue: CompiledConditionalValue = {
+    default: defaultValue,
+    conditions: compiled.conditions.map(condition => ({
+      query: condition.query,
+      value: processValue(condition.value),
+    })),
+  };
+  return {[CONDITIONAL_VALUE_KEY]: conditionalValue};
+}
+
+function processAttributeValue(
+  value: unknown,
+  attributeConfig: ?AnyAttributeType,
+  propKey: string,
+  validAttributes: AttributeConfiguration,
+): unknown {
+  if (isStyleConditionValue(value, validAttributes)) {
+    return processStyleConditionValue(value, attributeConfig, propKey);
+  }
+  return attributeConfig != null &&
+    attributeConfig !== true &&
+    attributeConfig.process != null
+    ? attributeConfig.process(value)
+    : value;
+}
 
 function defaultDiffer(prevProp: unknown, nextProp: unknown): boolean {
   if (typeof nextProp !== 'object' || nextProp === null) {
@@ -82,19 +165,18 @@ function restoreDeletedValuesInNestedArray(
         nextProp = null;
       }
 
-      if (typeof attributeConfig !== 'object') {
-        // case: !Object is the default case
-        updatePayload[propKey] = nextProp;
-      } else if (
+      if (
+        typeof attributeConfig !== 'object' ||
         typeof attributeConfig.diff === 'function' ||
         typeof attributeConfig.process === 'function'
       ) {
-        // case: CustomAttributeConfiguration
-        const nextValue =
-          typeof attributeConfig.process === 'function'
-            ? attributeConfig.process(nextProp)
-            : nextProp;
-        updatePayload[propKey] = nextValue;
+        // case: !Object | CustomAttributeConfiguration
+        updatePayload[propKey] = processAttributeValue(
+          nextProp,
+          attributeConfig,
+          propKey,
+          validAttributes,
+        );
       }
       // $FlowFixMe[incompatible-use] found when upgrading Flow
       removedKeys[propKey] = false;
@@ -291,19 +373,18 @@ function diffProperties(
       // value. It doesn't matter if nothing changed, we'll set it anyway.
 
       // Pattern match on: attributeConfig
-      if (typeof attributeConfig !== 'object') {
-        // case: !Object is the default case
-        updatePayload[propKey] = nextProp;
-      } else if (
+      if (
+        typeof attributeConfig !== 'object' ||
         typeof attributeConfig.diff === 'function' ||
         typeof attributeConfig.process === 'function'
       ) {
-        // case: CustomAttributeConfiguration
-        const nextValue =
-          typeof attributeConfig.process === 'function'
-            ? attributeConfig.process(nextProp)
-            : nextProp;
-        updatePayload[propKey] = nextValue;
+        // case: !Object | CustomAttributeConfiguration
+        updatePayload[propKey] = processAttributeValue(
+          nextProp,
+          attributeConfig,
+          propKey,
+          validAttributes,
+        );
       }
       continue;
     }
@@ -319,26 +400,35 @@ function diffProperties(
         // a normal leaf has changed
         (updatePayload || (updatePayload = {} as {[key: string]: unknown}))[
           propKey
-        ] = nextProp;
+        ] = processAttributeValue(
+          nextProp,
+          attributeConfig,
+          propKey,
+          validAttributes,
+        );
       }
     } else if (
       typeof attributeConfig.diff === 'function' ||
       typeof attributeConfig.process === 'function'
     ) {
       // case: CustomAttributeConfiguration
+      // A custom `diff` does not know conditional values.
       const shouldUpdate =
         prevProp === undefined ||
-        (typeof attributeConfig.diff === 'function'
+        (!isStyleConditionValue(prevProp, validAttributes) &&
+        !isStyleConditionValue(nextProp, validAttributes) &&
+        typeof attributeConfig.diff === 'function'
           ? attributeConfig.diff(prevProp, nextProp)
           : defaultDiffer(prevProp, nextProp));
       if (shouldUpdate) {
-        const nextValue =
-          typeof attributeConfig.process === 'function'
-            ? attributeConfig.process(nextProp)
-            : nextProp;
         (updatePayload || (updatePayload = {} as {[key: string]: unknown}))[
           propKey
-        ] = nextValue;
+        ] = processAttributeValue(
+          nextProp,
+          attributeConfig,
+          propKey,
+          validAttributes,
+        );
       }
     } else {
       // default: fallthrough case when nested properties are defined
@@ -440,10 +530,10 @@ function addNestedProperty(
   for (const propKey in props) {
     const prop = props[propKey];
 
-    const attributeConfig = validAttributes[
-      propKey
+    const attributeType = validAttributes[propKey];
+    const attributeConfig =
       // $FlowFixMe[unclear-type] AttributeConfiguration/AnyAttributeType are defined upstream with $FlowFixMe
-    ] as any as AttributeConfiguration;
+      attributeType as any as AttributeConfiguration;
 
     if (attributeConfig == null) {
       continue;
@@ -459,12 +549,18 @@ function addNestedProperty(
         continue;
       }
     } else if (typeof attributeConfig === 'object') {
-      if (typeof attributeConfig.process === 'function') {
-        // An atomic prop with custom processing.
-        newValue = attributeConfig.process(prop);
-      } else if (typeof attributeConfig.diff === 'function') {
-        // An atomic prop with custom diffing. We don't need to do diffing when adding props.
-        newValue = prop;
+      if (
+        typeof attributeConfig.process === 'function' ||
+        typeof attributeConfig.diff === 'function'
+      ) {
+        // An atomic prop with custom processing or diffing. We don't need to
+        // do diffing when adding props.
+        newValue = processAttributeValue(
+          prop,
+          attributeType,
+          propKey,
+          validAttributes,
+        );
       }
     } else {
       if (typeof prop === 'function') {
@@ -472,7 +568,12 @@ function addNestedProperty(
         newValue = true;
       } else {
         // An atomic prop. Doesn't need to be flattened.
-        newValue = prop;
+        newValue = processAttributeValue(
+          prop,
+          attributeType,
+          propKey,
+          validAttributes,
+        );
       }
     }
 
@@ -507,11 +608,23 @@ function clearProperties(
   return diffProperties(updatePayload, prevProps, emptyObject, validAttributes);
 }
 
+// A later plain value can replace the conditional value, so the flag can be
+// set without one. Native handles that.
+function markConditionalValues(
+  payload: null | {[key: string]: unknown},
+): null | {[key: string]: unknown} {
+  if (hasConditionalValues && payload != null) {
+    payload[HAS_CONDITIONAL_VALUES_KEY] = true;
+  }
+  return payload;
+}
+
 export function create(
   props: NestedNode,
   validAttributes: AttributeConfiguration,
 ): null | {[key: string]: unknown} {
-  return addNestedProperty(null, props, validAttributes);
+  hasConditionalValues = false;
+  return markConditionalValues(addNestedProperty(null, props, validAttributes));
 }
 
 export function diff(
@@ -519,10 +632,13 @@ export function diff(
   nextProps: {[key: string]: unknown},
   validAttributes: AttributeConfiguration,
 ): null | {[key: string]: unknown} {
-  return diffProperties(
-    null, // updatePayload
-    prevProps,
-    nextProps,
-    validAttributes,
+  hasConditionalValues = false;
+  return markConditionalValues(
+    diffProperties(
+      null, // updatePayload
+      prevProps,
+      nextProps,
+      validAttributes,
+    ),
   );
 }

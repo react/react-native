@@ -12,8 +12,10 @@
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
+#include <react/renderer/core/ConditionalValues.h>
 #include <react/renderer/core/LayoutContext.h>
 #include <react/renderer/core/LayoutPrimitives.h>
+#include <react/renderer/core/MediaFeatures.h>
 #include <react/renderer/mounting/ShadowTreeRevision.h>
 #include <react/renderer/mounting/ShadowViewMutation.h>
 #include <react/renderer/telemetry/TransactionTelemetry.h>
@@ -223,13 +225,78 @@ static std::shared_ptr<RootShadowNode> progressRootLayoutInfo(
   return shadowNode;
 }
 
+/*
+ * The stored conditional values as JavaScript sends them, so that `cloneProps`
+ * resolves them again.
+ */
+static RawProps conditionalValuesAsRawProps(const folly::dynamic& values) {
+  folly::dynamic rawProps =
+      folly::dynamic::object(kHasConditionalValuesPropName, true);
+  for (const auto& item : values.items()) {
+    rawProps[item.first] =
+        folly::dynamic::object(kConditionalValueKey, item.second);
+  }
+  return RawProps(std::move(rawProps));
+}
+
+/*
+ * Returns null if no view in the subtree has outdated conditional values.
+ */
+static std::shared_ptr<ShadowNode> resolveOutdatedConditionalValues(
+    const ShadowNode& shadowNode,
+    const MediaFeatures& mediaFeatures) {
+  if (!shadowNode.subtreeHasConditionalValues()) {
+    return nullptr;
+  }
+
+  const auto& children = shadowNode.getChildren();
+  std::shared_ptr<std::vector<std::shared_ptr<const ShadowNode>>> newChildren;
+  for (size_t index = 0; index < children.size(); index++) {
+    if (auto newChild =
+            resolveOutdatedConditionalValues(*children[index], mediaFeatures)) {
+      if (!newChildren) {
+        newChildren =
+            std::make_shared<std::vector<std::shared_ptr<const ShadowNode>>>(
+                children);
+      }
+      (*newChildren)[index] = std::move(newChild);
+    }
+  }
+
+  Props::Shared newProps;
+  const auto& props = shadowNode.getProps();
+  if (props->conditionalValues != nullptr &&
+      props->conditionalValues->isOutdatedFor(mediaFeatures)) {
+    PropsParserContext context{
+        shadowNode.getSurfaceId(), *shadowNode.getContextContainer()};
+    newProps = shadowNode.getComponentDescriptor().cloneProps(
+        context,
+        props,
+        conditionalValuesAsRawProps(props->conditionalValues->values));
+  }
+
+  if (!newChildren && !newProps) {
+    return nullptr;
+  }
+  return shadowNode.clone({
+      .props = newProps ? newProps : ShadowNodeFragment::propsPlaceholder(),
+      .children =
+          newChildren ? newChildren : ShadowNodeFragment::childrenPlaceholder(),
+  });
+}
+
 ShadowTree::ShadowTree(
     SurfaceId surfaceId,
     const LayoutConstraints& layoutConstraints,
     const LayoutContext& layoutContext,
     const ShadowTreeDelegate& delegate,
     const ContextContainer& contextContainer)
-    : surfaceId_(surfaceId), delegate_(delegate) {
+    : surfaceId_(surfaceId),
+      delegate_(delegate),
+      mediaFeaturesStore_(
+          contextContainer
+              .find<std::shared_ptr<MediaFeaturesStore>>(kMediaFeaturesStoreKey)
+              .value_or(nullptr)) {
   static RootComponentDescriptor globalRootComponentDescriptor(
       ComponentDescriptorParameters{
           .eventDispatcher = EventDispatcher::Shared{},
@@ -396,6 +463,16 @@ CommitStatus ShadowTree::tryCommit(
         newRootShadowNode,
         *oldRevisionForStateProgression.rootShadowNode,
         commitOptions);
+  }
+
+  // Resolve outdated conditional values, for example in the nodes that React
+  // holds, before the commit hooks see the tree.
+  if (mediaFeaturesStore_) {
+    if (auto resolvedRootShadowNode = resolveOutdatedConditionalValues(
+            *newRootShadowNode, mediaFeaturesStore_->get())) {
+      newRootShadowNode =
+          std::static_pointer_cast<RootShadowNode>(resolvedRootShadowNode);
+    }
   }
 
   // Run commit hooks.
