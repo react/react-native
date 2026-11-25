@@ -8,7 +8,11 @@
  * @format
  */
 
-import type {BackPressEventName} from '../BackHandler';
+import type {
+  BackHandlerOptions,
+  BackHandlerSubscription,
+  BackPressEventName,
+} from '../BackHandler';
 import type {HardwareBackPressEvent} from '../HardwareBackPressEvent';
 
 import {HardwareBackPressEvent as HardwareBackPressEventClass} from '../HardwareBackPressEvent';
@@ -23,12 +27,14 @@ const BackHandler = {
   addEventListener: function (
     eventName: BackPressEventName,
     handler: (event: HardwareBackPressEvent) => ?boolean,
-  ): {remove: () => void, ...} {
+    _options?: BackHandlerOptions,
+  ): BackHandlerSubscription {
     _backPressSubscriptions.add(handler);
     return {
       remove: () => {
         _backPressSubscriptions.delete(handler);
       },
+      setInterceptEnabled: (_enabled: boolean) => {},
     };
   },
 

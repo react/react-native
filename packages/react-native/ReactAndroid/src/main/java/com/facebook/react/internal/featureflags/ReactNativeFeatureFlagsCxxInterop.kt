@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ef7526b6b18e20db71fe54d43218ab69>>
+ * @generated SignedSource<<56b78da1741a04b8a526bd31030172e9>>
  */
 
 /**
@@ -125,6 +125,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enableNativeCSSParsing(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enablePredictiveBackAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enablePreparedTextLayout(): Boolean
 

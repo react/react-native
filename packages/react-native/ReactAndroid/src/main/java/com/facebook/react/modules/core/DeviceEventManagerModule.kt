@@ -10,6 +10,7 @@ package com.facebook.react.modules.core
 import android.net.Uri
 import com.facebook.fbreact.specs.NativeDeviceEventManagerSpec
 import com.facebook.proguard.annotations.DoNotStripAny
+import com.facebook.react.ReactActivity
 import com.facebook.react.bridge.JavaScriptModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
@@ -57,6 +58,16 @@ public open class DeviceEventManagerModule(
     // the thread instances cannot be null, and scheduling on a thread after ReactApplicationContext
     // teardown is a noop.
     reactApplicationContext.runOnUiQueueThread(invokeDefaultBackPressRunnable)
+  }
+
+  /**
+   * Called by BackHandler whenever its listeners change, with whether at least one asks for back.
+   * Acts on the current activity if it is a [ReactActivity].
+   */
+  override fun setInterceptEnabled(enabled: Boolean) {
+    UiThreadUtil.runOnUiThread {
+      (reactApplicationContext.currentActivity as? ReactActivity)?.setInterceptEnabled(enabled)
+    }
   }
 
   public companion object {

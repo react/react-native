@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f20f175d0628995e9659684d0803f997>>
+ * @generated SignedSource<<51a639651d1427539ca5d3d07ae5e7b8>>
  */
 
 /**
@@ -285,6 +285,11 @@ class ReactNativeFeatureFlags {
    * When enabled together with `enableAccumulatedUpdatesInRawPropsAndroid`, the Insert of a preallocated view only sends the difference between the props the view was preallocated with and the inserted props, instead of sending all props again on every Insert.
    */
   RN_EXPORT static bool enablePreallocatedPropsDiffOnInsertAndroid();
+
+  /**
+   * On Android 16+ with targetSdk 36+, ReactActivity creates its back callback disabled so Android can play the predictive back animation. Back reaches JS only while a BackHandler listener asks for it with `intercept: true`.
+   */
+  RN_EXPORT static bool enablePredictiveBackAndroid();
 
   /**
    * Enables caching text layout artifacts for later reuse

@@ -142,3 +142,143 @@ describe('BackHandler', () => {
     expect(called).toBe(false);
   });
 });
+
+// Fantom has no DeviceEventManager native module, so the request BackHandler
+// sends to native can't be observed. These cases cover the parts of the
+// `intercept` option that are visible through the public API: it must not
+// change which handlers run, or how often.
+describe('BackHandler intercept option', () => {
+  const subscriptions: Array<{remove: () => void, ...}> = [];
+
+  afterEach(() => {
+    for (const sub of subscriptions) {
+      sub.remove();
+    }
+    subscriptions.length = 0;
+  });
+
+  it('calls a handler added with intercept', () => {
+    let called = false;
+    const handler = (_event: HardwareBackPressEventType) => {
+      called = true;
+      return true;
+    };
+
+    subscriptions.push(
+      BackHandler.addEventListener('hardwareBackPress', handler, {
+        intercept: true,
+      }),
+    );
+
+    DeviceEventEmitter.emit('hardwareBackPress', {timeStamp: 100});
+
+    expect(called).toBe(true);
+  });
+
+  it('keeps reverse order across listeners with and without intercept', () => {
+    const callOrder: Array<string> = [];
+    const handler1 = (_event: HardwareBackPressEventType) => {
+      callOrder.push('first');
+      return false;
+    };
+    const handler2 = (_event: HardwareBackPressEventType) => {
+      callOrder.push('second');
+      return false;
+    };
+    const handler3 = (_event: HardwareBackPressEventType) => {
+      callOrder.push('third');
+      return false;
+    };
+
+    subscriptions.push(
+      BackHandler.addEventListener('hardwareBackPress', handler1, {
+        intercept: true,
+      }),
+    );
+    subscriptions.push(
+      BackHandler.addEventListener('hardwareBackPress', handler2),
+    );
+    subscriptions.push(
+      BackHandler.addEventListener('hardwareBackPress', handler3, {
+        intercept: true,
+      }),
+    );
+
+    DeviceEventEmitter.emit('hardwareBackPress', {timeStamp: 100});
+
+    expect(callOrder).toEqual(['third', 'second', 'first']);
+  });
+
+  it('runs the same handlers after setInterceptEnabled', () => {
+    const callOrder: Array<string> = [];
+    const intercepting = BackHandler.addEventListener(
+      'hardwareBackPress',
+      (_event: HardwareBackPressEventType) => {
+        callOrder.push('intercepting');
+        return false;
+      },
+      {intercept: true},
+    );
+    const plain = BackHandler.addEventListener(
+      'hardwareBackPress',
+      (_event: HardwareBackPressEventType) => {
+        callOrder.push('plain');
+        return false;
+      },
+    );
+    subscriptions.push(intercepting, plain);
+
+    intercepting.setInterceptEnabled(false);
+    plain.setInterceptEnabled(true);
+    DeviceEventEmitter.emit('hardwareBackPress', {timeStamp: 100});
+
+    intercepting.setInterceptEnabled(true);
+    plain.setInterceptEnabled(false);
+    DeviceEventEmitter.emit('hardwareBackPress', {timeStamp: 200});
+
+    expect(callOrder).toEqual([
+      'plain',
+      'intercepting',
+      'plain',
+      'intercepting',
+    ]);
+  });
+
+  it('does not bring back a removed listener on setInterceptEnabled', () => {
+    let called = false;
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      (_event: HardwareBackPressEventType) => {
+        called = true;
+        return true;
+      },
+    );
+    subscription.remove();
+
+    subscription.setInterceptEnabled(true);
+    DeviceEventEmitter.emit('hardwareBackPress', {timeStamp: 100});
+
+    expect(called).toBe(false);
+  });
+
+  it('calls the same handler once when added twice', () => {
+    let calls = 0;
+    const handler = (_event: HardwareBackPressEventType) => {
+      calls++;
+      return false;
+    };
+
+    subscriptions.push(
+      BackHandler.addEventListener('hardwareBackPress', handler),
+    );
+    subscriptions.push(
+      BackHandler.addEventListener('hardwareBackPress', handler, {
+        intercept: true,
+      }),
+    );
+
+    DeviceEventEmitter.emit('hardwareBackPress', {timeStamp: 100});
+
+    expect(calls).toBe(1);
+  });
+});

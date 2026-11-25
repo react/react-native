@@ -61,6 +61,7 @@ public final class com/facebook/react/NativeModuleRegistryBuilder {
 public abstract class com/facebook/react/ReactActivity : androidx/appcompat/app/AppCompatActivity, com/facebook/react/modules/core/DefaultHardwareBackBtnHandler, com/facebook/react/modules/core/PermissionAwareActivity {
 	protected fun <init> ()V
 	protected fun createReactActivityDelegate ()Lcom/facebook/react/ReactActivityDelegate;
+	public fun getBackPressedCallback ()Landroidx/activity/OnBackPressedCallback;
 	protected fun getMainComponentName ()Ljava/lang/String;
 	public fun getReactActivityDelegate ()Lcom/facebook/react/ReactActivityDelegate;
 	public fun getReactDelegate ()Lcom/facebook/react/ReactDelegate;
@@ -84,6 +85,7 @@ public abstract class com/facebook/react/ReactActivity : androidx/appcompat/app/
 	public fun onUserLeaveHint ()V
 	public fun onWindowFocusChanged (Z)V
 	public fun requestPermissions ([Ljava/lang/String;ILcom/facebook/react/modules/core/PermissionListener;)V
+	public fun setInterceptEnabled (Z)V
 }
 
 public class com/facebook/react/ReactActivityDelegate {
@@ -2535,6 +2537,7 @@ public class com/facebook/react/modules/core/DeviceEventManagerModule : com/face
 	public fun emitHardwareBackPressed ()V
 	public fun emitNewIntentReceived (Landroid/net/Uri;)V
 	public fun invokeDefaultBackPressHandler ()V
+	public fun setInterceptEnabled (Z)V
 }
 
 public final class com/facebook/react/modules/core/DeviceEventManagerModule$Companion {

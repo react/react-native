@@ -13,6 +13,16 @@ import type {HardwareBackPressEvent} from './HardwareBackPressEvent';
 type BackPressEventName = 'backPress' | 'hardwareBackPress';
 type BackPressHandler = (event: HardwareBackPressEvent) => ?boolean | void;
 
+type BackHandlerOptions = {
+  intercept?: boolean,
+};
+
+type BackHandlerSubscription = {
+  remove: () => void,
+  setInterceptEnabled: (enabled: boolean) => void,
+  ...
+};
+
 function emptyFunction(): void {}
 
 type TBackHandler = {
@@ -20,14 +30,20 @@ type TBackHandler = {
   addEventListener(
     eventName: BackPressEventName,
     handler: BackPressHandler,
-  ): {remove: () => void, ...},
+    options?: BackHandlerOptions,
+  ): BackHandlerSubscription,
 };
 
 const BackHandler: TBackHandler = {
   exitApp: emptyFunction,
-  addEventListener(_eventName: BackPressEventName, _handler: BackPressHandler) {
+  addEventListener(
+    _eventName: BackPressEventName,
+    _handler: BackPressHandler,
+    _options?: BackHandlerOptions,
+  ) {
     return {
       remove: emptyFunction,
+      setInterceptEnabled: emptyFunction,
     };
   },
 };

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<53efcbcc0b7fb4f8da094449e96e1584>>
+ * @generated SignedSource<<7bce18c01d40cf5005d3a70278d6e500>>
  */
 
 /**
@@ -330,6 +330,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enablePreallocatedPropsDiffOnInsertAndroid() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enablePreallocatedPropsDiffOnInsertAndroid");
+    return method(javaProvider_);
+  }
+
+  bool enablePredictiveBackAndroid() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enablePredictiveBackAndroid");
     return method(javaProvider_);
   }
 
@@ -888,6 +894,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enablePreallocatedPropsDiffOnInsertAndr
   return ReactNativeFeatureFlags::enablePreallocatedPropsDiffOnInsertAndroid();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enablePredictiveBackAndroid(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enablePredictiveBackAndroid();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enablePreparedTextLayout(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enablePreparedTextLayout();
@@ -1321,6 +1332,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enablePreallocatedPropsDiffOnInsertAndroid",
         JReactNativeFeatureFlagsCxxInterop::enablePreallocatedPropsDiffOnInsertAndroid),
+      makeNativeMethod(
+        "enablePredictiveBackAndroid",
+        JReactNativeFeatureFlagsCxxInterop::enablePredictiveBackAndroid),
       makeNativeMethod(
         "enablePreparedTextLayout",
         JReactNativeFeatureFlagsCxxInterop::enablePreparedTextLayout),

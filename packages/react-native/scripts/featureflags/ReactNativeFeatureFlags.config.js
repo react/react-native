@@ -577,6 +577,16 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enablePredictiveBackAndroid: {
+      defaultValue: false,
+      metadata: {
+        description:
+          'On Android 16+ with targetSdk 36+, ReactActivity creates its back callback disabled so Android can play the predictive back animation. Back reaches JS only while a BackHandler listener asks for it with `intercept: true`.',
+        expectedReleaseValue: true,
+        purpose: 'release',
+      },
+      ossReleaseStage: 'none',
+    },
     enablePreparedTextLayout: {
       defaultValue: true,
       metadata: {

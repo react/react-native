@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<99c0c14cf6e3eca24e7bf1c7eaf64d07>>
+ * @generated SignedSource<<8aa311770b06a39172d98a415b022321>>
  */
 
 /**
@@ -323,6 +323,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enablePreallocatedPropsDiffOnInsertAndroid(): Boolean = accessor.enablePreallocatedPropsDiffOnInsertAndroid()
+
+  /**
+   * On Android 16+ with targetSdk 36+, ReactActivity creates its back callback disabled so Android can play the predictive back animation. Back reaches JS only while a BackHandler listener asks for it with `intercept: true`.
+   */
+  @JvmStatic
+  public fun enablePredictiveBackAndroid(): Boolean = accessor.enablePredictiveBackAndroid()
 
   /**
    * Enables caching text layout artifacts for later reuse
