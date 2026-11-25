@@ -31,6 +31,7 @@ internal class FabricUIManagerBinding : HybridClassBase() {
       uiManager: FabricUIManager,
       eventBeatManager: EventBeatManager,
       componentsRegistry: ComponentFactory,
+      isDarkMode: Boolean,
   )
 
   external fun startSurface(surfaceId: Int, moduleName: String, initialProps: NativeMap?)
@@ -65,6 +66,8 @@ internal class FabricUIManagerBinding : HybridClassBase() {
 
   external fun setPixelDensity(pointScaleFactor: Float)
 
+  external fun setMediaFeatures(isDarkMode: Boolean)
+
   external fun setConstraints(
       surfaceId: Int,
       minWidth: Float,
@@ -95,6 +98,7 @@ internal class FabricUIManagerBinding : HybridClassBase() {
       fabricUIManager: FabricUIManager,
       eventBeatManager: EventBeatManager,
       componentFactory: ComponentFactory,
+      isDarkMode: Boolean,
   ) {
     fabricUIManager.setBinding(this)
 
@@ -104,6 +108,7 @@ internal class FabricUIManagerBinding : HybridClassBase() {
         fabricUIManager,
         eventBeatManager,
         componentFactory,
+        isDarkMode,
     )
     setPixelDensity(getDisplayMetricDensity())
   }

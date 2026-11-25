@@ -24,6 +24,7 @@
 #include <react/renderer/componentregistry/ComponentDescriptorFactory.h>
 #include <react/renderer/core/EventBeat.h>
 #include <react/renderer/core/EventEmitter.h>
+#include <react/renderer/core/MediaFeatures.h>
 #include <react/renderer/core/conversions.h>
 #include <react/renderer/imagemanager/ImageFetcher.h>
 #include <react/renderer/scheduler/Scheduler.h>
@@ -34,6 +35,14 @@
 #include <string_view>
 
 namespace facebook::react {
+
+namespace {
+
+MediaFeatures mediaFeaturesForDarkMode(bool isDarkMode) {
+  return {.colorScheme = isDarkMode ? ColorScheme::Dark : ColorScheme::Light};
+}
+
+} // namespace
 
 void FabricUIManagerBinding::initHybrid(jni::alias_ref<jhybridobject> jobj) {
   setCxxInstance(jobj);
@@ -49,6 +58,12 @@ std::shared_ptr<Scheduler> FabricUIManagerBinding::getScheduler() {
 
 void FabricUIManagerBinding::setPixelDensity(float pointScaleFactor) {
   pointScaleFactor_ = pointScaleFactor;
+}
+
+void FabricUIManagerBinding::setMediaFeatures(jboolean isDarkMode) {
+  if (auto scheduler = getScheduler()) {
+    scheduler->setMediaFeatures(mediaFeaturesForDarkMode(isDarkMode));
+  }
 }
 
 void FabricUIManagerBinding::driveCxxAnimations() {
@@ -565,7 +580,8 @@ void FabricUIManagerBinding::installFabricUIManager(
     jni::alias_ref<JRuntimeScheduler::javaobject> runtimeSchedulerHolder,
     jni::alias_ref<JFabricUIManager::javaobject> javaUIManager,
     EventBeatManager* eventBeatManager,
-    ComponentFactory* componentsRegistry) {
+    ComponentFactory* componentsRegistry,
+    jboolean isDarkMode) {
   TraceSection s("FabricUIManagerBinding::installFabricUIManager");
 
   enableFabricLogs_ = ReactNativeFeatureFlags::enableFabricLogs();
@@ -615,6 +631,10 @@ void FabricUIManagerBinding::installFabricUIManager(
   contextContainer->insert("FabricUIManagerOwner", fabricUIManagerOwner);
   contextContainer->insert(
       "FabricUIManager", jni::alias_ref<jobject>(*fabricUIManagerOwner));
+
+  auto mediaFeaturesStore = std::make_shared<MediaFeaturesStore>();
+  mediaFeaturesStore->set(mediaFeaturesForDarkMode(isDarkMode));
+  contextContainer->insert(kMediaFeaturesStoreKey, mediaFeaturesStore);
 
   animationChoreographer_ = std::make_shared<AndroidAnimationChoreographer>();
 
@@ -928,6 +948,8 @@ void FabricUIManagerBinding::registerNatives() {
           "setConstraints", FabricUIManagerBinding::setConstraints),
       makeNativeMethod(
           "setPixelDensity", FabricUIManagerBinding::setPixelDensity),
+      makeNativeMethod(
+          "setMediaFeatures", FabricUIManagerBinding::setMediaFeatures),
       makeNativeMethod(
           "driveCxxAnimations", FabricUIManagerBinding::driveCxxAnimations),
       makeNativeMethod(
