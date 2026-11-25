@@ -68,7 +68,6 @@ describe.each(['HTTP', 'HTTPS'])(
           app: 'bar-app',
           id: 'page1',
           title: 'bar-title',
-          vm: 'bar-vm',
         },
       );
       try {
@@ -108,7 +107,6 @@ describe.each(['HTTP', 'HTTPS'])(
           app: 'bar-app',
           id: 'page1',
           title: 'bar-title',
-          vm: 'bar-vm',
         },
       );
       try {
@@ -147,7 +145,6 @@ describe.each(['HTTP', 'HTTPS'])(
           app: 'bar-app',
           id: 'page1',
           title: 'bar-title',
-          vm: 'bar-vm',
         },
         {
           deviceHostHeader: '192.168.0.123:' + serverRef.port,
@@ -189,7 +186,6 @@ describe.each(['HTTP', 'HTTPS'])(
               app: 'bar-app',
               id: 'page1',
               title: 'bar-title',
-              vm: 'bar-vm',
             },
             {
               deviceHostHeader: sourceHost,
@@ -224,7 +220,6 @@ describe.each(['HTTP', 'HTTPS'])(
               app: 'bar-app',
               id: 'page1',
               title: 'bar-title',
-              vm: 'bar-vm',
             },
             {
               deviceHostHeader: sourceHost,
@@ -271,7 +266,6 @@ describe.each(['HTTP', 'HTTPS'])(
               app: 'bar-app',
               id: 'page1',
               title: 'bar-title',
-              vm: 'bar-vm',
             },
             {
               debuggerHeaders: {
@@ -356,7 +350,6 @@ describe.each(['HTTP', 'HTTPS'])(
                 app: 'bar-app',
                 id: 'page1',
                 title: 'bar-title',
-                vm: 'bar-vm',
               },
               {
                 deviceHostHeader: sourceHost,
@@ -396,7 +389,6 @@ describe.each(['HTTP', 'HTTPS'])(
           app: 'bar-app',
           id: 'page1',
           title: 'bar-title',
-          vm: 'bar-vm',
         },
         {
           deviceHostHeader: '127.0.0.1:' + serverRef.port,
@@ -431,7 +423,6 @@ describe.each(['HTTP', 'HTTPS'])(
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         );
         try {
@@ -479,7 +470,6 @@ describe.each(['HTTP', 'HTTPS'])(
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         );
 
@@ -528,7 +518,6 @@ describe.each(['HTTP', 'HTTPS'])(
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         );
 
@@ -581,7 +570,6 @@ describe.each(['HTTP', 'HTTPS'])(
         capabilities: {
           nativeSourceCodeFetching: true,
         },
-        vm: 'bar-vm',
       };
 
       describe('Debugger.scriptParsed', () => {

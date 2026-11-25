@@ -24,9 +24,6 @@ import type {IncomingMessage, ServerResponse} from 'node:http';
 import getDevToolsFrontendUrl from '../utils/getDevToolsFrontendUrl';
 import {createHash} from 'node:crypto';
 
-const LEGACY_SYNTHETIC_PAGE_TITLE =
-  'React Native Experimental (Improved Chrome Reloads)';
-
 type Options = Readonly<{
   serverBaseUrl: ReadonlyURL,
   logger?: Logger,
@@ -92,7 +89,6 @@ export default function openDebuggerMiddleware({
         })
         .filter(app => {
           const betterReloadingSupport =
-            app.title === LEGACY_SYNTHETIC_PAGE_TITLE ||
             app.reactNative.capabilities?.nativePageReloads === true;
 
           if (!betterReloadingSupport) {

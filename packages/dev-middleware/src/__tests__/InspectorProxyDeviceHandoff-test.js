@@ -31,7 +31,7 @@ const PAGE_DEFAULTS = {
   app: 'bar-app',
   id: 'page1',
   title: 'bar-title',
-  vm: 'bar-vm',
+  description: 'bar-description',
 };
 
 // Must match PAGES_POLLING_INTERVAL in `Device.js`.
@@ -54,7 +54,7 @@ describe('inspector-proxy device socket handoff', () => {
         [
           {
             ...PAGE_DEFAULTS,
-            vm: 'bar-vm',
+            description: 'bar-description',
           },
         ],
       ));
@@ -64,7 +64,7 @@ describe('inspector-proxy device socket handoff', () => {
         [
           {
             ...PAGE_DEFAULTS,
-            vm: 'bar-vm-updated',
+            description: 'bar-description-updated',
           },
         ],
       ));
@@ -92,7 +92,7 @@ describe('inspector-proxy device socket handoff', () => {
         [
           {
             ...PAGE_DEFAULTS,
-            vm: 'bar-vm',
+            description: 'bar-description',
           },
         ],
       ));
@@ -107,7 +107,7 @@ describe('inspector-proxy device socket handoff', () => {
         [
           {
             ...PAGE_DEFAULTS,
-            vm: 'bar-vm-updated',
+            description: 'bar-description-updated',
           },
         ],
       ));
@@ -159,7 +159,7 @@ describe('inspector-proxy device socket handoff', () => {
         [
           {
             ...PAGE_DEFAULTS,
-            vm: 'bar-vm',
+            description: 'bar-description',
           },
         ],
       ));
@@ -187,7 +187,7 @@ describe('inspector-proxy device socket handoff', () => {
         [
           {
             ...PAGE_DEFAULTS,
-            vm: 'bar-vm-updated',
+            description: 'bar-description-updated',
           },
         ],
       ));
@@ -260,7 +260,7 @@ describe('inspector-proxy device socket handoff', () => {
         [
           {
             ...PAGE_DEFAULTS,
-            vm: 'bar-vm',
+            description: 'bar-description',
           },
         ],
       ));
@@ -278,7 +278,7 @@ describe('inspector-proxy device socket handoff', () => {
         [
           {
             ...PAGE_DEFAULTS,
-            vm: 'bar-vm-updated',
+            description: 'bar-description-updated',
           },
         ],
       ));
@@ -365,7 +365,7 @@ describe('inspector-proxy device socket handoff', () => {
           [
             {
               ...PAGE_DEFAULTS,
-              vm: 'bar-vm',
+              description: 'bar-description',
             },
           ],
         ));
@@ -378,7 +378,7 @@ describe('inspector-proxy device socket handoff', () => {
           [
             {
               ...PAGE_DEFAULTS,
-              vm: 'bar-vm-updated',
+              description: 'bar-description-updated',
             },
           ],
         ));
@@ -434,7 +434,7 @@ describe('inspector-proxy device socket handoff', () => {
           [
             {
               ...PAGE_DEFAULTS,
-              vm: 'bar-vm',
+              description: 'bar-description',
             },
           ],
         ));
@@ -450,7 +450,7 @@ describe('inspector-proxy device socket handoff', () => {
           [
             {
               ...PAGE_DEFAULTS,
-              vm: 'bar-vm-updated',
+              description: 'bar-description-updated',
             },
           ],
         ));
@@ -526,10 +526,9 @@ describe('inspector-proxy device socket handoff', () => {
           expect.arrayContaining(
             pageListSpec.map(pageSpec =>
               expect.objectContaining({
-                description: pageSpec.app,
+                description: pageSpec.description ?? pageSpec.app,
                 id: expect.stringContaining(pageSpec.id),
                 title: pageSpec.title,
-                vm: pageSpec.vm,
               }),
             ),
           ),

@@ -8,13 +8,9 @@
  * @format
  */
 
-import {fetchJson} from './FetchUtils';
-import {createDebuggerMock} from './InspectorDebuggerUtils';
-import {createDeviceMock} from './InspectorDeviceUtils';
 import {createAndConnectTarget} from './InspectorProtocolUtils';
 import {withAbortSignalForEachTest} from './ResourceUtils';
 import {baseUrlForServer, createServer} from './ServerUtils';
-import invariant from 'invariant';
 import until from 'wait-for-expect';
 
 // WebSocket is unreliable when using fake timers.
@@ -28,7 +24,6 @@ describe('inspector proxy device message middleware', () => {
     id: 'page1',
     app: 'bar-app',
     title: 'bar-title',
-    vm: 'bar-vm',
   };
 
   afterEach(() => {
@@ -56,85 +51,6 @@ describe('inspector proxy device message middleware', () => {
           expect.objectContaining({
             page: expect.objectContaining({
               ...page,
-              capabilities: expect.any(Object),
-            }),
-            device: expect.objectContaining({
-              appId: expect.any(String),
-              id: expect.any(String),
-              name: expect.any(String),
-              sendMessage: expect.any(Function),
-            }),
-            debugger: expect.objectContaining({
-              userAgent: null,
-              sendMessage: expect.any(Function),
-            }),
-          }),
-        ),
-      );
-    } finally {
-      device?.close();
-      debugger_?.close();
-      await closeServer(server);
-    }
-  });
-
-  test('middleware is created with device, debugger, and page information for synthetic reloadable page', async () => {
-    const createCustomMessageHandler = jest.fn().mockImplementation(() => null);
-    const {server} = await createServer({
-      logger: undefined,
-      unstable_customInspectorMessageHandler: createCustomMessageHandler,
-    });
-    const {serverBaseUrl, serverBaseWsUrl} = serverRefUrls(server);
-
-    let device, debugger_;
-    try {
-      device = await createDeviceMock(
-        `${serverBaseWsUrl}/inspector/device?device=device1&name=foo&app=bar`,
-        autoCleanup.signal,
-      );
-      // Mock the device to return a normal React (Native) page
-      device.getPages.mockImplementation(() => [
-        {
-          ...page,
-          // NOTE: 'React' is a magic string used to detect React Native pages.
-          title: 'React Native (mock)',
-        },
-      ]);
-
-      // Retrieve the full page list from device
-      let pageList;
-      await until(async () => {
-        pageList = (await fetchJson(
-          `${serverBaseUrl}/json`,
-          // $FlowFixMe[unclear-type]
-        )) as any;
-        expect(pageList.length).toBeGreaterThan(0);
-      });
-      invariant(pageList != null, '');
-
-      // Find the synthetic page
-      const syntheticPage = pageList.find(
-        ({title}) =>
-          // NOTE: Magic string used for the synthetic page that has a stable ID
-          title === 'React Native Experimental (Improved Chrome Reloads)',
-      );
-      expect(syntheticPage).not.toBeUndefined();
-
-      // Connect the debugger to this synthetic page
-      debugger_ = await createDebuggerMock(
-        syntheticPage.webSocketDebuggerUrl,
-        autoCleanup.signal,
-      );
-
-      // Ensure the middleware was created with the device information
-      await until(() =>
-        expect(createCustomMessageHandler).toBeCalledWith(
-          expect.objectContaining({
-            page: expect.objectContaining({
-              id: expect.any(String),
-              title: syntheticPage.title,
-              vm: syntheticPage.vm,
-              app: expect.any(String),
               capabilities: expect.any(Object),
             }),
             device: expect.objectContaining({

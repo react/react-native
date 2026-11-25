@@ -37,7 +37,6 @@ async function setupDevice(
       app: 'bar-app',
       id: 'page1',
       title: 'bar-title',
-      vm: 'bar-vm',
       capabilities: {
         nativePageReloads: true,
       },
