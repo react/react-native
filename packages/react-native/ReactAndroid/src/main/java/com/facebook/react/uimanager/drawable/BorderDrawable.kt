@@ -121,6 +121,11 @@ internal class BorderDrawable(
     needUpdatePath = true
   }
 
+  override fun onLayoutDirectionChanged(layoutDirection: Int): Boolean {
+    invalidateSelf()
+    return true
+  }
+
   override fun setAlpha(alpha: Int) {
     /*
      * borderAlpha proportionally affects the alpha each borderColor edge

@@ -71,6 +71,11 @@ internal class BackgroundDrawable(
     needUpdatePath = true
   }
 
+  override fun onLayoutDirectionChanged(layoutDirection: Int): Boolean {
+    invalidateSelf()
+    return true
+  }
+
   override fun setAlpha(alpha: Int) {
     backgroundPaint.alpha =
         (((alpha / 255f) * (Color.alpha(backgroundColor) / 255f)) * 255f).roundToInt()
