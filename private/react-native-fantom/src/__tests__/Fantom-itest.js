@@ -576,6 +576,49 @@ describe('Fantom', () => {
     });
 
     describe('toJSON', () => {
+      it('keeps nested fragment children as arrays in object output', () => {
+        const root = Fantom.createRoot();
+        Fantom.runTask(() => {
+          root.render(
+            <Text>
+              before<Text>inside</Text>after
+            </Text>,
+          );
+        });
+
+        const output = root.getRenderedOutput({props: []});
+        const expected = {
+          type: 'Paragraph',
+          props: {},
+          children: [
+            'before',
+            {type: 'Text', props: {}, children: ['inside']},
+            'after',
+          ],
+        };
+        expect(output.toJSONObject()).toEqual(expected);
+        expect(output.toJSON()).toEqual(expected);
+      });
+
+      it('preserves nested JSX text when fragment content changes', () => {
+        const root = Fantom.createRoot();
+        for (const content of ['first', 'caf\u00e9 \ud83d\ude80']) {
+          Fantom.runTask(() => {
+            root.render(
+              <Text>
+                before<Text>{content}</Text>after
+              </Text>,
+            );
+          });
+
+          expect(root.getRenderedOutput({props: []}).toJSX()).toEqual(
+            <rn-paragraph>
+              before<rn-text key="1">{content}</rn-text>after
+            </rn-paragraph>,
+          );
+        }
+      });
+
       it('nested text', () => {
         const root = Fantom.createRoot();
 
@@ -596,14 +639,14 @@ describe('Fantom', () => {
           children: [
             'Testing native ',
             {
-              children: 'JSX is ',
+              children: ['JSX is '],
               props: {
                 foregroundColor: 'rgba(255, 0, 0, 1)',
               },
               type: 'Text',
             },
             {
-              children: 'easy!',
+              children: ['easy!'],
               props: {
                 foregroundColor: 'rgba(0, 0, 255, 1)',
               },
