@@ -363,7 +363,10 @@ describe('conic gradient native props', () => {
       });
       Fantom.runTask(() => {
         root.render(
-          <View collapsable={false} style={{backgroundImage: after}} />,
+          <View
+            collapsable={false}
+            style={after === undefined ? {} : {backgroundImage: after}}
+          />,
         );
       });
       expect(
