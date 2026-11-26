@@ -71,7 +71,6 @@ Open the JavaScript debugger for a given CDP target. Must be provided with one o
 
 - `device`‌ — An ID unique to a combination of device and app, stable across installs. Implemented by `getInspectorDeviceId` on each native platform.
 - `target` — The target page ID as returned by `/json/list` for the current dev server session.
-- `appId` (deprecated, legacy only) — The application bundle identifier to match (non-unique across multiple connected devices). This param will only match legacy Hermes debugger targets.
 
 <details>
 <summary>Example</summary>

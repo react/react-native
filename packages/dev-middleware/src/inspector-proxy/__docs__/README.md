@@ -174,8 +174,8 @@ If a device cannot accept a `connect` (e.g., page doesn't exist), it should send
 a `disconnect` back to the proxy for that `pageId`. Devices also send a
 `disconnect` for each session when a page is removed.
 
-For targets with `nativePageReloads`, the proxy closes the debugger connection
-with `[PAGE_REMOVED]` when it receives a `disconnect` for its session.
+The proxy closes the debugger connection with `[PAGE_REMOVED]` when it receives
+a `disconnect` for its session.
 
 ### Connection Semantics
 
@@ -274,22 +274,6 @@ The following features exist for backward compatibility with older React Native
 targets that lack modern capabilities. New implementations should set
 appropriate capability flags and may ignore this section.
 
-### Synthetic Reloadable Page (Page ID `-1`)
-
-For targets without the `nativePageReloads` capability, the proxy exposes a
-synthetic page with ID `-1` titled "React Native Experimental (Improved Chrome
-Reloads)". Debuggers connecting to this page are automatically redirected to the
-most recent React Native page, surviving page reloads.
-
-When a new React Native page appears while a debugger is connected to `-1`:
-
-1. Proxy sends `disconnect` for the old page, `connect` for the new page
-2. Proxy sends `Runtime.enable` and `Debugger.enable` CDP commands to the new
-   page
-3. When `Runtime.executionContextCreated` is received, proxy sends
-   `Runtime.executionContextsCleared` to debugger, then `Debugger.resume` to
-   device
-
 ### URL Rewriting
 
 For targets without the `nativeSourceCodeFetching` capability, the proxy
@@ -305,9 +289,3 @@ rewrites URLs in CDP messages:
 
 Additionally, if a script URL matches `^[0-9a-z]+$` (alphanumeric ID), the proxy
 prepends `file://` to ensure Chrome downloads source maps.
-
-### Legacy Reload Notification
-
-For targets without `nativePageReloads`, when a `disconnect` event is received
-for a page, the proxy sends `{method: 'reload'}` to the connected debugger to
-signal a page reload.
