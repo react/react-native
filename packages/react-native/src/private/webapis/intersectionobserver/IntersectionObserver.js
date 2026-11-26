@@ -109,10 +109,14 @@ export default class IntersectionObserver {
 
     this._callback = callback;
 
-    this._rootThresholds = normalizeRootThreshold(options?.rnRootThreshold);
-    this._thresholds = normalizeThreshold(
-      options?.threshold,
-      this._rootThresholds != null, // only provide default if no rootThreshold
+    const rootThresholds = normalizeRootThreshold(options?.rnRootThreshold);
+    this._rootThresholds =
+      rootThresholds == null ? null : Object.freeze(rootThresholds);
+    this._thresholds = Object.freeze(
+      normalizeThreshold(
+        options?.threshold,
+        this._rootThresholds != null, // only provide default if no rootThreshold
+      ),
     );
     this._root = options?.root ?? null;
     this._rootMargin = normalizeMargin(options?.rootMargin, 'rootMargin');

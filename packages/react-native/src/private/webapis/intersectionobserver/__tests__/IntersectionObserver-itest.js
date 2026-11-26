@@ -439,6 +439,52 @@ describe('IntersectionObserver', () => {
       ).toEqual([0]);
     });
 
+    it('should freeze normalized thresholds without freezing caller arrays', () => {
+      const threshold = [1, 0, 0.5];
+      const rnRootThreshold = [0.5, 1, 0];
+      observer = new IntersectionObserver(() => {}, {
+        threshold,
+        rnRootThreshold,
+      });
+
+      for (const thresholds of [
+        observer.thresholds,
+        nullthrows(observer.rnRootThresholds),
+      ]) {
+        expect(Object.isFrozen(thresholds)).toBe(true);
+        let mutationError: unknown;
+        try {
+          Object.defineProperty(thresholds, '0', {value: 1});
+        } catch (error: unknown) {
+          mutationError = error;
+        }
+        expect(mutationError).toBeInstanceOf(TypeError);
+        expect(thresholds).toEqual([0, 0.5, 1]);
+      }
+
+      expect(Object.isFrozen(threshold)).toBe(false);
+      expect(Object.isFrozen(rnRootThreshold)).toBe(false);
+      threshold.reverse();
+      rnRootThreshold[0] = 0;
+      expect(observer.thresholds).toEqual([0, 0.5, 1]);
+      expect(observer.rnRootThresholds).toEqual([0, 0.5, 1]);
+    });
+
+    it('should freeze default, scalar, and empty normalized threshold arrays', () => {
+      const observers = [
+        new IntersectionObserver(() => {}),
+        new IntersectionObserver(() => {}, {threshold: []}),
+        new IntersectionObserver(() => {}, {threshold: 0.5}),
+        new IntersectionObserver(() => {}, {rnRootThreshold: 0.5}),
+      ];
+      for (const testObserver of observers) {
+        expect(Object.isFrozen(testObserver.thresholds)).toBe(true);
+        if (testObserver.rnRootThresholds != null) {
+          expect(Object.isFrozen(testObserver.rnRootThresholds)).toBe(true);
+        }
+      }
+    });
+
     it('should not throw if rnRootThreshold is null or undefined', () => {
       expect(() => {
         // $FlowExpectedError[incompatible-type]
