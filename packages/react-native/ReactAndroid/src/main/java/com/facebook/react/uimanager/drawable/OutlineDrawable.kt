@@ -124,7 +124,6 @@ internal class OutlineDrawable(
     computedBorderRadius =
         borderRadius?.resolve(
             layoutDirection,
-            context,
             bounds.width().pxToDp(),
             bounds.height().pxToDp(),
         )

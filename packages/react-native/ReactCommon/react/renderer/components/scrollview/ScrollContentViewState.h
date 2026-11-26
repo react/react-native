@@ -39,12 +39,6 @@ class ScrollContentViewState final {
    */
   EdgeInsets contentInsetAdjustment{};
 
-  /*
-   * Whether left and right swap in RTL, which decides the padding edges the
-   * safe area adds to.
-   */
-  bool swapLeftAndRightInRTL{false};
-
   bool operator==(const ScrollContentViewState &) const = default;
 
 #ifdef RN_SERIALIZABLE_STATE
@@ -60,8 +54,7 @@ class ScrollContentViewState final {
             {(Float)data["contentInsetLeft"].getDouble(),
              (Float)data["contentInsetTop"].getDouble(),
              (Float)data["contentInsetRight"].getDouble(),
-             (Float)data["contentInsetBottom"].getDouble()}),
-        swapLeftAndRightInRTL(data["swapLeftAndRightInRTL"].getBool())
+             (Float)data["contentInsetBottom"].getDouble()})
   {
   }
 
@@ -70,8 +63,7 @@ class ScrollContentViewState final {
     return folly::dynamic::object("left", safeAreaPadding.left)("top", safeAreaPadding.top)(
         "right", safeAreaPadding.right)("bottom", safeAreaPadding.bottom)(
         "contentInsetLeft", contentInsetAdjustment.left)("contentInsetTop", contentInsetAdjustment.top)(
-        "contentInsetRight", contentInsetAdjustment.right)("contentInsetBottom", contentInsetAdjustment.bottom)(
-        "swapLeftAndRightInRTL", swapLeftAndRightInRTL);
+        "contentInsetRight", contentInsetAdjustment.right)("contentInsetBottom", contentInsetAdjustment.bottom);
   }
 #endif
 };

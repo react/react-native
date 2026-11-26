@@ -9,14 +9,31 @@
 
 export interface I18nManagerStatic {
   getConstants: () => {
-    isRTL: boolean;
+    /**
+     * @deprecated Has no effect, and is always `false`. Use `start` and `end`
+     * style properties, such as `marginStart`, instead.
+     */
     doLeftAndRightSwapInRTL: boolean;
+    isRTL: boolean;
     localeIdentifier?: string | null | undefined;
   };
+  /**
+   * @deprecated Has no effect. Set `RCTSupportsRTL` to `true` in Info.plist on
+   * iOS, or `android:supportsRtl="true"` in AndroidManifest.xml on Android,
+   * instead.
+   */
   allowRTL: (allowRTL: boolean) => void;
   forceRTL: (forceRTL: boolean) => void;
+  /**
+   * @deprecated Has no effect. Use `start` and `end` style properties, such as
+   * `marginStart`, instead.
+   */
   swapLeftAndRightInRTL: (swapLeftAndRight: boolean) => void;
   isRTL: boolean;
+  /**
+   * @deprecated Has no effect, and is always `false`. Use `start` and `end`
+   * style properties, such as `marginStart`, instead.
+   */
   doLeftAndRightSwapInRTL: boolean;
 }
 

@@ -7,7 +7,6 @@
 
 #import "RCTScrollContentViewComponentView.h"
 
-#import <React/RCTI18nUtil.h>
 #import <React/RCTUtils.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/renderer/components/scrollview/ScrollContentViewComponentDescriptor.h>
@@ -53,11 +52,9 @@ static EdgeInsets RCTRoundedEdgeInsets(UIEdgeInsets insets)
     return;
   }
 
-  RCTI18nUtil *i18nUtil = [RCTI18nUtil sharedInstance];
   ScrollContentViewState newData;
   newData.safeAreaPadding = RCTRoundedEdgeInsets(_safeAreaPadding);
   newData.contentInsetAdjustment = RCTRoundedEdgeInsets(_contentInsetAdjustment);
-  newData.swapLeftAndRightInRTL = i18nUtil.isRTL && i18nUtil.doLeftAndRightSwapInRTL;
   if (newData == _lastStateData) {
     return;
   }

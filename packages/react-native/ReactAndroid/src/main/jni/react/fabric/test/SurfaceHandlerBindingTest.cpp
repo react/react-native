@@ -33,7 +33,6 @@ TEST_F(
       /*maxHeight=*/640.0f,
       /*offsetX=*/3.0f,
       /*offsetY=*/4.0f,
-      /*doLeftAndRightSwapInRTL=*/1,
       /*isRTL=*/1,
       /*pixelDensity=*/2.0f,
       /*fontScale=*/1.25f);
@@ -52,7 +51,6 @@ TEST_F(
   EXPECT_FLOAT_EQ(4.0f, layoutContext.viewportOffset.y);
   EXPECT_FLOAT_EQ(320.0f, layoutContext.viewportSize.width);
   EXPECT_FLOAT_EQ(640.0f, layoutContext.viewportSize.height);
-  EXPECT_TRUE(layoutContext.swapLeftAndRightInRTL);
   EXPECT_FLOAT_EQ(2.0f, layoutContext.pointScaleFactor);
   EXPECT_FLOAT_EQ(1.25f, layoutContext.fontSizeMultiplier);
 }
@@ -69,7 +67,6 @@ TEST_F(
       /*maxHeight=*/400.0f,
       /*offsetX=*/0.0f,
       /*offsetY=*/0.0f,
-      /*doLeftAndRightSwapInRTL=*/0,
       /*isRTL=*/0,
       /*pixelDensity=*/1.0f,
       /*fontScale=*/1.0f);
@@ -79,7 +76,6 @@ TEST_F(
   EXPECT_EQ(
       LayoutDirection::LeftToRight,
       surfaceHandler.getLayoutConstraints().layoutDirection);
-  EXPECT_FALSE(surfaceHandler.getLayoutContext().swapLeftAndRightInRTL);
 }
 
 TEST_F(

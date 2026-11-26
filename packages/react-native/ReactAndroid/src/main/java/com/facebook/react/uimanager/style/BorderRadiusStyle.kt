@@ -7,9 +7,7 @@
 
 package com.facebook.react.uimanager.style
 
-import android.content.Context
 import android.util.LayoutDirection
-import com.facebook.react.modules.i18nmanager.I18nUtil
 import com.facebook.react.uimanager.LengthPercentage
 
 /**
@@ -140,14 +138,12 @@ internal data class BorderRadiusStyle(
    * corner radii do not overlap per the CSS specification.
    *
    * @param layoutDirection The resolved layout direction (LTR or RTL)
-   * @param context Android context for RTL configuration
    * @param width The width of the element for percentage resolution
    * @param height The height of the element for percentage resolution
    * @return ComputedBorderRadius with resolved physical corner radii
    */
   fun resolve(
       layoutDirection: Int,
-      context: Context,
       width: Float,
       height: Float,
   ): ComputedBorderRadius {
@@ -176,49 +172,25 @@ internal data class BorderRadiusStyle(
               height = height,
           )
       LayoutDirection.RTL ->
-          if (I18nUtil.instance.doLeftAndRightSwapInRTL(context)) {
-            ensureNoOverlap(
-                topLeft =
-                    (startEnd ?: topEnd ?: topRight ?: uniform)?.let {
-                      CornerRadii(it, width, height)
-                    } ?: zeroRadii,
-                topRight =
-                    (startStart ?: topStart ?: topLeft ?: uniform)?.let {
-                      CornerRadii(it, width, height)
-                    } ?: zeroRadii,
-                bottomLeft =
-                    (endEnd ?: bottomEnd ?: bottomRight ?: uniform)?.let {
-                      CornerRadii(it, width, height)
-                    } ?: zeroRadii,
-                bottomRight =
-                    (endStart ?: bottomStart ?: bottomLeft ?: uniform)?.let {
-                      CornerRadii(it, width, height)
-                    } ?: zeroRadii,
-                width = width,
-                height = height,
-            )
-          } else {
-            ensureNoOverlap(
-                topLeft =
-                    (startEnd ?: topEnd ?: topLeft ?: uniform)?.let {
-                      CornerRadii(it, width, height)
-                    } ?: zeroRadii,
-                topRight =
-                    (startStart ?: topStart ?: topRight ?: uniform)?.let {
-                      CornerRadii(it, width, height)
-                    } ?: zeroRadii,
-                bottomLeft =
-                    (endEnd ?: bottomEnd ?: bottomLeft ?: uniform)?.let {
-                      CornerRadii(it, width, height)
-                    } ?: zeroRadii,
-                bottomRight =
-                    (endStart ?: bottomStart ?: bottomRight ?: uniform)?.let {
-                      CornerRadii(it, width, height)
-                    } ?: zeroRadii,
-                width = width,
-                height = height,
-            )
-          }
+          ensureNoOverlap(
+              topLeft =
+                  (startEnd ?: topEnd ?: topLeft ?: uniform)?.let { CornerRadii(it, width, height) }
+                      ?: zeroRadii,
+              topRight =
+                  (startStart ?: topStart ?: topRight ?: uniform)?.let {
+                    CornerRadii(it, width, height)
+                  } ?: zeroRadii,
+              bottomLeft =
+                  (endEnd ?: bottomEnd ?: bottomLeft ?: uniform)?.let {
+                    CornerRadii(it, width, height)
+                  } ?: zeroRadii,
+              bottomRight =
+                  (endStart ?: bottomStart ?: bottomRight ?: uniform)?.let {
+                    CornerRadii(it, width, height)
+                  } ?: zeroRadii,
+              width = width,
+              height = height,
+          )
       else -> throw IllegalArgumentException("Expected?.resolved layout direction")
     }
   }

@@ -585,8 +585,7 @@ public object BackgroundStyleApplicator {
    */
   internal fun getPaddingBoxRect(view: View, outRect: Rect) {
     val composite = getCompositeBackgroundDrawable(view)
-    val computedBorderInsets =
-        composite?.borderInsets?.resolve(composite.layoutDirection, view.context)
+    val computedBorderInsets = composite?.borderInsets?.resolve(composite.layoutDirection)
     if (computedBorderInsets == null) {
       outRect.set(0, 0, view.width, view.height)
       return
@@ -632,8 +631,7 @@ public object BackgroundStyleApplicator {
 
     val paddingBoxRect = RectF()
 
-    val computedBorderInsets =
-        composite.borderInsets?.resolve(composite.layoutDirection, view.context)
+    val computedBorderInsets = composite.borderInsets?.resolve(composite.layoutDirection)
 
     paddingBoxRect.left = composite.bounds.left + (computedBorderInsets?.left?.dpToPx() ?: 0f)
     paddingBoxRect.top = composite.bounds.top + (computedBorderInsets?.top?.dpToPx() ?: 0f)
@@ -875,7 +873,6 @@ public object BackgroundStyleApplicator {
     val computedBorderRadius =
         composite.borderRadius?.resolve(
             composite.layoutDirection,
-            view.context,
             PixelUtil.toDIPFromPixel(composite.bounds.width().toFloat()),
             PixelUtil.toDIPFromPixel(composite.bounds.height().toFloat()),
         )
