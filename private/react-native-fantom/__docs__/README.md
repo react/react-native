@@ -356,13 +356,21 @@ expect(root.getRenderedOutput().toJSX()).toEqual(
 
 ### Test configuration
 
+Tests run in development (`dev`) mode by default. Keep this default when the
+logic under test does not depend on development versus optimized mode. Do not
+add `@fantom_mode opt` or `@fantom_mode *` just for extra coverage. Override the
+mode only for mode-dependent logic, and use `@fantom_mode *` when both behaviors
+need coverage.
+
+Benchmarks automatically use optimized (`opt`) mode, so they do not need an
+explicit mode pragma.
+
 You can configure certain aspects of the test execution using pragmas in the
 docblock at the top of the file. E.g.:
 
 ```javascript
 /**
  * @fantom_flags jsOnlyTestFlag:true
- * @fantom_mode opt
  */
 ```
 
@@ -404,7 +412,8 @@ Setting `@fantom_mode` is mutually exclusive with setting any of
 
 For all pragmas, except non-boolean feature flags, you can use a wildcard (`*`)
 as value to run the test with all possible values for that pragma. For example,
-this test:
+a test whose logic depends on both `jsOnlyTestFlag` and development versus
+optimized mode could use:
 
 ```javascript
 /**
