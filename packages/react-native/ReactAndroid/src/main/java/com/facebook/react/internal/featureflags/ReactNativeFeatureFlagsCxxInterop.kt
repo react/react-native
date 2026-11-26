@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8606a8e4878360df1538b4218534377a>>
+ * @generated SignedSource<<a980a4686e0ec1da053ef504509c4314>>
  */
 
 /**
@@ -151,6 +151,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun fixBorderlessRippleAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun fixMultilineContentJumpAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun fixProgrammaticScrollMomentumEventsIOS(): Boolean
 

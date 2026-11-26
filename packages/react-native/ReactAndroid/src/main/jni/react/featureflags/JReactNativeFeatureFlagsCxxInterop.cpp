@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5948daf54ab796ec4bc2754bd309cbc1>>
+ * @generated SignedSource<<04ec1a82d4d8a9f78fcb804be6189176>>
  */
 
 /**
@@ -408,6 +408,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fixMappingOfEventPrioritiesBetweenFabricAndReact");
+    return method(javaProvider_);
+  }
+
+  bool fixMultilineContentJumpAndroid() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("fixMultilineContentJumpAndroid");
     return method(javaProvider_);
   }
 
@@ -959,6 +965,11 @@ bool JReactNativeFeatureFlagsCxxInterop::fixMappingOfEventPrioritiesBetweenFabri
   return ReactNativeFeatureFlags::fixMappingOfEventPrioritiesBetweenFabricAndReact();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::fixMultilineContentJumpAndroid(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::fixMultilineContentJumpAndroid();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::fixProgrammaticScrollMomentumEventsIOS(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::fixProgrammaticScrollMomentumEventsIOS();
@@ -1371,6 +1382,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "fixMappingOfEventPrioritiesBetweenFabricAndReact",
         JReactNativeFeatureFlagsCxxInterop::fixMappingOfEventPrioritiesBetweenFabricAndReact),
+      makeNativeMethod(
+        "fixMultilineContentJumpAndroid",
+        JReactNativeFeatureFlagsCxxInterop::fixMultilineContentJumpAndroid),
       makeNativeMethod(
         "fixProgrammaticScrollMomentumEventsIOS",
         JReactNativeFeatureFlagsCxxInterop::fixProgrammaticScrollMomentumEventsIOS),

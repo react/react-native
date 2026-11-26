@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<59361ec9827f932f3f0ff8400d262580>>
+ * @generated SignedSource<<095a2439c2db06e9ee161bdbde7498c1>>
  */
 
 /**
@@ -350,6 +350,11 @@ class ReactNativeFeatureFlags {
    * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
    */
   RN_EXPORT static bool fixMappingOfEventPrioritiesBetweenFabricAndReact();
+
+  /**
+   * Flushes TextInput state updates synchronously on Android when a multiline input changes line count, so the new height mounts in the same frame instead of the content jumping. Pairs with enableFollowUpMountItemDispatchAndroid for updates that happen during mount dispatch.
+   */
+  RN_EXPORT static bool fixMultilineContentJumpAndroid();
 
   /**
    * Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.
