@@ -198,6 +198,7 @@ describe('inspector proxy React Native reloads', () => {
         syntheticPage.webSocketDebuggerUrl,
         autoCleanup.signal,
       );
+      await until(() => expect(device1.connect).toBeCalledTimes(1));
 
       device1.sendWrappedEvent('originalPage-initial', {
         error: 'Mock error',
@@ -237,6 +238,7 @@ describe('inspector proxy React Native reloads', () => {
        * We can reuse our existing debugger connection to the synthetic page.
        * Messages from the updated page will be routed to the debugger.
        */
+      await until(() => expect(device1.connect).toBeCalledTimes(2));
       device1.sendWrappedEvent('originalPage-updated', {
         error: 'Another mock error',
       });
@@ -402,51 +404,45 @@ describe('inspector proxy React Native reloads', () => {
     }
   });
 
-  test.each([
-    ['with', true],
-    ['without', false],
-  ])(
-    "device disconnect event %s session ID closes the debugger connection when target has 'nativePageReloads' capability flag",
-    async (_, includeSessionId) => {
-      const {device, debugger_, sessionId} = await createAndConnectTarget(
-        serverRef,
-        autoCleanup.signal,
-        {
-          app: 'bar-app',
-          id: 'page1',
-          title: 'bar-title',
-          vm: 'bar-vm',
-          capabilities: {
-            nativePageReloads: true,
-          },
+  test("device disconnect event closes the debugger connection when target has 'nativePageReloads' capability flag", async () => {
+    const {device, debugger_, sessionId} = await createAndConnectTarget(
+      serverRef,
+      autoCleanup.signal,
+      {
+        app: 'bar-app',
+        id: 'page1',
+        title: 'bar-title',
+        vm: 'bar-vm',
+        capabilities: {
+          nativePageReloads: true,
         },
-      );
-      const debuggerClosed = new Promise<{code: number, reason: string}>(
-        resolve =>
-          debugger_.socket.once('close', (code: number, reason: Buffer) =>
-            resolve({code, reason: reason.toString()}),
-          ),
-      );
+      },
+    );
+    const debuggerClosed = new Promise<{code: number, reason: string}>(
+      resolve =>
+        debugger_.socket.once('close', (code: number, reason: Buffer) =>
+          resolve({code, reason: reason.toString()}),
+        ),
+    );
 
-      try {
-        device.send({
-          event: 'disconnect',
-          payload: {
-            pageId: 'page1',
-            ...(includeSessionId ? {sessionId} : {}),
-          },
-        });
-        expect(await debuggerClosed).toEqual({
-          code: 1000,
-          reason: WS_CLOSE_REASON.PAGE_REMOVED,
-        });
-        expect(debugger_.handle).not.toBeCalledWith({method: 'reload'});
-      } finally {
-        device.close();
-        debugger_.close();
-      }
-    },
-  );
+    try {
+      device.send({
+        event: 'disconnect',
+        payload: {
+          pageId: 'page1',
+          sessionId,
+        },
+      });
+      expect(await debuggerClosed).toEqual({
+        code: 1000,
+        reason: WS_CLOSE_REASON.PAGE_REMOVED,
+      });
+      expect(debugger_.handle).not.toBeCalledWith({method: 'reload'});
+    } finally {
+      device.close();
+      debugger_.close();
+    }
+  });
 
   test("disabled when target has 'nativePageReloads' capability flag", async () => {
     let device1;

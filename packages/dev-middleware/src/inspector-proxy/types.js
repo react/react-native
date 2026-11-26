@@ -58,7 +58,7 @@ export type WrappedEventFromDevice = Readonly<{
   payload: Readonly<{
     pageId: string,
     wrappedEvent: string,
-    sessionId?: string,
+    sessionId: string,
   }>,
 }>;
 
@@ -87,10 +87,10 @@ export type DisconnectRequest = Readonly<{
 }>;
 
 // Event sent from Device to Inspector Proxy when a debugger session ends or is
-// rejected. Legacy devices omit the sessionId.
+// rejected.
 export type DisconnectEventFromDevice = Readonly<{
   event: 'disconnect',
-  payload: Readonly<{pageId: string, sessionId?: string}>,
+  payload: Readonly<{pageId: string, sessionId: string}>,
 }>;
 
 // Request sent from Inspector Proxy to Device to get a list of pages.

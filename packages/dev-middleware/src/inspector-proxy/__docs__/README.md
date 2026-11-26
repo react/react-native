@@ -110,11 +110,11 @@ interface Message {
 
 #### Device → Proxy Messages
 
-| Event          | Payload                                                        | Description                                           |
-| -------------- | -------------------------------------------------------------- | ----------------------------------------------------- |
-| `getPages`     | `Page[]`                                                       | Current list of inspectable pages.                    |
-| `disconnect`   | `{ pageId: string, sessionId?: string }`                       | Notify that page disconnected or rejected connection. |
-| `wrappedEvent` | `{ pageId: string, sessionId?: string, wrappedEvent: string }` | Forward CDP message (JSON string) from page.          |
+| Event          | Payload                                                       | Description                                           |
+| -------------- | ------------------------------------------------------------- | ----------------------------------------------------- |
+| `getPages`     | `Page[]`                                                      | Current list of inspectable pages.                    |
+| `disconnect`   | `{ pageId: string, sessionId: string }`                       | Notify that page disconnected or rejected connection. |
+| `wrappedEvent` | `{ pageId: string, sessionId: string, wrappedEvent: string }` | Forward CDP message (JSON string) from page.          |
 
 #### Page Object
 
@@ -175,8 +175,7 @@ a `disconnect` back to the proxy for that `pageId`. Devices also send a
 `disconnect` for each session when a page is removed.
 
 For targets with `nativePageReloads`, the proxy closes the debugger connection
-with `[PAGE_REMOVED]` when it receives a `disconnect` for its session (or for
-its page, if `sessionId` is omitted).
+with `[PAGE_REMOVED]` when it receives a `disconnect` for its session.
 
 ### Connection Semantics
 

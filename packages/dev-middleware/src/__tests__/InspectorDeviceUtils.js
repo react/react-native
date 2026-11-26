@@ -25,6 +25,7 @@ import WebSocket from 'ws';
 export class DeviceAgent {
   #ws: ?WebSocket;
   #readyPromise: Promise<void>;
+  #lastSessionIdByPageId: Map<string, string> = new Map();
 
   constructor(url: string, signal?: AbortSignal, host?: ?string) {
     const ws = new WebSocket(url, {
@@ -40,7 +41,14 @@ export class DeviceAgent {
     });
     this.#ws = ws;
     ws.on('message', data => {
-      this.__handle(JSON.parse(data.toString()));
+      const message: MessageToDevice = JSON.parse(data.toString());
+      if (message.event === 'connect') {
+        this.#lastSessionIdByPageId.set(
+          message.payload.pageId,
+          message.payload.sessionId,
+        );
+      }
+      this.__handle(message);
     });
     if (signal != null) {
       signal.addEventListener('abort', () => {
@@ -80,12 +88,20 @@ export class DeviceAgent {
     this.#ws = null;
   }
 
-  sendWrappedEvent(pageId: string, event: JSONSerializable) {
+  sendWrappedEvent(
+    pageId: string,
+    event: JSONSerializable,
+    sessionId: string = nullthrows(
+      this.#lastSessionIdByPageId.get(pageId),
+      `No session connected to page ${pageId}`,
+    ),
+  ) {
     this.send({
       event: 'wrappedEvent',
       payload: {
         pageId,
         wrappedEvent: JSON.stringify(event),
+        sessionId,
       },
     });
   }
