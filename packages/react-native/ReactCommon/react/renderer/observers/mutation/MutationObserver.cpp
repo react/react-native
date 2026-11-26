@@ -143,8 +143,12 @@ void MutationObserver::recordMutationsInSubtrees(
 
   processedNodes.insert(oldNode.get());
 
-  auto oldChildren = oldNode->getChildren();
-  auto newChildren = newNode->getChildren();
+  const auto& oldChildren = oldNode->getChildren();
+  const auto& newChildren = newNode->getChildren();
+
+  if (&oldChildren == &newChildren) {
+    return;
+  }
 
   std::vector<std::shared_ptr<const ShadowNode>> addedNodes;
   std::vector<std::shared_ptr<const ShadowNode>> removedNodes;
