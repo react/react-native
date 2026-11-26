@@ -59,7 +59,6 @@ describe('inspector proxy concurrent sessions', () => {
             id: 'page1',
             app: 'bar-app',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         ]);
 
