@@ -50,6 +50,12 @@ The formatting command uses pinned npm packages for Kotlin and Java and installs
 - `yarn install` dirties the working tree: a `preinstall` hook (`scripts/try-set-hermes-compiler-prebuilt.js`) resolves the `hermes-compiler` placeholder in `packages/react-native/package.json` (`0.0.0` → a real version) and touches `yarn.lock`. Expected — do not commit it.
 - Metro cannot bundle until codegen is built once — `yarn --cwd packages/react-native-codegen build`. Without it, bundling fails with `Cannot find module '@react-native/codegen/lib/parsers/flow/parser'`. Every other package runs from source — `yarn build` is not needed for development (see [`scripts/build/README.md`](scripts/build/README.md)).
 
+## Android networking compatibility
+
+- Keep shared Android Java and Kotlin sources, including devsupport code, source-compatible with OkHttp 3.14.9. Downstream consumers build React Native from source with OkHttp 3 even when the OSS build and tests select a newer version.
+- Use APIs available in both OkHttp 3 and the version configured in this repository. Avoid APIs and Kotlin extensions introduced in newer major versions, such as `okhttp3.HttpUrl.Companion.toHttpUrlOrNull`; use compatible APIs such as `Request.Builder().url(...)` for URL validation. The `okhttp3` package name is also used by newer major versions and does not establish compatibility.
+- When introducing or changing OkHttp usage, compile the affected sources against OkHttp 3.14.9 and run the relevant tests with the repository's configured version. Passing tests with a newer OkHttp version does not verify OkHttp 3 source compatibility. Report the selected versions, exact commands and results in the PR test plan, and state any compatibility check you could not run.
+
 ## Verification: Running RNTester
 
 Needed only for changes that have to be seen running, such as user interface behavior.
