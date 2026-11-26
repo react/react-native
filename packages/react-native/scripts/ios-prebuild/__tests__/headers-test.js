@@ -57,15 +57,19 @@ describe('prebuilt header layout', () => {
     },
   );
 
-  test.each([
-    'intersection/IntersectionObserverManager.h',
-    'mutation/MutationObserverManager.h',
-    'resize/ResizeObserverManager.h',
-  ])('observers/%s is shipped', observerHeader => {
-    expect(targetsOf(`observers/${observerHeader}`)).toEqual([
-      `react/renderer/observers/${observerHeader}`,
-    ]);
-  });
+  // Private headers (PrivateGuard.h): keep them out of the prebuilt package.
+  test.each(['intersection', 'mutation', 'resize'])(
+    '%s observer headers are not shipped',
+    observer => {
+      const shippedObserverHeaders = [...targets].filter(
+        target =>
+          target.startsWith(`react/renderer/observers/${observer}/`) ||
+          target.startsWith(`react/nativemodule/${observer}observer/`),
+      );
+
+      expect(shippedObserverHeaders).toEqual([]);
+    },
+  );
 
   test('no Android text input header is shipped', () => {
     const androidTextInputDir = path.join(

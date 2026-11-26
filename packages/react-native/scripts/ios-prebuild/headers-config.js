@@ -217,24 +217,6 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
             excludePatterns: ['react/renderer/observers/events/tests'],
             headerDir: 'react/renderer/observers/events',
           },
-          {
-            name: 'intersection',
-            headerPatterns: ['react/renderer/observers/intersection/**/*.h'],
-            excludePatterns: ['react/renderer/observers/intersection/tests'],
-            headerDir: 'react/renderer/observers/intersection',
-          },
-          {
-            name: 'mutation',
-            headerPatterns: ['react/renderer/observers/mutation/**/*.h'],
-            excludePatterns: ['react/renderer/observers/mutation/tests'],
-            headerDir: 'react/renderer/observers/mutation',
-          },
-          {
-            name: 'resize',
-            headerPatterns: ['react/renderer/observers/resize/**/*.h'],
-            excludePatterns: ['react/renderer/observers/resize/tests'],
-            headerDir: 'react/renderer/observers/resize',
-          },
         ],
       },
 
@@ -648,6 +630,14 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
     ],
   },
   'React.podspec': {disabled: true},
+  // Private headers (PrivateGuard.h), included only by .cpp files. Shipping
+  // them would also require the private observers/{intersection,mutation,resize}.
+  'ReactCommon/react/nativemodule/intersectionobserver/React-intersectionobservernativemodule.podspec':
+    {disabled: true},
+  'ReactCommon/react/nativemodule/mutationobserver/React-mutationobservernativemodule.podspec':
+    {disabled: true},
+  'ReactCommon/react/nativemodule/resizeobserver/React-resizeobservernativemodule.podspec':
+    {disabled: true},
   'ReactCommon/react/timing/React-timing.podspec': {
     name: 'React-timing',
     headerPatterns: [],
