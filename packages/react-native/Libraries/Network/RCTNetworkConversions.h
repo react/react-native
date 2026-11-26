@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 inline std::string_view RCTStringViewFromNSString(NSString *string)
 {
-  return std::string_view{string.UTF8String, string.length};
+  return std::string_view{string.UTF8String, [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding]};
 }
 
 NS_ASSUME_NONNULL_END
