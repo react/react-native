@@ -50,6 +50,19 @@ std::string limitRequestBodySize(std::string requestBody) {
   return requestBody;
 }
 
+RequestInfo convertToRequestInfo(
+    jni::alias_ref<jstring> requestUrl,
+    jni::alias_ref<jstring> requestMethod,
+    jni::alias_ref<jni::JMap<jstring, jstring>> requestHeaders,
+    jni::alias_ref<jstring> requestBody) {
+  RequestInfo requestInfo;
+  requestInfo.url = requestUrl->toStdString();
+  requestInfo.httpMethod = requestMethod->toStdString();
+  requestInfo.headers = convertJavaMapToHeaders(requestHeaders);
+  requestInfo.httpBody = limitRequestBodySize(requestBody->toStdString());
+  return requestInfo;
+}
+
 } // namespace
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
@@ -75,14 +88,36 @@ static std::mutex responseBuffersMutex;
     jni::alias_ref<jni::JMap<jstring, jstring>> requestHeaders,
     jni::alias_ref<jstring> requestBody,
     jlong encodedDataLength) {
-  RequestInfo requestInfo;
-  requestInfo.url = requestUrl->toStdString();
-  requestInfo.httpMethod = requestMethod->toStdString();
-  requestInfo.headers = convertJavaMapToHeaders(requestHeaders);
-  requestInfo.httpBody = limitRequestBodySize(requestBody->toStdString());
+  NetworkReporter::getInstance().reportRequestStart(
+      requestId->toStdString(),
+      convertToRequestInfo(
+          requestUrl, requestMethod, requestHeaders, requestBody),
+      encodedDataLength,
+      std::nullopt);
+}
+
+/* static */ void JInspectorNetworkReporter::reportRequestStartWithRedirect(
+    jni::alias_ref<jclass> /*unused*/,
+    jni::alias_ref<jstring> requestId,
+    jni::alias_ref<jstring> requestUrl,
+    jni::alias_ref<jstring> requestMethod,
+    jni::alias_ref<jni::JMap<jstring, jstring>> requestHeaders,
+    jni::alias_ref<jstring> requestBody,
+    jlong encodedDataLength,
+    jni::alias_ref<jstring> redirectResponseUrl,
+    jint redirectResponseStatus,
+    jni::alias_ref<jni::JMap<jstring, jstring>> redirectResponseHeaders) {
+  ResponseInfo redirectResponse;
+  redirectResponse.url = redirectResponseUrl->toStdString();
+  redirectResponse.statusCode = redirectResponseStatus;
+  redirectResponse.headers = convertJavaMapToHeaders(redirectResponseHeaders);
 
   NetworkReporter::getInstance().reportRequestStart(
-      requestId->toStdString(), requestInfo, encodedDataLength, std::nullopt);
+      requestId->toStdString(),
+      convertToRequestInfo(
+          requestUrl, requestMethod, requestHeaders, requestBody),
+      encodedDataLength,
+      redirectResponse);
 }
 
 /* static */ void JInspectorNetworkReporter::reportConnectionTiming(
@@ -254,6 +289,9 @@ JInspectorNetworkReporter::reportWebSocketHandshakeResponseReceived(
           "isDebuggingEnabled", JInspectorNetworkReporter::isDebuggingEnabled),
       makeNativeMethod(
           "reportRequestStart", JInspectorNetworkReporter::reportRequestStart),
+      makeNativeMethod(
+          "reportRequestStart",
+          JInspectorNetworkReporter::reportRequestStartWithRedirect),
       makeNativeMethod(
           "reportResponseStart",
           JInspectorNetworkReporter::reportResponseStart),

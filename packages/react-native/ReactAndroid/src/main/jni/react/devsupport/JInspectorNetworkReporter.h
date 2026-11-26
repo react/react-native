@@ -26,6 +26,18 @@ class JInspectorNetworkReporter : public jni::HybridClass<JInspectorNetworkRepor
       jni::alias_ref<jstring> requestBody,
       jlong encodedDataLength);
 
+  static void reportRequestStartWithRedirect(
+      jni::alias_ref<jclass> /*unused*/,
+      jni::alias_ref<jstring> requestId,
+      jni::alias_ref<jstring> requestUrl,
+      jni::alias_ref<jstring> requestMethod,
+      jni::alias_ref<jni::JMap<jstring, jstring>> requestHeaders,
+      jni::alias_ref<jstring> requestBody,
+      jlong encodedDataLength,
+      jni::alias_ref<jstring> redirectResponseUrl,
+      jint redirectResponseStatus,
+      jni::alias_ref<jni::JMap<jstring, jstring>> redirectResponseHeaders);
+
   static void reportConnectionTiming(
       jni::alias_ref<jclass> /*unused*/,
       jni::alias_ref<jstring> requestId,
