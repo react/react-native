@@ -406,6 +406,105 @@ describe('MutationObserver', () => {
       expect([...secondRecords[0].removedNodes]).toEqual([node111]);
     });
 
+    for (const width of [15, 16, 32]) {
+      it(`should preserve record order when ${width} children are reordered and mutated`, () => {
+        const root = Fantom.createRoot();
+        const parentRef = createRef<HostInstance>();
+        const firstChangedIndex = 4;
+        const secondChangedIndex = 8;
+        const childRefs = Array.from({length: width}, () =>
+          createRef<HostInstance>(),
+        );
+        const firstDescendantRef = createRef<HostInstance>();
+        const secondDescendantRef = createRef<HostInstance>();
+        const firstAddedRef = createRef<HostInstance>();
+        const secondAddedRef = createRef<HostInstance>();
+
+        Fantom.runTask(() => {
+          root.render(
+            <View ref={parentRef}>
+              {childRefs.map((ref, i) => (
+                <View key={i} ref={ref} />
+              ))}
+            </View>,
+          );
+        });
+
+        const parent = nullthrows(parentRef.current);
+        const originalChildren = childRefs.map(ref => nullthrows(ref.current));
+        let deepRecords: ReadonlyArray<MutationRecordType> = [];
+        let shallowRecords: ReadonlyArray<MutationRecordType> = [];
+        const deepObserver = new MutationObserver(records => {
+          deepRecords = records;
+        });
+        const shallowObserver = new MutationObserver(records => {
+          shallowRecords = records;
+        });
+        deepObserver.observe(parent, {childList: true, subtree: true});
+        deepObserver.observe(originalChildren[firstChangedIndex], {
+          childList: true,
+        });
+        shallowObserver.observe(parent, {childList: true});
+
+        Fantom.runTask(() => {
+          const updatedChildren = childRefs
+            .slice(2)
+            .map((ref, offset) => {
+              const i = offset + 2;
+              return (
+                <View key={i} ref={ref}>
+                  {i === firstChangedIndex ? (
+                    <View ref={firstDescendantRef} />
+                  ) : null}
+                  {i === secondChangedIndex ? (
+                    <View ref={secondDescendantRef} />
+                  ) : null}
+                </View>
+              );
+            })
+            .reverse();
+          root.render(
+            <View ref={parentRef}>
+              {[
+                <View key="added-first" ref={firstAddedRef} />,
+                ...updatedChildren,
+                <View key="added-second" ref={secondAddedRef} />,
+              ]}
+            </View>,
+          );
+        });
+
+        const nodes: ReadonlyArray<unknown> = [
+          parent,
+          ...originalChildren,
+          nullthrows(firstDescendantRef.current),
+          nullthrows(secondDescendantRef.current),
+          nullthrows(firstAddedRef.current),
+          nullthrows(secondAddedRef.current),
+        ];
+        const summarizeRecord = (record: MutationRecordType) => ({
+          target: nodes.indexOf(record.target),
+          added: [...record.addedNodes].map(node => nodes.indexOf(node)),
+          removed: [...record.removedNodes].map(node => nodes.indexOf(node)),
+        });
+        const parentRecord = {
+          target: 0,
+          added: [width + 3, width + 4],
+          removed: [1, 2],
+        };
+        expect(deepRecords.map(summarizeRecord)).toEqual([
+          {target: firstChangedIndex + 1, added: [width + 1], removed: []},
+          {target: secondChangedIndex + 1, added: [width + 2], removed: []},
+          parentRecord,
+        ]);
+        expect(shallowRecords.map(summarizeRecord)).toEqual([parentRecord]);
+
+        deepObserver.disconnect();
+        shallowObserver.disconnect();
+        root.destroy();
+      });
+    }
+
     it('should report changes in different parts of the subtree as separate entries (subtree = true)', () => {
       const nodeRef = createRef<HostInstance>();
 
