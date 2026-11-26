@@ -893,7 +893,8 @@ static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, 
 
   // Drop the clipping container of the previous owner. Fabric mounts a view's
   // children before it applies that view's props, so a container left in place
-  // would receive the next owner's children.
+  // would receive the next owner's children. With the flag cleared, this getter
+  // moves any remaining subviews out and removes the container.
   _useCustomContainerView = NO;
   [self currentContainerView];
 
@@ -1159,9 +1160,9 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
       // shadows, outlines), where they sit when no container is used.
       // `insertSubview:atIndex:` counts sublayers, so appending them after
       // those layers would shift every later mount by one.
-      NSUInteger index = 0;
-      for (UIView *subview in _containerView.subviews) {
-        [effectiveContentView insertSubview:subview atIndex:index++];
+      NSArray<UIView *> *subviews = _containerView.subviews;
+      for (NSUInteger index = 0; index < subviews.count; index++) {
+        [effectiveContentView insertSubview:subviews[index] atIndex:index];
       }
       effectiveContentView.clipsToBounds = _containerView.clipsToBounds;
       effectiveContentView.layer.mask = _containerView.layer.mask;

@@ -35,7 +35,9 @@ static Props::Shared makeProps(bool clips, bool hasBoxShadow)
 
 static void applyProps(RCTViewComponentView *view, const Props::Shared &props)
 {
-  [view updateProps:props oldProps:view.props];
+  // Like the mounting layer does for an Insert, pass no old props: the view
+  // diffs against its own.
+  [view updateProps:props oldProps:nullptr];
   LayoutMetrics layoutMetrics;
   layoutMetrics.frame.size = {100, 40};
   [view updateLayoutMetrics:layoutMetrics oldLayoutMetrics:EmptyLayoutMetrics];
@@ -73,7 +75,7 @@ unmountAndReturnAssertMessage(RCTViewComponentView *parent, UIView<RCTComponentV
 - (void)testChildrenMovedOutOfContainerStayBelowSelfDrawnLayers
 {
   RCTViewComponentView *parent = [RCTViewComponentView new];
-  applyProps(parent, makeProps(/* clips */ true, /* hasBoxShadow */ true));
+  applyProps(parent, makeProps(/*clips=*/true, /*hasBoxShadow=*/true));
 
   RCTViewComponentView *first = [RCTViewComponentView new];
   RCTViewComponentView *second = [RCTViewComponentView new];
@@ -81,7 +83,7 @@ unmountAndReturnAssertMessage(RCTViewComponentView *parent, UIView<RCTComponentV
   [parent mountChildComponentView:second index:1];
   XCTAssertNotEqual(first.superview, parent, @"children of a clipping view with a box shadow go into a container");
 
-  applyProps(parent, makeProps(/* clips */ false, /* hasBoxShadow */ true));
+  applyProps(parent, makeProps(/*clips=*/false, /*hasBoxShadow=*/true));
   XCTAssertEqual(first.superview, parent);
   XCTAssertEqual(parent.layer.sublayers.firstObject, first.layer, @"children must precede the box shadow layer");
 
@@ -100,7 +102,7 @@ unmountAndReturnAssertMessage(RCTViewComponentView *parent, UIView<RCTComponentV
 - (void)testRecycledViewDropsContainerBeforeNextOwnerMountsChildren
 {
   RCTViewComponentView *view = [RCTViewComponentView new];
-  applyProps(view, makeProps(/* clips */ true, /* hasBoxShadow */ true));
+  applyProps(view, makeProps(/*clips=*/true, /*hasBoxShadow=*/true));
   RCTViewComponentView *previousChild = [RCTViewComponentView new];
   [view mountChildComponentView:previousChild index:0];
   UIView *previousContainer = previousChild.superview;
@@ -115,7 +117,7 @@ unmountAndReturnAssertMessage(RCTViewComponentView *parent, UIView<RCTComponentV
   RCTViewComponentView *first = [RCTViewComponentView new];
   [view mountChildComponentView:first index:0];
   XCTAssertEqual(first.superview, view);
-  applyProps(view, makeProps(/* clips */ false, /* hasBoxShadow */ true));
+  applyProps(view, makeProps(/*clips=*/false, /*hasBoxShadow=*/true));
   XCTAssertFalse(view.clipsToBounds);
 
   RCTViewComponentView *second = [RCTViewComponentView new];
@@ -132,12 +134,12 @@ unmountAndReturnAssertMessage(RCTViewComponentView *parent, UIView<RCTComponentV
 - (void)testRecycledViewKeepsClippingForNextOwnerThatClips
 {
   RCTViewComponentView *view = [RCTViewComponentView new];
-  applyProps(view, makeProps(/* clips */ true, /* hasBoxShadow */ true));
+  applyProps(view, makeProps(/*clips=*/true, /*hasBoxShadow=*/true));
   [view prepareForRecycle];
 
   RCTViewComponentView *child = [RCTViewComponentView new];
   [view mountChildComponentView:child index:0];
-  applyProps(view, makeProps(/* clips */ true, /* hasBoxShadow */ false));
+  applyProps(view, makeProps(/*clips=*/true, /*hasBoxShadow=*/false));
 
   XCTAssertEqual(child.superview, view);
   XCTAssertTrue(view.clipsToBounds);
@@ -148,7 +150,7 @@ unmountAndReturnAssertMessage(RCTViewComponentView *parent, UIView<RCTComponentV
 - (void)testRecycledViewMovesContentViewOutOfContainer
 {
   RCTViewComponentView *view = [RCTViewComponentView new];
-  applyProps(view, makeProps(/* clips */ true, /* hasBoxShadow */ true));
+  applyProps(view, makeProps(/*clips=*/true, /*hasBoxShadow=*/true));
   UIView *contentView = [UIView new];
   view.contentView = contentView;
   XCTAssertNotEqual(contentView.superview, view);
