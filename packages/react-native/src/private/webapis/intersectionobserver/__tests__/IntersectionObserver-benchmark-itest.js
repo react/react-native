@@ -12,6 +12,7 @@
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type IntersectionObserverType from '../IntersectionObserver';
+import type IntersectionObserverEntryType from '../IntersectionObserverEntry';
 import type {Root} from '@react-native/fantom';
 import type {HostInstance} from 'react-native';
 
@@ -424,4 +425,140 @@ Fantom.unstable_benchmark
         cleanup(root, observer);
       },
     },
+  );
+
+let ratioEntry: IntersectionObserverEntryType;
+let ratioSum = 0;
+
+const ratioOptions = {
+  beforeEach: () => {
+    Fantom.runTask(() => {
+      root.render(
+        <View ref={nodeRef} style={{width: 50, height: 20, margin: 10}} />,
+      );
+    });
+    Fantom.runTask(() => {
+      observer = new IntersectionObserver(entries => {
+        ratioEntry = entries[0];
+      });
+      observer.observe(nullthrows(nodeRef.current));
+    });
+    ratioSum = 0;
+  },
+  afterEach: () => cleanup(root, observer),
+};
+
+Fantom.unstable_benchmark
+  .suite('IntersectionObserver ratio access', {
+    minTestExecutionTimeMs: 500,
+    minWarmupIterations: 10,
+  })
+  .test(
+    'Read intersectionRatio 1000 times',
+    () => {
+      for (let i = 0; i < 1000; i++) {
+        ratioSum += ratioEntry.intersectionRatio;
+      }
+    },
+    {
+      ...ratioOptions,
+      afterEach: () => {
+        expect(ratioSum).toBe(1000);
+        ratioOptions.afterEach();
+      },
+    },
+  )
+  .test(
+    'Read rnRootIntersectionRatio 1000 times',
+    () => {
+      for (let i = 0; i < 1000; i++) {
+        ratioSum += ratioEntry.rnRootIntersectionRatio;
+      }
+    },
+    {
+      ...ratioOptions,
+      afterEach: () => {
+        expect(ratioSum).toBeCloseTo(100, 8);
+        ratioOptions.afterEach();
+      },
+    },
+  );
+
+const scalingCases = [
+  {depth: 1, thresholdCount: 1, customRoot: false},
+  {depth: 1, thresholdCount: 2, customRoot: false},
+  {depth: 1, thresholdCount: 10, customRoot: false},
+  {depth: 1, thresholdCount: 100, customRoot: false},
+  {depth: 40, thresholdCount: 1, customRoot: false},
+  {depth: 40, thresholdCount: 1, customRoot: true},
+];
+const scalingTargetRefs = Array.from({length: 100}, () =>
+  createRef<HostInstance>(),
+);
+let scalingNotifications = 0;
+let scalingEntries = 0;
+
+Fantom.unstable_benchmark
+  .suite('IntersectionObserver scaling', {
+    minIterations: 100,
+    minTestExecutionTimeMs: 500,
+    minWarmupIterations: 5,
+  })
+  .test.each(
+    scalingCases,
+    ({depth, thresholdCount, customRoot}) =>
+      `Scroll 100 targets, depth ${depth}, ${thresholdCount} thresholds, ${customRoot ? 'explicit' : 'implicit'} root`,
+    () => scrollBy1(scrollViewNode, 50),
+    ({depth, thresholdCount, customRoot}) => ({
+      beforeEach: () => {
+        let content: React.Node = scalingTargetRefs.map((ref, index) => (
+          <View
+            key={index}
+            ref={ref}
+            style={{position: 'absolute', width: 10, height: 100}}
+          />
+        ));
+        for (let i = 0; i < depth; i++) {
+          content = <View style={{width: 100, height: 100}}>{content}</View>;
+        }
+        Fantom.runTask(() => {
+          root.render(
+            <ScrollView ref={scrollViewRef}>
+              {content}
+              <View style={{width: 100, height: 1000}} />
+            </ScrollView>,
+          );
+        });
+        scrollViewNode = nullthrows(scrollViewRef.current);
+        scalingNotifications = 0;
+        scalingEntries = 0;
+        Fantom.runTask(() => {
+          observer = new IntersectionObserver(
+            entries => {
+              scalingNotifications++;
+              scalingEntries += entries.length;
+            },
+            {
+              root: customRoot ? scrollViewNode : null,
+              threshold:
+                thresholdCount === 1
+                  ? [0]
+                  : Array.from(
+                      {length: thresholdCount},
+                      (_, i) => i / (thresholdCount - 1),
+                    ),
+            },
+          );
+          for (const ref of scalingTargetRefs) {
+            observer.observe(nullthrows(ref.current));
+          }
+        });
+      },
+      afterEach: () => {
+        const expectedNotifications = 1 + Math.ceil((thresholdCount - 1) / 2);
+        expect(scalingNotifications).toBe(expectedNotifications);
+        expect(scalingEntries).toBe(100 * expectedNotifications);
+        cleanup(root, observer);
+      },
+    }),
   );
