@@ -110,3 +110,37 @@ appId: ${APP_ID}
     path: ${VISUAL_OUTPUT_DIR}/text-input/text-styles/cycle-6
     cropOn:
       id: 'text-styles'
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow:
+          file: ../helpers/open-example.yml
+          env:
+            EXAMPLE_URL: rntester://example/TextInputExample/boxShadowUnderlineColor
+      - extendedWaitUntil:
+          visible:
+            id: 'textinput-box-shadow-underline'
+          timeout: 15000
+      - tapOn:
+          id: 'textinput-box-shadow-underline-toggle'
+      - assertVisible:
+          id: 'textinput-box-shadow-underline-label'
+          text: 'underlineColorAndroid="red" (tap to change)'
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - takeScreenshot:
+          path: ${VISUAL_OUTPUT_DIR}/text-input/box-shadow-underline-color/red
+          cropOn:
+            id: 'textinput-box-shadow-underline'
+      - tapOn:
+          id: 'textinput-box-shadow-underline-toggle'
+      - assertVisible:
+          id: 'textinput-box-shadow-underline-label'
+          text: 'underlineColorAndroid="transparent" (tap to change)'
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - takeScreenshot:
+          path: ${VISUAL_OUTPUT_DIR}/text-input/box-shadow-underline-color/transparent
+          cropOn:
+            id: 'textinput-box-shadow-underline'
