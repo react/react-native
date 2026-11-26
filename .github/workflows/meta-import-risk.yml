@@ -49,7 +49,9 @@ jobs:
     if: always() && github.repository == 'react/react-native'
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: read
+      # Applying a label to a PR requires PR write access, even though the
+      # REST endpoint is under issues. Keep this out of the classifier job.
+      pull-requests: write
       issues: write
     steps:
       # This job has write access but no model secret and no PR checkout.
