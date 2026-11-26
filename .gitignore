@@ -155,6 +155,7 @@ vendor/
 /packages/react-native/third-party/
 fix_*.patch
 *.xcframework
+!/scripts/abi-check/__tests__/__fixtures__/**/*.xcframework
 
 # Visual Studio Code (config dir - if present, this merges user defined
 # workspace settings on top of react-native.code-workspace)
