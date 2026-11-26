@@ -11,7 +11,7 @@
 import type {
   BackgroundImageValue,
   RadialGradientPosition,
-} from 'react-native/Libraries/StyleSheet/StyleSheetTypes';
+} from '../../../../react-native/Libraries/StyleSheet/StyleSheetTypes';
 
 import RNTesterButton from '../../components/RNTesterButton';
 import * as React from 'react';
