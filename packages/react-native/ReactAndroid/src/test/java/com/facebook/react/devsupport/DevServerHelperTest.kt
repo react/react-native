@@ -7,6 +7,7 @@
 
 package com.facebook.react.devsupport
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import com.facebook.react.devsupport.DevServerHelper.PackagerCommandListener
 import com.facebook.react.packagerconnection.PackagerConnectionSettings
@@ -42,6 +43,7 @@ class DevServerHelperTest {
   private var onConnect: () -> Unit = {}
 
   @Before
+  @SuppressLint("HardcodedIPAddressUse")
   fun setUp() {
     whenever(settings.debugServerHost).thenReturn("127.0.0.1:8083")
     whenever(settings.packageName).thenReturn("com.example.test")
@@ -115,6 +117,7 @@ class DevServerHelperTest {
   }
 
   @Test
+  @SuppressLint("HardcodedIPAddressUse")
   fun openAfterHostChangeWithoutCloseUsesOnlyTheNewServer() {
     helper.openPackagerConnection("test", listener)
     runPending()

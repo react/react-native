@@ -13,8 +13,8 @@ import com.facebook.react.modules.network.OkHttpClientProvider
 import java.util.concurrent.TimeUnit
 import okhttp3.ConnectionPool
 import okhttp3.Dispatcher
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
+import okhttp3.Request
 
 /**
  * Shared [OkHttpClient] instances for devsupport networking. Configured from the app's client, so a
@@ -74,5 +74,10 @@ internal object DevSupportHttpClient {
    * Returns whether OkHttp can build a request for the given host, for example "localhost:8081".
    */
   internal fun isValidHost(host: String): Boolean =
-      "${httpScheme(host)}://$host/".toHttpUrlOrNull() != null
+      try {
+        Request.Builder().url("${httpScheme(host)}://$host/")
+        true
+      } catch (_: IllegalArgumentException) {
+        false
+      }
 }

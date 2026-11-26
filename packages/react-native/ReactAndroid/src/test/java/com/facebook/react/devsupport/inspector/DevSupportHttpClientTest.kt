@@ -7,11 +7,13 @@
 
 package com.facebook.react.devsupport.inspector
 
+import android.annotation.SuppressLint
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class DevSupportHttpClientTest {
   @Test
+  @SuppressLint("HardcodedIPAddressUse")
   fun acceptsHostsThatOkHttpCanConnectTo() {
     assertThat(DevSupportHttpClient.isValidHost("localhost:8081")).isTrue()
     assertThat(DevSupportHttpClient.isValidHost("10.0.2.2:8081")).isTrue()
