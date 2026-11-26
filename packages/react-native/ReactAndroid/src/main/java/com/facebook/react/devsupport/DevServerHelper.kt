@@ -5,16 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// Conflicting okhttp versions + This class needs to be rewritten to don't
-// use AsyncTasks
+// Conflicting okhttp versions
 @file:Suppress("DEPRECATION", "DEPRECATION_ERROR")
 
 package com.facebook.react.devsupport
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.os.AsyncTask
 import android.provider.Settings.Secure
 import androidx.annotation.VisibleForTesting
 import com.facebook.common.logging.FLog
@@ -61,9 +58,6 @@ import okio.Okio
  * - Android stock emulator with standard non-configurable local loopback alias: 10.0.2.2
  * - Genymotion emulator with default settings: 10.0.3.2
  */
-@SuppressLint(
-    "StaticFieldLeak",
-) // TODO: This entire class should be rewritten to don't use AsyncTask
 public open class DevServerHelper(
     private val settings: DeveloperSettings,
     private val applicationContext: Context,
@@ -101,7 +95,19 @@ public open class DevServerHelper(
       }
   private var packagerClient: JSPackagerClient? = null
   private var packagerClientHost: String? = null
-  private var inspectorPackagerConnection: IInspectorPackagerConnection? = null
+  // Written on the executor thread; disableDebugger() reads it from other threads.
+  @Volatile private var inspectorPackagerConnection: IInspectorPackagerConnection? = null
+  private var inspectorPackagerConnectionHost: String? = null
+  @VisibleForTesting
+  internal var inspectorConnectionFactory: () -> IInspectorPackagerConnection? = {
+    val deviceName = getInspectorHostMetadata(applicationContext)["deviceName"]
+    if (deviceName == null) {
+      FLog.w(ReactConstants.TAG, "Could not get device name from Inspector Host Metadata.")
+      null
+    } else {
+      CxxInspectorPackagerConnection(inspectorDeviceUrl, deviceName, packageName)
+    }
+  }
 
   /** Returns an opaque ID which is stable for the current combination of device and app, stable */
   private val inspectorDeviceId: String
@@ -210,30 +216,22 @@ public open class DevServerHelper(
   }
 
   public fun openInspectorConnection() {
-    if (inspectorPackagerConnection != null) {
-      FLog.w(ReactConstants.TAG, "Inspector connection already open, nooping.")
-      return
-    }
-    object : AsyncTask<Void, Void, Void>() {
-          @Deprecated("This class needs to be rewritten to don't use AsyncTasks")
-          override fun doInBackground(vararg params: Void): Void? {
-            val metadata = getInspectorHostMetadata(applicationContext)
-            val deviceName = metadata["deviceName"]
-            if (deviceName == null) {
-              FLog.w(ReactConstants.TAG, "Could not get device name from Inspector Host Metadata.")
-              return null
-            }
-            inspectorPackagerConnection =
-                CxxInspectorPackagerConnection(
-                        this@DevServerHelper.inspectorDeviceUrl,
-                        deviceName,
-                        packageName,
-                    )
-                    .apply { connect() }
-            return null
-          }
+    packagerConnectionExecutor.execute {
+      val host = packagerConnectionSettings.debugServerHost
+      inspectorPackagerConnection?.let { connection ->
+        if (host == inspectorPackagerConnectionHost) {
+          FLog.w(ReactConstants.TAG, "Inspector connection already open, nooping.")
+          return@execute
         }
-        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+        // The dev server host changed without a close.
+        connection.closeQuietly()
+        inspectorPackagerConnection = null
+      }
+      val connection = inspectorConnectionFactory() ?: return@execute
+      connection.connect()
+      inspectorPackagerConnection = connection
+      inspectorPackagerConnectionHost = host
+    }
   }
 
   public fun disableDebugger() {
@@ -241,15 +239,11 @@ public open class DevServerHelper(
   }
 
   public fun closeInspectorConnection() {
-    object : AsyncTask<Void, Void, Void>() {
-          @Deprecated("This class needs to be rewritten to don't use AsyncTasks")
-          override fun doInBackground(vararg params: Void): Void? {
-            inspectorPackagerConnection?.closeQuietly()
-            inspectorPackagerConnection = null
-            return null
-          }
-        }
-        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+    packagerConnectionExecutor.execute {
+      inspectorPackagerConnection?.closeQuietly()
+      inspectorPackagerConnection = null
+      inspectorPackagerConnectionHost = null
+    }
   }
 
   @JvmOverloads

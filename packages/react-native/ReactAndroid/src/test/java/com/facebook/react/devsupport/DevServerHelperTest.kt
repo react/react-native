@@ -40,6 +40,7 @@ class DevServerHelperTest {
   private val listener: PackagerCommandListener = mock()
   private val pending = ArrayDeque<Runnable>()
   private var onConnect: () -> Unit = {}
+  private val inspectors = mutableListOf<FakeInspector>()
 
   @Before
   fun setUp() {
@@ -48,13 +49,20 @@ class DevServerHelperTest {
     sockets = mockSockets()
     helper = DevServerHelper(mock(), RuntimeEnvironment.getApplication(), settings)
     helper.packagerConnectionExecutor = Executor { pending.add(it) }
+    helper.inspectorConnectionFactory = {
+      FakeInspector(settings.debugServerHost).also { inspectors.add(it) }
+    }
   }
 
   @After
   fun tearDown() {
-    helper.closePackagerConnection()
-    runPending()
-    sockets.close()
+    try {
+      helper.closePackagerConnection()
+      helper.closeInspectorConnection()
+      runPending()
+    } finally {
+      sockets.close()
+    }
   }
 
   @Test
@@ -128,6 +136,38 @@ class DevServerHelperTest {
     verify(listener).onPackagerReloadCommand()
   }
 
+  @Test
+  fun repeatedInspectorOpenCreatesOnlyOneConnection() {
+    helper.openInspectorConnection()
+    helper.openInspectorConnection()
+    runPending()
+
+    assertThat(inspectors).hasSize(1)
+    assertThat(inspectors.single().connected).isTrue()
+  }
+
+  @Test
+  fun inspectorCloseQueuedAfterOpenRetiresTheConnection() {
+    helper.openInspectorConnection()
+    helper.closeInspectorConnection()
+    runPending()
+
+    assertThat(inspectors).hasSize(1)
+    assertThat(inspectors.single().connected).isFalse()
+  }
+
+  @Test
+  fun inspectorOpenAfterHostChangeUsesOnlyTheNewServer() {
+    helper.openInspectorConnection()
+    runPending()
+    whenever(settings.debugServerHost).thenReturn("127.0.0.1:8082")
+    helper.openInspectorConnection()
+    runPending()
+
+    assertThat(inspectors.map { it.host }).containsExactly("127.0.0.1:8083", "127.0.0.1:8082")
+    assertThat(inspectors.filter { it.connected }.map { it.host }).containsExactly("127.0.0.1:8082")
+  }
+
   private fun runPending() {
     while (true) {
       val task = pending.poll() ?: return
@@ -160,6 +200,20 @@ class DevServerHelperTest {
       }
 
   private fun connectedPeers(): List<Peer> = peers.filter { it.connected }
+
+  private class FakeInspector(val host: String) : IInspectorPackagerConnection {
+    var connected = false
+
+    override fun connect() {
+      connected = true
+    }
+
+    override fun closeQuietly() {
+      connected = false
+    }
+
+    override fun sendEventToAllConnections(event: String?) = Unit
+  }
 
   private class Peer(val url: String, val callback: ReconnectingWebSocket.MessageCallback) {
     @Volatile var connected = false
