@@ -46,7 +46,11 @@ jobs:
 
   label:
     needs: classify
-    if: always() && github.repository == 'react/react-native'
+    # A newer PR event cancels the old run. Do not treat its missing output as
+    # an unknown risk; only an explicit unknown from the classifier is fail-safe.
+    if: >-
+      always() && !cancelled() && github.repository == 'react/react-native' &&
+      contains(fromJSON('["low","high","unknown"]'), needs.classify.outputs.risk)
     runs-on: ubuntu-latest
     permissions:
       # Applying a label to a PR requires PR write access, even though the
