@@ -3183,6 +3183,123 @@ describe('ResizeObserver', () => {
     });
   });
 
+  describe('large observation sets', () => {
+    it('preserves target order and hidden/removal deliveries for many siblings', () => {
+      const root = Fantom.createRoot();
+      const refs = Array.from({length: 64}, () => createRef<HostInstance>());
+      const callback = jest.fn();
+      const render = (hidden: boolean) => (
+        <View style={{display: hidden ? 'none' : 'flex'}}>
+          {refs.map((ref, index) => (
+            <View key={index} ref={ref} style={{width: 100, height: 10}} />
+          ))}
+        </View>
+      );
+      Fantom.runTask(() => root.render(render(false)));
+      const targets = refs.map(ref => nullthrows(ref.current)).reverse();
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(callback);
+        for (const target of targets) {
+          observer.observe(target);
+        }
+      });
+      const expectDelivery = (width: number) => {
+        const [entries] = callback.mock.lastCall;
+        expect(entries.map(entry => entry.target)).toEqual(targets);
+        expect(
+          entries.map(entry => entry.contentBoxSize[0].inlineSize),
+        ).toEqual(targets.map(() => width));
+      };
+      expectDelivery(100);
+      Fantom.runTask(() => root.render(render(true)));
+      expectDelivery(0);
+      Fantom.runTask(() => root.render(render(false)));
+      expectDelivery(100);
+      Fantom.runTask(() => root.render(<></>));
+      expectDelivery(0);
+      expect(callback).toHaveBeenCalledTimes(4);
+      Fantom.runTask(() => {});
+      expect(callback).toHaveBeenCalledTimes(4);
+      observer.disconnect();
+      root.destroy();
+    });
+
+    it('can disconnect and re-observe many targets inside the callback', () => {
+      const root = Fantom.createRoot();
+      const refs = Array.from({length: 64}, () => createRef<HostInstance>());
+      Fantom.runTask(() => {
+        root.render(
+          <View>
+            {refs.map((ref, index) => (
+              <View key={index} ref={ref} style={{width: 100, height: 10}} />
+            ))}
+          </View>,
+        );
+      });
+      const targets = refs.map(ref => nullthrows(ref.current));
+      let deliveries = 0;
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries => {
+          deliveries++;
+          expect(entries.map(entry => entry.target)).toEqual(targets);
+          if (deliveries === 1) {
+            observer.disconnect();
+            for (const target of targets) {
+              observer.observe(target);
+            }
+          }
+        });
+        for (const target of targets) {
+          observer.observe(target);
+        }
+      });
+      expect(deliveries).toBe(2);
+      Fantom.runTask(() => {});
+      expect(deliveries).toBe(2);
+      observer.disconnect();
+      root.destroy();
+    });
+
+    it('disconnects all targets of the last observer and permits re-observation', () => {
+      const root = Fantom.createRoot({viewportWidth: 200});
+      const refs = Array.from({length: 64}, () => createRef<HostInstance>());
+      const callback = jest.fn();
+      Fantom.runTask(() => {
+        root.render(
+          <View>
+            {refs.map((ref, index) => (
+              <View key={index} ref={ref} style={{width: '50%', height: 10}} />
+            ))}
+          </View>,
+        );
+      });
+      const targets = refs.map(ref => nullthrows(ref.current));
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(callback);
+        for (const target of targets) {
+          observer.observe(target);
+        }
+      });
+      expect(callback).toHaveBeenCalledTimes(1);
+      Fantom.runTask(() => observer.disconnect());
+      Fantom.runTask(() => root.updateSurfaceConstraints(400, 200));
+      expect(callback).toHaveBeenCalledTimes(1);
+      Fantom.runTask(() => {
+        for (const target of targets) {
+          observer.observe(target);
+        }
+      });
+      expect(callback).toHaveBeenCalledTimes(2);
+      const [entries] = callback.mock.lastCall;
+      expect(entries.map(entry => entry.target)).toEqual(targets);
+      expect(entries.map(entry => entry.contentBoxSize[0].inlineSize)).toEqual(
+        targets.map(() => 200),
+      );
+      observer.disconnect();
+      root.destroy();
+    });
+  });
+
   describe('surface teardown', () => {
     it('should stop delivering and not fail when the observed surface is stopped', () => {
       const nodeRef = createRef<HostInstance>();

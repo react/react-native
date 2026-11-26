@@ -90,8 +90,8 @@ export function registerObserver(
 
 /**
  * Unregisters the given resize observer.
- * This should only be called when an observer is no longer observing any
- * targets.
+ * All targets must already be unobserved unless this is the last registered
+ * observer, whose targets are removed by the native disconnect.
  */
 export function unregisterObserver(resizeObserverId: ResizeObserverId): void {
   const deleted = registeredResizeObservers.delete(resizeObserverId);
@@ -99,6 +99,20 @@ export function unregisterObserver(resizeObserverId: ResizeObserverId): void {
     NativeResizeObserver?.disconnect();
     isConnected = false;
   }
+}
+
+export function disconnectIfLastObserver(
+  resizeObserverId: ResizeObserverId,
+): boolean {
+  if (
+    registeredResizeObservers.size !== 1 ||
+    !registeredResizeObservers.has(resizeObserverId)
+  ) {
+    return false;
+  }
+
+  unregisterObserver(resizeObserverId);
+  return true;
 }
 
 /**

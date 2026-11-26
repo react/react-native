@@ -157,6 +157,16 @@ export default class ResizeObserver {
    * Unobserves all observed `ReactNativeElement` targets.
    */
   disconnect(): void {
+    const resizeObserverId = this._resizeObserverId;
+    if (
+      resizeObserverId != null &&
+      ResizeObserverManager.disconnectIfLastObserver(resizeObserverId)
+    ) {
+      this._observationTargets.clear();
+      this._resizeObserverId = null;
+      return;
+    }
+
     for (const target of this._observationTargets.keys()) {
       this.unobserve(target);
     }
