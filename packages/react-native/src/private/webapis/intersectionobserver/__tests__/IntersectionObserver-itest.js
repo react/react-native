@@ -5164,6 +5164,37 @@ describe('IntersectionObserver', () => {
     });
   });
 
+  it('should keep entry ratios stable after later scrolling updates', () => {
+    const scrollRef = createRef<HostInstance>();
+    const targetRef = createRef<HostInstance>();
+    const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 200});
+    const callback = jest.fn();
+    Fantom.runTask(() => {
+      root.render(
+        <ScrollView ref={scrollRef}>
+          <View ref={targetRef} style={{width: 100, height: 100}} />
+          <View style={{width: 100, height: 1000}} />
+        </ScrollView>,
+      );
+    });
+    Fantom.runTask(() => {
+      observer = new IntersectionObserver(callback, {threshold: [0, 0.5, 1]});
+      observer.observe(nullthrows(targetRef.current));
+    });
+    const initialEntry = callback.mock.lastCall[0][0];
+    Fantom.scrollTo(nullthrows(scrollRef.current), {x: 0, y: 50});
+    const updatedEntry = callback.mock.lastCall[0][0];
+    expect(callback).toHaveBeenCalledTimes(2);
+    for (let i = 0; i < 2; i++) {
+      expect(initialEntry.intersectionRatio).toBe(1);
+      expect(initialEntry.rnRootIntersectionRatio).toBe(0.5);
+      expect(updatedEntry.intersectionRatio).toBe(0.5);
+      expect(updatedEntry.rnRootIntersectionRatio).toBe(0.25);
+    }
+    Fantom.runTask(() => observer.disconnect());
+    root.destroy();
+  });
+
   describe('disconnect', () => {
     it('should do nothing if no targets are observed (not fail)', () => {
       const callback = jest.fn();

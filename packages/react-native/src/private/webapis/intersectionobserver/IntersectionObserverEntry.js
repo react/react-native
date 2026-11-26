@@ -60,16 +60,18 @@ export default class IntersectionObserverEntry {
    */
   // $FlowFixMe[unsafe-getters-setters]
   get intersectionRatio(): number {
-    const intersectionRect = this.intersectionRect;
-    const boundingClientRect = this.boundingClientRect;
+    const intersectionRect = this._nativeEntry.intersectionRect;
+    const targetRect = this._nativeEntry.targetRect;
+    const width = targetRect[2];
+    const height = targetRect[3];
 
-    if (boundingClientRect.width === 0 || boundingClientRect.height === 0) {
+    if (width === 0 || height === 0) {
       return 0;
     }
 
-    const ratio =
-      (intersectionRect.width * intersectionRect.height) /
-      (boundingClientRect.width * boundingClientRect.height);
+    const intersectionArea =
+      intersectionRect == null ? 0 : intersectionRect[2] * intersectionRect[3];
+    const ratio = intersectionArea / (width * height);
 
     // Prevent rounding errors from making this value greater than 1.
     return Math.min(ratio, 1);
@@ -80,23 +82,18 @@ export default class IntersectionObserverEntry {
    */
   // $FlowFixMe[unsafe-getters-setters]
   get rnRootIntersectionRatio(): number {
-    const intersectionRect = this.intersectionRect;
-
+    const intersectionRect = this._nativeEntry.intersectionRect;
     const rootRect = this._nativeEntry.rootRect;
-    const boundingRootRect = new DOMRectReadOnly(
-      rootRect[0],
-      rootRect[1],
-      rootRect[2],
-      rootRect[3],
-    );
+    const width = rootRect[2];
+    const height = rootRect[3];
 
-    if (boundingRootRect.width === 0 || boundingRootRect.height === 0) {
+    if (width === 0 || height === 0) {
       return 0;
     }
 
-    const ratio =
-      (intersectionRect.width * intersectionRect.height) /
-      (boundingRootRect.width * boundingRootRect.height);
+    const intersectionArea =
+      intersectionRect == null ? 0 : intersectionRect[2] * intersectionRect[3];
+    const ratio = intersectionArea / (width * height);
 
     // Prevent rounding errors from making this value greater than 1.
     return Math.min(ratio, 1);
