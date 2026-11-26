@@ -199,9 +199,7 @@ describe('inspector proxy HTTP API', () => {
             devtoolsFrontendUrl: expect.any(String),
             id: 'device1-page1',
             reactNative: {
-              capabilities: {
-                supportsMultipleDebuggers: false,
-              },
+              capabilities: {},
               logicalDeviceId: 'device1',
             },
             title: 'bar-title',
@@ -216,9 +214,7 @@ describe('inspector proxy HTTP API', () => {
             devtoolsFrontendUrl: expect.any(String),
             id: 'device2-page1',
             reactNative: {
-              capabilities: {
-                supportsMultipleDebuggers: false,
-              },
+              capabilities: {},
               logicalDeviceId: 'device2',
             },
             title: 'bar-title',

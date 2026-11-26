@@ -369,10 +369,7 @@ export default class Device {
     // Clear any commands we were waiting on.
     this.#deviceEventReporter?.logDisconnection('debugger');
 
-    // Check if this specific page supports multiple debuggers.
-    // If not (legacy mode), disconnect existing debuggers for THIS PAGE only
-    // before connecting the new one.
-    if (!this.#pageHasCapability(page, 'supportsMultipleDebuggers')) {
+    if (!this.#experiments.enableStandaloneFuseboxShell) {
       for (const [sid, conn] of this.#debuggerConnections) {
         if (conn.pageId === pageId) {
           this.#terminateDebuggerConnection(
@@ -554,22 +551,11 @@ export default class Device {
   #handleMessageFromDevice(message: MessageFromDevice) {
     if (message.event === 'getPages') {
       // Preserve ordering - getPages guarantees addition order.
-      const shouldDisableMultipleDebuggers =
-        !this.#experiments.enableStandaloneFuseboxShell;
       this.#pages = new Map(
-        message.payload.map(({capabilities: rawCapabilities, ...page}) => {
-          const capabilities: TargetCapabilityFlags =
-            shouldDisableMultipleDebuggers
-              ? {...(rawCapabilities ?? {}), supportsMultipleDebuggers: false}
-              : (rawCapabilities ?? {});
-          return [
-            page.id,
-            {
-              ...page,
-              capabilities,
-            },
-          ];
-        }),
+        message.payload.map(({capabilities, ...page}) => [
+          page.id,
+          {...page, capabilities: capabilities ?? {}},
+        ]),
       );
 
       if (message.payload.length !== this.#pages.size) {

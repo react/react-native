@@ -151,7 +151,6 @@ describe('inspector-proxy device socket handoff', () => {
   test('device ID collision with multiple debuggers connected restores all connections', async () => {
     let device1, device2, debugger1, debugger2, webSocketDebuggerUrl;
     try {
-      // Connect device with a page that supports multiple debuggers
       ({
         device: device1,
         pageList: [{webSocketDebuggerUrl}],
@@ -161,9 +160,6 @@ describe('inspector-proxy device socket handoff', () => {
           {
             ...PAGE_DEFAULTS,
             vm: 'bar-vm',
-            capabilities: {
-              supportsMultipleDebuggers: true,
-            },
           },
         ],
       ));
@@ -192,9 +188,6 @@ describe('inspector-proxy device socket handoff', () => {
           {
             ...PAGE_DEFAULTS,
             vm: 'bar-vm-updated',
-            capabilities: {
-              supportsMultipleDebuggers: true,
-            },
           },
         ],
       ));
