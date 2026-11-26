@@ -15,10 +15,11 @@ import com.facebook.react.bridge.ReadableType
 /**
  * Represents a single layer of a background image, typically containing a gradient.
  *
- * This class encapsulates gradient definitions (linear or radial) that can be applied as background
- * layers to React Native views. It provides parsing from React Native bridge data and shader
- * generation for rendering.
+ * This class encapsulates gradient definitions that can be applied as background layers to React
+ * Native views. It provides parsing from React Native bridge data and shader generation for
+ * rendering.
  *
+ * @see ConicGradient
  * @see LinearGradient
  * @see RadialGradient
  */
@@ -33,8 +34,8 @@ public class BackgroundImageLayer() {
     /**
      * Parses a ReadableMap into a BackgroundImageLayer.
      *
-     * The map should contain gradient configuration including a "type" key specifying either
-     * "linear-gradient" or "radial-gradient".
+     * The map should contain gradient configuration including a "type" key specifying a supported
+     * gradient type.
      *
      * @param gradientMap The map containing gradient configuration
      * @param context Android context for resource resolution
@@ -54,6 +55,7 @@ public class BackgroundImageLayer() {
       }
 
       return when (gradientMap.getString("type")) {
+        "conic-gradient" -> ConicGradient.parse(gradientMap, context)
         "linear-gradient" -> LinearGradient.parse(gradientMap, context)
         "radial-gradient" -> RadialGradient.parse(gradientMap, context)
         else -> null
