@@ -2759,6 +2759,7 @@ class facebook::react::ModalHostViewProps : public facebook::react::HostPlatform
   public bool statusBarTranslucent;
   public bool transparent;
   public bool visible;
+  public facebook::react::Float blurBehindRadius;
   public facebook::react::ModalHostViewAnimationType animationType;
   public facebook::react::ModalHostViewPresentationStyle presentationStyle;
   public facebook::react::ModalHostViewSupportedOrientationsMask supportedOrientations;

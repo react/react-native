@@ -59,6 +59,11 @@ internal class ReactModalHostManager :
     view.navigationBarTranslucent = value
   }
 
+  @ReactProp(name = "blurBehindRadius", defaultFloat = 0f)
+  override fun setBlurBehindRadius(view: ReactModalHostView, value: Float) {
+    view.blurBehindRadius = value
+  }
+
   @ReactProp(name = "hardwareAccelerated")
   override fun setHardwareAccelerated(view: ReactModalHostView, value: Boolean) {
     view.hardwareAccelerated = value

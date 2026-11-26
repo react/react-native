@@ -5128,6 +5128,7 @@ public class com/facebook/react/viewmanagers/ModalHostViewManagerDelegate : com/
 public abstract interface class com/facebook/react/viewmanagers/ModalHostViewManagerInterface : com/facebook/react/uimanager/ViewManagerWithGeneratedInterface {
 	public abstract fun setAllowSwipeDismissal (Landroid/view/View;Z)V
 	public abstract fun setAnimationType (Landroid/view/View;Ljava/lang/String;)V
+	public abstract fun setBlurBehindRadius (Landroid/view/View;F)V
 	public abstract fun setHardwareAccelerated (Landroid/view/View;Z)V
 	public abstract fun setIdentifier (Landroid/view/View;I)V
 	public abstract fun setNavigationBarTranslucent (Landroid/view/View;Z)V
@@ -5414,6 +5415,7 @@ public final class com/facebook/react/views/modal/ReactModalHostView : android/v
 	public fun dispatchPopulateAccessibilityEvent (Landroid/view/accessibility/AccessibilityEvent;)Z
 	public fun dispatchProvideStructure (Landroid/view/ViewStructure;)V
 	public final fun getAnimationType ()Ljava/lang/String;
+	public final fun getBlurBehindRadius ()F
 	public fun getChildAt (I)Landroid/view/View;
 	public fun getChildCount ()I
 	public final fun getEventDispatcher ()Lcom/facebook/react/uimanager/events/EventDispatcher;
@@ -5431,6 +5433,7 @@ public final class com/facebook/react/views/modal/ReactModalHostView : android/v
 	public fun removeView (Landroid/view/View;)V
 	public fun removeViewAt (I)V
 	public final fun setAnimationType (Ljava/lang/String;)V
+	public final fun setBlurBehindRadius (F)V
 	public final fun setDialogRootViewGroupTestId (Ljava/lang/String;)V
 	public final fun setEventDispatcher (Lcom/facebook/react/uimanager/events/EventDispatcher;)V
 	public final fun setHardwareAccelerated (Z)V
