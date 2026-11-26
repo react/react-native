@@ -45,6 +45,10 @@ function parseBackgroundSizeCSSString(
 
     const parts = size.split(/\s+/).filter(p => p.length > 0);
 
+    if (parts.length > 2) {
+      return [];
+    }
+
     if (parts.length === 2) {
       const x = getValidLengthPercentageSizeOrNull(parts[0].toLowerCase());
       const y = getValidLengthPercentageSizeOrNull(parts[1].toLowerCase());
@@ -57,7 +61,12 @@ function parseBackgroundSizeCSSString(
         return [];
       }
     } else if (parts.length === 1) {
-      const x = getValidLengthPercentageSizeOrNull(parts[0].toLowerCase());
+      const part = parts[0].toLowerCase();
+      if (part === 'cover' || part === 'contain') {
+        result.push(part);
+        continue;
+      }
+      const x = getValidLengthPercentageSizeOrNull(part);
       if (x != null) {
         result.push({
           x,
