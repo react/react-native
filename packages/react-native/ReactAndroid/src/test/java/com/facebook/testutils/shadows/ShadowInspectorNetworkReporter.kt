@@ -35,6 +35,20 @@ class ShadowInspectorNetworkReporter {
 
     @JvmStatic
     @Implementation
+    fun reportRequestStart(
+        requestId: String,
+        requestUrl: String,
+        requestMethod: String,
+        requestHeaders: Map<String, String>,
+        requestBody: String,
+        encodedDataLength: Long,
+        redirectResponseUrl: String,
+        redirectResponseStatus: Int,
+        redirectResponseHeaders: Map<String, String>,
+    ) {}
+
+    @JvmStatic
+    @Implementation
     fun reportConnectionTiming(requestId: String, headers: Map<String, String>) {}
 
     @JvmStatic
