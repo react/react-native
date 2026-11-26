@@ -73,8 +73,6 @@ export default function openDebuggerMiddleware({
 
       const query: {
         /** @deprecated Will only match legacy Hermes targets */
-        appId?: string,
-        /** @deprecated Will only match legacy Hermes targets */
         device?: string,
         launchId?: string,
         telemetryInfo?: string,
@@ -110,7 +108,6 @@ export default function openDebuggerMiddleware({
 
       if (
         typeof query.target === 'string' ||
-        typeof query.appId === 'string' ||
         typeof query.device === 'string'
       ) {
         logger?.info(
@@ -121,9 +118,6 @@ export default function openDebuggerMiddleware({
         target = targets.find(
           _target =>
             (query.target == null || _target.id === query.target) &&
-            (query.appId == null ||
-              (_target.appId === query.appId &&
-                _target.title === LEGACY_SYNTHETIC_PAGE_TITLE)) &&
             (query.device == null ||
               _target.reactNative.logicalDeviceId === query.device),
         );

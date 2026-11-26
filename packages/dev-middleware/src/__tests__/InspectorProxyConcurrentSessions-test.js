@@ -8,7 +8,11 @@
  * @format
  */
 
-import type {JsonPagesListResponse} from '../inspector-proxy/types';
+import type {
+  ConnectRequest,
+  DisconnectRequest,
+  JsonPagesListResponse,
+} from '../inspector-proxy/types';
 
 import {fetchJson} from './FetchUtils';
 import {createDebuggerMock} from './InspectorDebuggerUtils';
@@ -43,6 +47,13 @@ describe('inspector proxy concurrent sessions', () => {
           `${serverBaseWsUrl}/inspector/device?device=device1&name=foo&app=bar`,
           autoCleanup.signal,
         );
+        const events: Array<ConnectRequest | DisconnectRequest> = [];
+        device.connect.mockImplementation(message => {
+          events.push(message);
+        });
+        device.disconnect.mockImplementation(message => {
+          events.push(message);
+        });
         device.getPages.mockImplementation(() => [
           {
             id: 'page1',
@@ -85,9 +96,23 @@ describe('inspector proxy concurrent sessions', () => {
         // Second debugger should be open
         expect(debugger2.socket.readyState).toBe(1); // OPEN
 
-        // Device should have received disconnect for first session and connect for second
-        await until(() => expect(device.disconnect).toHaveBeenCalledTimes(1));
-        await until(() => expect(device.connect).toHaveBeenCalledTimes(2));
+        // Device should receive disconnect for the first session before
+        // connect for the second
+        await until(() => expect(events).toHaveLength(3));
+        const [connect1, disconnect1, connect2] = events;
+        expect(connect1).toEqual({
+          event: 'connect',
+          payload: {pageId: 'page1', sessionId: expect.any(String)},
+        });
+        expect(disconnect1).toEqual({
+          event: 'disconnect',
+          payload: {pageId: 'page1', sessionId: connect1.payload.sessionId},
+        });
+        expect(connect2).toEqual({
+          event: 'connect',
+          payload: {pageId: 'page1', sessionId: expect.any(String)},
+        });
+        expect(connect2.payload.sessionId).not.toBe(connect1.payload.sessionId);
       } finally {
         device?.close();
         debugger1?.close();
