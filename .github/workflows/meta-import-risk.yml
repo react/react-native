@@ -68,6 +68,9 @@ jobs:
             });
             core.setOutput('risk', result.status);
             core.info(`Meta import risk: ${result.status}`);
+            // Log only the validated, bounded decision and failure category.
+            // Never log the raw patch, model response, or API credential.
+            core.info(`Meta import Muse trace: ${JSON.stringify(result.trace)}`);
             if (!result.aiComplete) {
               core.setFailed('Muse did not assess the complete PR diff; the labeling job will conservatively request Meta review.');
             }
