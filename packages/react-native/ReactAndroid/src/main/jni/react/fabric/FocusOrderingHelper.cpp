@@ -8,6 +8,9 @@
 #include "FocusOrderingHelper.h"
 #include <react/renderer/uimanager/UIManager.h>
 
+#include <algorithm>
+#include <vector>
+
 namespace facebook::react {
 
 int majorAxisDistanceRaw(
@@ -84,24 +87,11 @@ bool isCandidate(Rect source, Rect dest, FocusDirection focusDirection) {
               (source.origin.y + source.size.height) <= dest.origin.y) &&
           ((source.origin.y + source.size.height) <
            (dest.origin.y + dest.size.height));
+    // Forward and backward follow the tab order instead, see
+    // FocusOrderingHelper::findNextInTabOrder
     case FocusDirection::FocusForward:
-      return ((source.origin.y < dest.origin.y ||
-               (source.origin.y + source.size.height) <= dest.origin.y) &&
-              ((source.origin.y + source.size.height) <
-               (dest.origin.y + dest.size.height))) ||
-          ((source.origin.x < dest.origin.x ||
-            (source.origin.x + source.size.width) <= dest.origin.x) &&
-           (source.origin.x + source.size.width) <
-               (dest.origin.x + dest.size.width));
     case FocusDirection::FocusBackward:
-      return (((source.origin.y + source.size.height) >
-                   (dest.origin.y + dest.size.height) ||
-               source.origin.y >= (dest.origin.y + dest.size.height)) &&
-              source.origin.y > dest.origin.y) ||
-          (((source.origin.x + source.size.width) >
-                (dest.origin.x + dest.size.width) ||
-            source.origin.x >= (dest.origin.x + dest.size.width)) &&
-           source.origin.x > dest.origin.x);
+      return false;
   }
 }
 
@@ -131,65 +121,148 @@ bool isBetterCandidate(
           minorAxisDistance(focusDirection, source, current));
 
       return candidateWeightedDistance < currentWeightedDistance;
-    /*
-     * For forward and backward, Android uses a different algorithm to tell the
-     * order in which to focus. It sorts the children of the root by top to
-     * bottom and then groups the views into "rows". Then, it looks for the
-     * index of the current focused, and focuses the next or previous element.
-     *
-     * We are not implementing this algorithm, but instead, we are using the
-     * same comparison logic android uses to sort the children to find the next
-     * focusable.
-     *
-     * See:
-     * https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/view/FocusFinder.java;l=833;drc=61197364367c9e404c7da6900658f1b16c42d0da
-     */
-    case FocusDirection::FocusForward: {
-      Float currentRowBottom = source.origin.y + source.size.height;
-      Float candidateRowBottom = candidate.origin.y + candidate.size.height;
-      Float result = NAN;
-
-      if (candidate.origin.y < currentRowBottom &&
-          candidateRowBottom > source.origin.y) {
-        result = candidate.origin.x - current.origin.x;
-        if (result == 0.0) {
-          result = (candidate.origin.x + candidate.size.width) -
-              (current.origin.x + current.size.width);
-        }
-        return result < 0.0;
-      } else {
-        result = candidate.origin.y - current.origin.y;
-        if (result == 0.0) {
-          result = (candidate.origin.y + candidate.size.height) -
-              (current.origin.y + current.size.height);
-        }
-        return result < 0.0;
-      }
-    }
-    case FocusDirection::FocusBackward: {
-      Float currentRowBottom = source.origin.y + source.size.height;
-      Float candidateRowBottom = candidate.origin.y + candidate.size.height;
-      Float result = NAN;
-
-      if (candidate.origin.y < currentRowBottom &&
-          candidateRowBottom > source.origin.y) {
-        result = current.origin.x - candidate.origin.x;
-        if (result == 0.0) {
-          result = (current.origin.x + current.size.width) -
-              (candidate.origin.x + candidate.size.width);
-        }
-        return result < 0.0;
-      } else {
-        result = current.origin.y - candidate.origin.y;
-        if (result == 0.0) {
-          result = (current.origin.y + current.size.height) -
-              (candidate.origin.y + candidate.size.height);
-        }
-        return result < 0.0;
-      }
-    }
+    case FocusDirection::FocusForward:
+    case FocusDirection::FocusBackward:
+      return false;
   }
   return false;
+}
+
+bool isKeyboardFocusable(const ShadowNode& shadowNode) {
+  const auto* props =
+      dynamic_cast<const ViewProps*>(shadowNode.getProps().get());
+
+  return shadowNode.getTraits().check(
+             ShadowNodeTraits::Trait::KeyboardFocusable) ||
+      (props != nullptr && (props->focusable || props->accessible));
+}
+
+struct NativeChild {
+  std::shared_ptr<const ShadowNode> shadowNode;
+  // In the coordinate space of the native parent
+  Rect frame;
+  bool hostsItsChildren;
+};
+
+// The views a native parent hosts, as the mounting layer flattens them: a
+// child that does not form a view is skipped, and the children of one that
+// does not form a stacking context are hoisted into the parent.
+void appendNativeChildren(
+    const ShadowNode& parentShadowNode,
+    Point parentOffset,
+    std::vector<NativeChild>& nativeChildren) {
+  bool childrenFormStackingContexts = parentShadowNode.getTraits().check(
+      ShadowNodeTraits::Trait::ChildrenFormStackingContext);
+
+  for (const auto& childShadowNode : parentShadowNode.getChildren()) {
+    const auto& traits = childShadowNode->getTraits();
+    const auto* layoutableShadowNode =
+        dynamic_cast<const LayoutableShadowNode*>(childShadowNode.get());
+
+    if (traits.check(ShadowNodeTraits::Trait::RootNodeKind) ||
+        traits.check(ShadowNodeTraits::Trait::Hidden) ||
+        layoutableShadowNode == nullptr) {
+      continue;
+    }
+
+    Rect frame = layoutableShadowNode->getLayoutMetrics().frame;
+    frame.origin += parentOffset;
+
+    bool forceFlattenView =
+        traits.check(ShadowNodeTraits::Trait::ForceFlattenView);
+    bool isConcreteView = (traits.check(ShadowNodeTraits::Trait::FormsView) ||
+                           childrenFormStackingContexts) &&
+        !forceFlattenView;
+    bool areChildrenFlattened =
+        (!traits.check(ShadowNodeTraits::Trait::FormsStackingContext) &&
+         !childrenFormStackingContexts) ||
+        forceFlattenView;
+
+    if (isConcreteView) {
+      nativeChildren.push_back(
+          {.shadowNode = childShadowNode,
+           .frame = frame,
+           .hostsItsChildren = !areChildrenFlattened});
+    }
+
+    if (areChildrenFlattened) {
+      appendNativeChildren(*childShadowNode, frame.origin, nativeChildren);
+    }
+  }
+}
+
+/*
+ * Sorts siblings the way Android's FocusFinder.FocusSorter does: top to bottom,
+ * then each run of vertically overlapping views forms a row, sorted by its
+ * start edge.
+ *
+ * See:
+ * https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/view/FocusFinder.java;l=833;drc=61197364367c9e404c7da6900658f1b16c42d0da
+ */
+void sortInTabOrder(std::vector<NativeChild>& nativeChildren, bool isRTL) {
+  if (nativeChildren.size() < 2) {
+    return;
+  }
+
+  auto sortRow = [isRTL](auto rowBegin, auto rowEnd) {
+    std::stable_sort(
+        rowBegin, rowEnd, [isRTL](const auto& first, const auto& second) {
+          if (first.frame.getMinX() != second.frame.getMinX()) {
+            return isRTL ? first.frame.getMinX() > second.frame.getMinX()
+                         : first.frame.getMinX() < second.frame.getMinX();
+          }
+          return first.frame.getMaxX() < second.frame.getMaxX();
+        });
+  };
+
+  std::stable_sort(
+      nativeChildren.begin(),
+      nativeChildren.end(),
+      [](const auto& first, const auto& second) {
+        if (first.frame.getMinY() != second.frame.getMinY()) {
+          return first.frame.getMinY() < second.frame.getMinY();
+        }
+        return first.frame.getMaxY() < second.frame.getMaxY();
+      });
+
+  auto rowBegin = nativeChildren.begin();
+  Float sweepBottom = rowBegin->frame.getMaxY();
+  for (auto it = std::next(nativeChildren.begin()); it != nativeChildren.end();
+       ++it) {
+    if (it->frame.getMinY() >= sweepBottom) {
+      sortRow(rowBegin, it);
+      rowBegin = it;
+      sweepBottom = it->frame.getMaxY();
+    } else {
+      sweepBottom = std::max(sweepBottom, it->frame.getMaxY());
+    }
+  }
+  sortRow(rowBegin, nativeChildren.end());
+}
+
+bool isLayoutRTL(const ShadowNode& shadowNode) {
+  const auto* layoutableShadowNode =
+      dynamic_cast<const LayoutableShadowNode*>(&shadowNode);
+  return layoutableShadowNode != nullptr &&
+      layoutableShadowNode->getLayoutMetrics().layoutDirection ==
+      LayoutDirection::RightToLeft;
+}
+
+void appendFocusablesInTabOrder(
+    const ShadowNode& parentShadowNode,
+    std::vector<std::shared_ptr<const ShadowNode>>& focusables) {
+  std::vector<NativeChild> nativeChildren;
+  appendNativeChildren(parentShadowNode, Point{}, nativeChildren);
+  sortInTabOrder(nativeChildren, isLayoutRTL(parentShadowNode));
+
+  for (const auto& nativeChild : nativeChildren) {
+    if (isKeyboardFocusable(*nativeChild.shadowNode)) {
+      focusables.push_back(nativeChild.shadowNode);
+    }
+    if (nativeChild.hostsItsChildren) {
+      appendFocusablesInTabOrder(*nativeChild.shadowNode, focusables);
+    }
+  }
 }
 
 void FocusOrderingHelper::traverseAndUpdateNextFocusableElement(
@@ -201,13 +274,9 @@ void FocusOrderingHelper::traverseAndUpdateNextFocusableElement(
     Rect sourceRect,
     std::optional<Rect>& nextRect,
     std::shared_ptr<const ShadowNode>& nextNode) {
-  const auto* props =
-      dynamic_cast<const ViewProps*>(currNode->getProps().get());
-
   // We only care about focusable elements since only they can be both
   // focused and present in the hierarchy
-  if (currNode->getTraits().check(ShadowNodeTraits::Trait::KeyboardFocusable) ||
-      (props != nullptr && (props->focusable || props->accessible))) {
+  if (isKeyboardFocusable(*currNode)) {
     LayoutMetrics nodeLayoutMetrics = uimanager.getRelativeLayoutMetrics(
         *currNode, parentShadowNode.get(), {.includeTransform = true});
 
@@ -243,6 +312,44 @@ void FocusOrderingHelper::traverseAndUpdateNextFocusableElement(
         nextNode);
   };
 };
+
+std::vector<std::shared_ptr<const ShadowNode>>
+FocusOrderingHelper::collectFocusablesInTabOrder(
+    const ShadowNode& rootShadowNode) {
+  std::vector<std::shared_ptr<const ShadowNode>> focusables;
+  appendFocusablesInTabOrder(rootShadowNode, focusables);
+  return focusables;
+}
+
+std::shared_ptr<const ShadowNode> FocusOrderingHelper::findNextInTabOrder(
+    const ShadowNode& rootShadowNode,
+    Tag focusedTag,
+    FocusDirection focusDirection) {
+  auto focusables = collectFocusablesInTabOrder(rootShadowNode);
+  auto focused = std::find_if(
+      focusables.begin(), focusables.end(), [focusedTag](const auto& node) {
+        return node->getTag() == focusedTag;
+      });
+
+  if (focused == focusables.end()) {
+    return nullptr;
+  }
+
+  switch (focusDirection) {
+    case FocusDirection::FocusForward:
+      return std::next(focused) == focusables.end() ? nullptr
+                                                    : *std::next(focused);
+    case FocusDirection::FocusBackward:
+      return focused == focusables.begin() ? nullptr : *std::prev(focused);
+    case FocusDirection::FocusDown:
+    case FocusDirection::FocusUp:
+    case FocusDirection::FocusRight:
+    case FocusDirection::FocusLeft:
+      return nullptr;
+  }
+
+  return nullptr;
+}
 
 std::shared_ptr<const ShadowNode>
 FocusOrderingHelper::findShadowNodeByTagRecursively(
