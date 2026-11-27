@@ -29,6 +29,8 @@ target_include_directories(react_utils
 target_include_directories(react_utils INTERFACE ${REACT_COMMON_DIR}/react/utils)
 
 target_link_libraries(react_utils
+        fmt
+        folly_runtime
         glog
         glog_init
         jsi
