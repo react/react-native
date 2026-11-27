@@ -249,7 +249,8 @@ IntersectionObserver::updateIntersectionObservation(
   if (rootMargins_.has_value()) {
     // Calculate the actual insets based on current root dimensions
     // (converts percentages to pixels)
-    auto insets = resolveEdgeMargins(*rootMargins_, rootBoundingRect.size);
+    auto insets =
+        resolveEdgeMargins(*rootMargins_, rootBoundingRect.size.width);
     // Use outsetBy to expand the root rect (positive values expand, negative
     // contract)
     rootMarginBoundingRect = outsetBy(rootBoundingRect, insets);
@@ -266,7 +267,7 @@ IntersectionObserver::updateIntersectionObservation(
             ShadowNodeTraits::Trait::FormsScrollContainer)) {
       rootClipRect = outsetBy(
           rootClipRect,
-          resolveEdgeMargins(*scrollMargins_, rootBoundingRect.size));
+          resolveEdgeMargins(*scrollMargins_, rootBoundingRect.size.width));
     }
   }
 

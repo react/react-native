@@ -196,7 +196,7 @@ LayoutMetrics LayoutableShadowNode::computeRelativeLayoutMetrics(
               ShadowNodeTraits::Trait::FormsScrollContainer)) {
         overflowRect = outsetBy(
             overflowRect,
-            resolveEdgeMargins(*policy.clipMargin, currentFrame.size));
+            resolveEdgeMargins(*policy.clipMargin, currentFrame.size.width));
       }
       overflowRect = currentShadowNode->getTransform().applyWithCenter(
           overflowRect, currentFrame.getCenter());

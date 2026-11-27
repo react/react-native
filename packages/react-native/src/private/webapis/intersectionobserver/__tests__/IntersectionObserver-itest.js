@@ -2803,7 +2803,7 @@ describe('IntersectionObserver', () => {
 
           const root = Fantom.createRoot({
             viewportWidth: 1000,
-            viewportHeight: 1000,
+            viewportHeight: 500,
           });
 
           Fantom.runTask(() => {
@@ -2840,7 +2840,7 @@ describe('IntersectionObserver', () => {
             x: -50,
             y: -50,
             width: 1100,
-            height: 1100,
+            height: 600,
           });
           expectRectEquals(entries[0].intersectionRect, {
             x: -50,
@@ -2849,7 +2849,7 @@ describe('IntersectionObserver', () => {
             height: 100,
           });
         });
-        it('should calculate percentage rootMargin relative to root dimensions with custom root', () => {
+        it('should calculate percentage rootMargin relative to the undilated custom root width', () => {
           const nodeRef = createRef<HostInstance>();
           const rootNodeRef = createRef<HostInstance>();
 
@@ -2860,7 +2860,7 @@ describe('IntersectionObserver', () => {
 
           Fantom.runTask(() => {
             root.render(
-              <View style={{width: 200, height: 200}} ref={rootNodeRef}>
+              <View style={{width: 200, height: 400}} ref={rootNodeRef}>
                 <View
                   style={{
                     width: 50,
@@ -2893,7 +2893,7 @@ describe('IntersectionObserver', () => {
             x: 50,
             y: 50,
             width: 100,
-            height: 100,
+            height: 300,
           });
           expectRectEquals(entries[0].intersectionRect, {
             x: 50,
@@ -2913,7 +2913,7 @@ describe('IntersectionObserver', () => {
 
           const root = Fantom.createRoot({
             viewportWidth: 1000,
-            viewportHeight: 1000,
+            viewportHeight: 500,
           });
 
           Fantom.runTask(() => {
@@ -2949,7 +2949,7 @@ describe('IntersectionObserver', () => {
             x: 0,
             y: -100,
             width: 1000,
-            height: 1100,
+            height: 600,
           });
           expectRectEquals(entries[0].intersectionRect, {
             x: 0,
@@ -4139,6 +4139,7 @@ describe('IntersectionObserver', () => {
       function renderTargetBelowTheFoldOfAScrollView(
         marginTop: number = 150,
         scale: number = 1,
+        width: number = 100,
       ) {
         const nodeRef = React.createRef<HostInstance>();
 
@@ -4150,7 +4151,7 @@ describe('IntersectionObserver', () => {
           root.render(
             <ScrollView
               style={{
-                width: 100,
+                width,
                 height: 100,
                 flexGrow: 0,
                 margin: scale === 1 ? 0 : 100,
@@ -4230,18 +4231,19 @@ describe('IntersectionObserver', () => {
             marginTop: 150,
             expectedRatio: 0.5,
           },
-          {scrollMargin: '0% 0% 75% 0%', marginTop: 150, expectedRatio: 0.5},
+          {scrollMargin: '0% 0% 37.5% 0%', marginTop: 150, expectedRatio: 0.5},
           {
             scrollMargin: '0px 0px -20px 0px',
             marginTop: 60,
             expectedRatio: 0.4,
           },
-          {scrollMargin: '0% 0% -20% 0%', marginTop: 60, expectedRatio: 0.4},
+          {scrollMargin: '0% 0% -10% 0%', marginTop: 60, expectedRatio: 0.4},
         ]) {
           it(`should apply ${scrollMargin} in scrollport coordinates at scale ${scale}`, () => {
             const node = renderTargetBelowTheFoldOfAScrollView(
               marginTop,
               scale,
+              200,
             );
             const entry = observeAndGetEntry(node, {scrollMargin});
 
@@ -4270,17 +4272,17 @@ describe('IntersectionObserver', () => {
         expect(entries[0].intersectionRatio).toBe(0);
       });
 
-      it('should resolve percentages against the scrollport, not the root', () => {
-        const node = renderTargetBelowTheFoldOfAScrollView();
+      it('should resolve percentages against the undilated scrollport width, not the root', () => {
+        const node = renderTargetBelowTheFoldOfAScrollView(150, 1, 200);
 
         const intersectionObserverCallback = jest.fn();
 
         Fantom.runTask(() => {
           observer = new IntersectionObserver(intersectionObserverCallback, {
-            // 60% of the 100px scrollport is 60px, expanding its clip to
+            // 30% of the 200px scrollport width is 60px, expanding its clip to
             // 0..160 and revealing 10px of the target. Were this resolved
             // against the 1000px viewport it would reveal the target entirely.
-            scrollMargin: '0% 0% 60% 0%',
+            scrollMargin: '0% 0% 30% 0%',
             threshold: [0.01],
           });
           observer.observe(node);
@@ -4294,6 +4296,77 @@ describe('IntersectionObserver', () => {
           y: 150,
           width: 50,
           height: 10,
+        });
+      });
+
+      for (const {scrollMargin, scrollY} of [
+        {scrollMargin: '10% 0px 0px 0px', scrollY: 30},
+        {scrollMargin: '-10% 0px 0px 0px', scrollY: -10},
+      ]) {
+        it(`should resolve top ${scrollMargin} against scrollport width`, () => {
+          const nodeRef = createRef<HostInstance>();
+          const scrollNodeRef = createRef<HostInstance>();
+          const root = Fantom.createRoot({
+            viewportWidth: 1000,
+            viewportHeight: 1000,
+          });
+          Fantom.runTask(() => {
+            root.render(
+              <ScrollView
+                ref={scrollNodeRef}
+                style={{width: 200, height: 100, flexGrow: 0, marginTop: 100}}>
+                <View ref={nodeRef} style={{width: 50, height: 50}} />
+              </ScrollView>,
+            );
+          });
+          Fantom.scrollTo(nullthrows(scrollNodeRef.current), {
+            x: 0,
+            y: scrollY,
+          });
+
+          const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+            scrollMargin,
+          });
+          expect(entry.isIntersecting).toBe(true);
+          expect(entry.intersectionRatio).toBe(0.8);
+          expectRectEquals(entry.intersectionRect, {
+            x: 0,
+            y: scrollY > 0 ? 80 : 120,
+            width: 50,
+            height: 40,
+          });
+        });
+      }
+
+      it('should resolve percentages independently against each nested scrollport width', () => {
+        const nodeRef = createRef<HostInstance>();
+        const root = Fantom.createRoot({
+          viewportWidth: 1000,
+          viewportHeight: 1000,
+        });
+        Fantom.runTask(() => {
+          root.render(
+            <ScrollView style={{width: 200, height: 100, flexGrow: 0}}>
+              <ScrollView style={{width: 300, height: 100, flexGrow: 0}}>
+                <View
+                  ref={nodeRef}
+                  style={{width: 50, height: 50, marginTop: 115}}
+                />
+              </ScrollView>
+            </ScrollView>,
+          );
+        });
+
+        const entry = observeAndGetEntry(nullthrows(nodeRef.current), {
+          scrollMargin: '0px 0px 10% 0px',
+        });
+        expect(entry.isIntersecting).toBe(true);
+        expect(entry.intersectionRatio).toBe(0.1);
+        expectRectEquals(entry.intersectionRect, {
+          x: 0,
+          y: 115,
+          width: 50,
+          height: 5,
         });
       });
 
@@ -4566,7 +4639,9 @@ describe('IntersectionObserver', () => {
       });
 
       describe('explicit root', () => {
-        function renderTargetBelowTheFoldOfAScrollViewRoot(): {
+        function renderTargetBelowTheFoldOfAScrollViewRoot(
+          width: number = 100,
+        ): {
           scrollNode: HostInstance,
           node: HostInstance,
         } {
@@ -4580,7 +4655,7 @@ describe('IntersectionObserver', () => {
           Fantom.runTask(() => {
             root.render(
               <ScrollView
-                style={{width: 100, height: 100, flexGrow: 0}}
+                style={{width, height: 100, flexGrow: 0}}
                 ref={scrollNodeRef}>
                 <View
                   style={{width: 50, height: 50, marginTop: 150}}
@@ -4625,32 +4700,29 @@ describe('IntersectionObserver', () => {
           });
         });
 
-        it('should combine with rootMargin on a scrollable root, resolving both against the undilated root', () => {
+        it('should combine with rootMargin on a scrollable root, resolving both against the undilated root width', () => {
           const {scrollNode, node} =
-            renderTargetBelowTheFoldOfAScrollViewRoot();
+            renderTargetBelowTheFoldOfAScrollViewRoot(200);
 
-          // rootMargin adds 40px and scrollMargin 25% of the undilated 100px
-          // root (25px), so the clip is 0..165. Resolving the percentage
-          // against the rootMargin-dilated root (140px) would give 0..175.
           const entry = observeAndGetEntry(node, {
             root: scrollNode,
-            rootMargin: '0px 0px 40px 0px',
+            rootMargin: '10% 50px 40px 50px',
             scrollMargin: '0% 0% 25% 0%',
           });
 
           expect(entry.isIntersecting).toBe(true);
-          expect(entry.intersectionRatio).toBe(0.3);
+          expect(entry.intersectionRatio).toBe(0.8);
           expectRectEquals(entry.intersectionRect, {
             x: 0,
             y: 150,
             width: 50,
-            height: 15,
+            height: 40,
           });
           expectRectEquals(nullthrows(entry.rootBounds), {
-            x: 0,
-            y: 0,
-            width: 100,
-            height: 140,
+            x: -50,
+            y: -20,
+            width: 300,
+            height: 160,
           });
         });
 

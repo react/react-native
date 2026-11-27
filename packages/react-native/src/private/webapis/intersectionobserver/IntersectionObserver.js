@@ -141,6 +141,7 @@ export default class IntersectionObserver {
    * Each side of the rectangle represented by `rootMargin` is added to the
    * corresponding side in the root element's bounding box before the
    * intersection test is performed.
+   * Percentages on all sides are relative to the width of the root's undilated box.
    */
   // $FlowFixMe[unsafe-getters-setters]
   get rootMargin(): string {
@@ -189,10 +190,11 @@ export default class IntersectionObserver {
    * String with syntax similar to that of the CSS `margin` property.
    * Each side of the rectangle represented by `scrollMargin` is added to the
    * corresponding side of the clipping box of every scroll container between
-   * the root and the target, before the intersection test is performed.
+   * the root and the target, including the root if it is scrollable, before the
+   * intersection test is performed. Percentages on all sides are relative to
+   * the width of each scrollport's undilated clipping box.
    *
-   * Unlike `rootMargin`, this does not affect the root itself, and so it does
-   * not affect the reported `rootBounds`.
+   * Unlike `rootMargin`, this does not affect the reported `rootBounds`.
    */
   // $FlowFixMe[unsafe-getters-setters]
   get scrollMargin(): string {
