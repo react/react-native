@@ -16,10 +16,11 @@ import {runWorkLoop} from './index';
  */
 export interface TimerMock {
   // Advances the virtual clock by `deltaMs`, firing every timer that becomes
-  // due (in order), then runs the work loop so the callbacks execute.
+  // due in order and running the work loop after each one, so each callback
+  // runs at its due time and timers it schedules can fire in the same advance.
   advanceTimersByTime(deltaMs: number): void;
-  // Fires all pending timers (bounded to avoid infinite loops), then runs the
-  // work loop so the callbacks execute.
+  // Fires all pending timers in order, running the work loop after each one
+  // (bounded to avoid infinite loops).
   runAllTimers(): void;
   // Returns the number of currently pending (scheduled but not yet fired)
   // timers.
@@ -28,6 +29,10 @@ export interface TimerMock {
 }
 
 let activeMock: ?TimerMock;
+
+// Safety bound to avoid spinning forever on self-rescheduling or zero-interval
+// recurring timers (mirrors jest fake-timer safeguards).
+const MAX_TIMER_FIRES = 100000;
 
 /**
  * Installs a deterministic timer mock. While installed, `setTimeout` and
@@ -68,12 +73,24 @@ export function installTimerMock(): TimerMock {
 
   const mock: TimerMock = {
     advanceTimersByTime: deltaMs => {
-      NativeFantom.advanceTimers(deltaMs);
-      runWorkLoop();
+      let remainingMs = deltaMs;
+      for (
+        let fires = 0;
+        fires < MAX_TIMER_FIRES && remainingMs >= 0;
+        fires++
+      ) {
+        remainingMs = NativeFantom.advanceTimersToNextDue(remainingMs);
+        runWorkLoop();
+      }
     },
     runAllTimers: () => {
-      NativeFantom.runAllTimers();
-      runWorkLoop();
+      for (let fires = 0; fires < MAX_TIMER_FIRES; fires++) {
+        const fired = NativeFantom.runNextTimer();
+        runWorkLoop();
+        if (!fired) {
+          break;
+        }
+      }
     },
     getPendingTimerCount: () => NativeFantom.getPendingTimerCount(),
     uninstall: () => {
