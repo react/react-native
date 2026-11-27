@@ -61,6 +61,12 @@ class MockMessageQueueThread : public MessageQueueThread {
     }
   }
 
+  void flush() {
+    while (!callbackQueue_.empty()) {
+      guardedTick();
+    }
+  }
+
   size_t size() {
     return callbackQueue_.size();
   }
@@ -901,6 +907,82 @@ function getCalls() {
                    .getPropertyAsFunction(*runtime_, "getCalls")
                    .call(*runtime_);
   EXPECT_EQ(calls.getNumber(), 0);
+}
+
+class ReactInstanceLazyRuntimeTest : public ::testing::Test {
+ protected:
+  std::unique_ptr<ReactInstance> makeInstance() {
+    messageQueueThread_ = std::make_shared<MockMessageQueueThread>();
+    timerManager_ =
+        std::make_shared<TimerManager>(std::make_unique<MockTimerRegistry>());
+    auto instance = std::make_unique<ReactInstance>(
+        [this]() -> std::unique_ptr<JSRuntime> {
+          runtimesCreated_++;
+          return std::make_unique<JSIRuntimeHolder>(
+              hermes::makeHermesRuntime());
+        },
+        messageQueueThread_,
+        timerManager_,
+        [](jsi::Runtime& /*runtime*/,
+           const JsErrorHandler::ProcessedError& /*error*/) noexcept {});
+    timerManager_->setRuntimeExecutor(instance->getBufferedRuntimeExecutor());
+    return instance;
+  }
+
+  std::shared_ptr<MockMessageQueueThread> messageQueueThread_;
+  std::shared_ptr<TimerManager> timerManager_;
+  int runtimesCreated_{0};
+};
+
+TEST_F(ReactInstanceLazyRuntimeTest, createsTheRuntimeAsTheFirstJSThreadTask) {
+  auto instance = makeInstance();
+
+  // Nothing is created on the constructing thread.
+  EXPECT_EQ(runtimesCreated_, 0);
+  // Queue: runtime creation, then the event-loop-control registration.
+  EXPECT_EQ(messageQueueThread_->size(), 2);
+
+  bool callbackRan = false;
+  instance->getUnbufferedRuntimeExecutor()(
+      [&callbackRan](jsi::Runtime& runtime) {
+        callbackRan = runtime.global().isObject(runtime);
+      });
+
+  messageQueueThread_->guardedTick();
+  EXPECT_EQ(runtimesCreated_, 1);
+  EXPECT_FALSE(callbackRan);
+
+  messageQueueThread_->flush();
+  EXPECT_TRUE(callbackRan);
+  EXPECT_NE(instance->getJavaScriptContext(), nullptr);
+}
+
+TEST_F(ReactInstanceLazyRuntimeTest, initializeRuntimeWorksWithALazyRuntime) {
+  auto instance = makeInstance();
+  instance->initializeRuntime(
+      {.isProfiling = false}, [](jsi::Runtime& /*runtime*/) {});
+  messageQueueThread_->flush();
+
+  jsi::Value bridgeless = jsi::Value::undefined();
+  instance->getUnbufferedRuntimeExecutor()(
+      [&bridgeless](jsi::Runtime& runtime) {
+        bridgeless = runtime.global().getProperty(runtime, "RN$Bridgeless");
+      });
+  messageQueueThread_->flush();
+  EXPECT_TRUE(bridgeless.isBool());
+  EXPECT_TRUE(bridgeless.getBool());
+}
+
+TEST_F(
+    ReactInstanceLazyRuntimeTest,
+    destroyingTheInstanceBeforeTheRuntimeExistsIsSafe) {
+  auto instance = makeInstance();
+  instance.reset();
+
+  // The pending creation task runs after the instance is gone: the runtime it
+  // creates is dropped and the later callbacks are no-ops.
+  messageQueueThread_->flush();
+  EXPECT_EQ(runtimesCreated_, 1);
 }
 
 } // namespace facebook::react

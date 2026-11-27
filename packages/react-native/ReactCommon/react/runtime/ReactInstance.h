@@ -29,8 +29,25 @@ class ReactInstance final : private jsinspector_modern::InstanceTargetDelegate {
   using BindingsInstallFunc = std::function<void(jsi::Runtime &runtime)>;
   using ArgFactory = std::function<void(jsi::Runtime &runtime, std::vector<jsi::Value> &args)>;
 
+  using JSRuntimeProvider = std::function<std::unique_ptr<JSRuntime>()>;
+
   ReactInstance(
       std::unique_ptr<JSRuntime> runtime,
+      std::shared_ptr<MessageQueueThread> jsMessageQueueThread,
+      std::shared_ptr<TimerManager> timerManager,
+      JsErrorHandler::OnJsError onJsError,
+      jsinspector_modern::HostTarget *parentInspectorTarget = nullptr);
+
+  /**
+   * Like the constructor above, but the JS runtime is created by `runtimeProvider` as the first task
+   * on the JS thread instead of synchronously on the calling thread. That lets the caller continue
+   * with the rest of the instance setup (TurboModules, Fabric) while the runtime is being created.
+   * The only method that needs the runtime synchronously, `getJavaScriptContext()`, waits for it.
+   * When `parentInspectorTarget` is set the runtime is created synchronously, as the inspector
+   * registration needs it right away.
+   */
+  ReactInstance(
+      JSRuntimeProvider runtimeProvider,
       std::shared_ptr<MessageQueueThread> jsMessageQueueThread,
       std::shared_ptr<TimerManager> timerManager,
       JsErrorHandler::OnJsError onJsError,
@@ -86,10 +103,25 @@ class ReactInstance final : private jsinspector_modern::InstanceTargetDelegate {
    */
   void unregisterFromInspector();
 
+  /**
+   * Returns the jsi::Runtime pointer. Blocks until the runtime has been created when the instance
+   * was constructed with a JSRuntimeProvider and the JS thread has not created it yet; returns
+   * nullptr if the instance is being destroyed before that happened.
+   */
   void *getJavaScriptContext();
 
  private:
-  std::shared_ptr<JSRuntime> runtime_;
+  class RuntimeHolder;
+
+  ReactInstance(
+      std::shared_ptr<JSRuntime> runtime,
+      JSRuntimeProvider runtimeProvider,
+      std::shared_ptr<MessageQueueThread> jsMessageQueueThread,
+      std::shared_ptr<TimerManager> timerManager,
+      JsErrorHandler::OnJsError onJsError,
+      jsinspector_modern::HostTarget *parentInspectorTarget);
+
+  std::shared_ptr<RuntimeHolder> runtimeHolder_;
   std::shared_ptr<MessageQueueThread> jsMessageQueueThread_;
   std::shared_ptr<BufferedRuntimeExecutor> bufferedRuntimeExecutor_;
   std::shared_ptr<TimerManager> timerManager_;
