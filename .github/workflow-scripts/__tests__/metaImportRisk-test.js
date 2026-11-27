@@ -134,6 +134,15 @@ describe('assessPullRequest', () => {
     expect(await assess([file('src/example.js')], fetchImpl)).toMatchObject({
       status: 'low',
       aiComplete: true,
+      trace: {
+        model: 'muse-spark-1.2',
+        forcedBy: [],
+        decision: {
+          requiresMetaImport: false,
+          reason: 'Checked the changed behavior.',
+          evidenceFiles: [],
+        },
+      },
     });
     expect(fetchImpl).toHaveBeenCalledWith(
       'https://api.meta.ai/v1/responses',
@@ -184,9 +193,23 @@ describe('assessPullRequest', () => {
 
   test('can escalate a workflow-only change when the model finds a concrete risk', async () => {
     const path = '.github/workflows/test-all.yml';
-    expect(
-      await assess([file(path)], async () => modelResponse(true, [path])),
-    ).toMatchObject({status: 'high', aiComplete: true});
+    const result = await assess([file(path)], async () =>
+      modelResponse(true, [path]),
+    );
+    expect(result).toMatchObject({
+      status: 'high',
+      aiComplete: true,
+      trace: {
+        forcedBy: [],
+        decision: {
+          requiresMetaImport: true,
+          reason: 'Checked the changed behavior.',
+          evidenceFiles: [path],
+        },
+      },
+    });
+    expect(JSON.stringify(result.trace)).not.toContain('test-key');
+    expect(JSON.stringify(result.trace)).not.toContain('@@ -1 +1 @@');
   });
 
   test('never downgrades a sensitive path based on model output', async () => {
@@ -194,7 +217,11 @@ describe('assessPullRequest', () => {
       await assess([file('packages/react-native/package.json')], async () =>
         modelResponse(false),
       ),
-    ).toMatchObject({status: 'high', aiComplete: true});
+    ).toMatchObject({
+      status: 'high',
+      aiComplete: true,
+      trace: {forcedBy: ['packages/react-native/package.json']},
+    });
   });
 
   test('honors a high-risk label on otherwise low-risk files', async () => {
@@ -216,31 +243,83 @@ describe('assessPullRequest', () => {
       await assess([file('src/example.js')], async () => {
         throw new Error('Network failure');
       }),
-    ).toEqual({status: 'unknown', aiComplete: false});
+    ).toMatchObject({
+      status: 'unknown',
+      aiComplete: false,
+      trace: {failure: 'model_request_failed'},
+    });
     expect(
       await assess([file('package.json')], async () => {
         throw new Error('Network failure');
       }),
-    ).toEqual({status: 'high', aiComplete: false});
+    ).toMatchObject({
+      status: 'high',
+      aiComplete: false,
+      trace: {
+        failure: 'model_request_failed',
+        forcedBy: ['package.json'],
+      },
+    });
+  });
+
+  test('records a safe failure category without logging the HTTP response', async () => {
+    const result = await assess([file('src/example.js')], async () => ({
+      ok: false,
+      status: 429,
+    }));
+    expect(result).toMatchObject({
+      status: 'unknown',
+      aiComplete: false,
+      trace: {failure: 'model_http_429'},
+    });
+  });
+
+  test('does not expose invalid model output in the trace', async () => {
+    const result = await assess([file('src/example.js')], async () => ({
+      ok: true,
+      json: async () => ({output_text: 'untrusted raw model output'}),
+    }));
+    expect(result).toMatchObject({
+      status: 'unknown',
+      aiComplete: false,
+      trace: {failure: 'invalid_model_decision'},
+    });
+    expect(JSON.stringify(result.trace)).not.toContain('untrusted raw');
+  });
+
+  test('bounds the number of evidence paths in the trace', async () => {
+    const paths = Array.from({length: 11}, (_, i) => `src/file${i}.js`);
+    const result = await assess(
+      paths.map(path => file(path)),
+      async () => modelResponse(true, paths),
+    );
+    expect(result.trace.decision.evidenceFiles).toHaveLength(10);
+    expect(result.trace.decision.evidenceFileCount).toBe(11);
   });
 
   test('treats missing patches and capped file listings as incomplete', async () => {
     const fetchImpl = jest.fn();
     expect(
       await assess([file('image.png', {patch: undefined})], fetchImpl),
-    ).toEqual({
+    ).toMatchObject({
       status: 'unknown',
       aiComplete: false,
+      trace: {failure: 'missing_or_incomplete_patch'},
     });
     expect(
       await assess(Array(3000).fill(file('README.md')), fetchImpl),
-    ).toEqual({
+    ).toMatchObject({
       status: 'unknown',
       aiComplete: false,
+      trace: {failure: 'file_list_capped'},
     });
     expect(
       await assess([file('src/large.js', {changes: 500})], fetchImpl),
-    ).toEqual({status: 'unknown', aiComplete: false});
+    ).toMatchObject({
+      status: 'unknown',
+      aiComplete: false,
+      trace: {failure: 'missing_or_incomplete_patch'},
+    });
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 });

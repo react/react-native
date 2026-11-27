@@ -12,6 +12,20 @@
 const MODEL_URL = 'https://api.meta.ai/v1/responses';
 const MODEL = 'muse-spark-1.2';
 const MAX_DIFF_CHARS = 120_000;
+const MAX_TRACE_PATHS = 10;
+
+function incomplete(status, failure, forcedBy = []) {
+  return {
+    status,
+    aiComplete: false,
+    trace: {
+      model: MODEL,
+      forcedBy: forcedBy.slice(0, MAX_TRACE_PATHS),
+      forcedByCount: forcedBy.length,
+      failure,
+    },
+  };
+}
 
 function sensitivePaths(files) {
   return files.flatMap(file => {
@@ -80,18 +94,26 @@ async function assessPullRequest({github, context, apiKey, fetchImpl = fetch}) {
       per_page: 100,
     });
   } catch {
-    return {status: 'unknown', aiComplete: false};
+    return incomplete('unknown', 'file_list_unavailable');
   }
 
   // GitHub's list-files endpoint caps results at 3,000. Never classify a
   // potentially incomplete change list as low risk.
   if (files.length === 0 || files.length >= 3_000) {
-    return {status: 'unknown', aiComplete: false};
+    return incomplete(
+      'unknown',
+      files.length === 0 ? 'file_list_empty' : 'file_list_capped',
+    );
   }
-  const forced =
+  const forcedBy = sensitivePaths(files);
+  if (
     context.payload.pull_request.labels.some(
       label => label.name === 'high-risk',
-    ) || sensitivePaths(files).length > 0;
+    )
+  ) {
+    forcedBy.push('high-risk label');
+  }
+  const forced = forcedBy.length > 0;
 
   // A missing patch (including binary changes) or oversized diff cannot be
   // reviewed completely. Still keep deterministic high-risk matches.
@@ -103,14 +125,25 @@ async function assessPullRequest({github, context, apiKey, fetchImpl = fetch}) {
       patch: file.patch,
     })),
   );
-  if (
-    files.some(file => !hasCompletePatch(file)) ||
-    diff.length > MAX_DIFF_CHARS ||
-    !apiKey
-  ) {
-    return {status: forced ? 'high' : 'unknown', aiComplete: false};
+  if (files.some(file => !hasCompletePatch(file))) {
+    return incomplete(
+      forced ? 'high' : 'unknown',
+      'missing_or_incomplete_patch',
+      forcedBy,
+    );
+  }
+  if (diff.length > MAX_DIFF_CHARS) {
+    return incomplete(forced ? 'high' : 'unknown', 'diff_too_large', forcedBy);
+  }
+  if (!apiKey) {
+    return incomplete(
+      forced ? 'high' : 'unknown',
+      'model_key_missing',
+      forcedBy,
+    );
   }
 
+  let failure = 'model_request_failed';
   try {
     const response = await fetchImpl(MODEL_URL, {
       method: 'POST',
@@ -134,8 +167,13 @@ async function assessPullRequest({github, context, apiKey, fetchImpl = fetch}) {
       signal: AbortSignal.timeout(120_000),
     });
     if (!response.ok) {
-      throw new Error('Model API request failed');
+      return incomplete(
+        forced ? 'high' : 'unknown',
+        `model_http_${response.status}`,
+        forcedBy,
+      );
     }
+    failure = 'invalid_model_decision';
     const decision = parseModelDecision(
       await response.json(),
       new Set(files.map(file => file.filename)),
@@ -144,10 +182,21 @@ async function assessPullRequest({github, context, apiKey, fetchImpl = fetch}) {
       status: forced || decision.requiresMetaImport ? 'high' : 'low',
       aiComplete: true,
       reason: decision.reason,
+      trace: {
+        model: MODEL,
+        forcedBy: forcedBy.slice(0, MAX_TRACE_PATHS),
+        forcedByCount: forcedBy.length,
+        decision: {
+          requiresMetaImport: decision.requiresMetaImport,
+          reason: decision.reason,
+          evidenceFiles: decision.evidenceFiles.slice(0, MAX_TRACE_PATHS),
+          evidenceFileCount: decision.evidenceFiles.length,
+        },
+      },
     };
   } catch {
     // Failure is inconclusive, not a negative review.
-    return {status: forced ? 'high' : 'unknown', aiComplete: false};
+    return incomplete(forced ? 'high' : 'unknown', failure, forcedBy);
   }
 }
 
