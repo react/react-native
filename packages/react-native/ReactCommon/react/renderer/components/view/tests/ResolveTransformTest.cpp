@@ -5,9 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <array>
+#include <limits>
+#include <vector>
+
 #include <gtest/gtest.h>
 
 #include <react/renderer/components/view/BaseViewProps.h>
+#include <react/renderer/components/view/conversions.h>
 
 namespace facebook::react {
 
@@ -372,6 +377,213 @@ TEST_F(ResolveTransformTest, RotationDifferentOriginPositions) {
   auto expectedBottomRight = Transform::Translate(50.0, 50.0, 0.0) * transform *
       Transform::Translate(-50.0, -50.0, 0.0);
   expectTransformsEqual(resultBottomRight, expectedBottomRight);
+}
+
+namespace {
+
+Transform parseTransform(const folly::dynamic& value) {
+  Transform result;
+  fromRawValue(
+      PropsParserContext{-1, ContextContainer{}}, RawValue{value}, result);
+  return result;
+}
+
+TransformOrigin parseTransformOrigin(const folly::dynamic& value) {
+  TransformOrigin result;
+  fromRawValue(
+      PropsParserContext{-1, ContextContainer{}}, RawValue{value}, result);
+  return result;
+}
+
+} // namespace
+
+TEST_F(ResolveTransformTest, TransformHoldingANonFiniteNumberIsUntransformed) {
+  Size frameSize{.width = 100, .height = 100};
+  constexpr std::array nonFiniteNumbers{
+      std::numeric_limits<double>::quiet_NaN(),
+      std::numeric_limits<double>::infinity(),
+      -std::numeric_limits<double>::infinity()};
+  constexpr std::array operations{
+      "perspective",
+      "rotate",
+      "rotateX",
+      "rotateY",
+      "rotateZ",
+      "scale",
+      "scaleX",
+      "scaleY",
+      "scaleZ",
+      "skewX",
+      "skewY",
+      "translateX",
+      "translateY"};
+
+  for (auto nonFiniteNumber : nonFiniteNumbers) {
+    auto transforms = std::vector<folly::dynamic>{
+        folly::dynamic::object(
+            "translate", folly::dynamic::array(nonFiniteNumber, 0)),
+        folly::dynamic::object(
+            "translate", folly::dynamic::array(0, nonFiniteNumber))};
+    for (const auto* operation : operations) {
+      transforms.push_back(folly::dynamic::object(operation, nonFiniteNumber));
+    }
+
+    for (const auto& transform : transforms) {
+      auto result = BaseViewProps::resolveTransform(
+          frameSize,
+          parseTransform(
+              folly::dynamic::array(
+                  folly::dynamic::object("translateX", 10), transform)),
+          TransformOrigin{});
+
+      EXPECT_EQ(result, Transform::Identity())
+          << transform.keys().begin()->asString() << " holding "
+          << nonFiniteNumber;
+    }
+  }
+}
+
+TEST_F(ResolveTransformTest, MatrixHoldingANonFiniteNumberIsUntransformed) {
+  Size frameSize{.width = 100, .height = 100};
+  const auto matrices = std::array{
+      folly::dynamic::array(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+      folly::dynamic::array(1, 0, 0, 0, 1, 0, 0, 0, 1)};
+
+  for (const auto& matrix : matrices) {
+    for (size_t index = 0; index < matrix.size(); index++) {
+      auto nonFiniteMatrix = matrix;
+      nonFiniteMatrix[index] = std::numeric_limits<double>::quiet_NaN();
+      auto result = BaseViewProps::resolveTransform(
+          frameSize,
+          parseTransform(
+              folly::dynamic::array(
+                  folly::dynamic::object("matrix", nonFiniteMatrix))),
+          TransformOrigin{});
+
+      EXPECT_EQ(result, Transform::Identity())
+          << matrix.size() << " entries, entry " << index;
+    }
+  }
+}
+
+TEST_F(ResolveTransformTest, StringThatParsesToInfinityIsUntransformed) {
+  Size frameSize{.width = 100, .height = 100};
+  const auto transforms = std::vector<folly::dynamic>{
+      folly::dynamic::object("rotate", "1e1000deg"),
+      folly::dynamic::object("rotate", "1e37rad"),
+      folly::dynamic::object("skewX", "1e1000deg"),
+      folly::dynamic::object("translateX", "1e1000%")};
+
+  for (const auto& transform : transforms) {
+    auto result = BaseViewProps::resolveTransform(
+        frameSize,
+        parseTransform(
+            folly::dynamic::array(
+                folly::dynamic::object("translateX", 10), transform)),
+        TransformOrigin{});
+
+    EXPECT_EQ(result, Transform::Identity())
+        << transform.keys().begin()->asString();
+  }
+}
+
+TEST_F(ResolveTransformTest, FinitePerspectiveIsKept) {
+  Size frameSize{.width = 100, .height = 100};
+  auto result = BaseViewProps::resolveTransform(
+      frameSize,
+      parseTransform(
+          folly::dynamic::array(
+              folly::dynamic::object("perspective", 100),
+              folly::dynamic::object("rotateY", "45deg"))),
+      TransformOrigin{});
+
+  expectTransformsEqual(
+      result, Transform::Perspective(100) * Transform::RotateY(M_PI / 4));
+}
+
+TEST_F(ResolveTransformTest, CompositionThatOverflowsIsUntransformed) {
+  Size frameSize{.width = 100, .height = 100};
+  auto result = BaseViewProps::resolveTransform(
+      frameSize,
+      parseTransform(
+          folly::dynamic::array(
+              folly::dynamic::object("scale", 1e20),
+              folly::dynamic::object("scale", 1e20))),
+      TransformOrigin{});
+
+  EXPECT_EQ(result, Transform::Identity());
+}
+
+TEST_F(
+    ResolveTransformTest,
+    PercentageThatResolvesPastTheLargestFloatIsUntransformed) {
+  Size frameSize{.width = 100, .height = 100};
+  auto translated = BaseViewProps::resolveTransform(
+      frameSize,
+      parseTransform(
+          folly::dynamic::array(folly::dynamic::object("translateX", "1e37%"))),
+      TransformOrigin{});
+  auto aboutAFarOrigin = BaseViewProps::resolveTransform(
+      frameSize,
+      parseTransform(
+          folly::dynamic::array(folly::dynamic::object("scaleX", 2))),
+      parseTransformOrigin(folly::dynamic::array("1e37%", "50%", 0)));
+
+  EXPECT_EQ(translated, Transform::Identity());
+  EXPECT_EQ(aboutAFarOrigin, Transform::Identity());
+}
+
+// A valid transform animates toward its value however large its matrix grows,
+// as the browsers animate it, and a frame whose matrix overflows is drawn
+// untransformed.
+TEST_F(
+    ResolveTransformTest,
+    AnimationTowardACompositionThatOverflowsDrawsTheFramesItCan) {
+  Size frameSize{.width = 100, .height = 100};
+  auto overflowing = parseTransform(
+      folly::dynamic::array(
+          folly::dynamic::object("scale", 1e20),
+          folly::dynamic::object("scale", 1e20)));
+  auto early = BaseViewProps::resolveTransform(
+      frameSize,
+      Transform::Interpolate(0.1, Transform{}, overflowing, frameSize),
+      TransformOrigin{});
+  auto late = BaseViewProps::resolveTransform(
+      frameSize,
+      Transform::Interpolate(0.5, Transform{}, overflowing, frameSize),
+      TransformOrigin{});
+
+  EXPECT_GT(early.matrix[0], 1e37);
+  EXPECT_EQ(late, Transform::Identity());
+}
+
+TEST_F(ResolveTransformTest, NonFiniteTransformOriginTurnsAboutTheCenter) {
+  Size frameSize{.width = 100, .height = 100};
+  auto transform = parseTransform(
+      folly::dynamic::array(folly::dynamic::object("scaleX", 2)));
+  auto aboutTheCenter =
+      BaseViewProps::resolveTransform(frameSize, transform, TransformOrigin{});
+  constexpr auto notANumber = std::numeric_limits<double>::quiet_NaN();
+  constexpr auto infinity = std::numeric_limits<double>::infinity();
+  const auto origins = std::array{
+      folly::dynamic::array(notANumber, 0, 0),
+      folly::dynamic::array(0, infinity, 0),
+      folly::dynamic::array(0, 0, notANumber)};
+
+  for (size_t index = 0; index < origins.size(); index++) {
+    auto result = BaseViewProps::resolveTransform(
+        frameSize, transform, parseTransformOrigin(origins[index]));
+
+    EXPECT_EQ(result.matrix, aboutTheCenter.matrix) << "origin " << index;
+  }
+
+  EXPECT_NE(
+      BaseViewProps::resolveTransform(
+          frameSize,
+          transform,
+          parseTransformOrigin(folly::dynamic::array(0, 0, 0)))
+          .matrix,
+      aboutTheCenter.matrix);
 }
 
 } // namespace facebook::react

@@ -442,7 +442,10 @@ public object MatrixMathHelper {
 
   @JvmStatic
   public fun applyPerspective(m: DoubleArray, perspective: Double) {
-    m[11] = -1 / perspective
+    // A depth from 0 up to 1px renders as 1px:
+    // https://drafts.csswg.org/css-transforms-2/#funcdef-perspective
+    val depth = if (perspective >= 0.0 && perspective < 1.0) 1.0 else perspective
+    m[11] = -1 / depth
   }
 
   @JvmStatic
