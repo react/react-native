@@ -22,6 +22,7 @@ enum class Errata : uint32_t {
   AbsolutePercentAgainstInnerSize = YGErrataAbsolutePercentAgainstInnerSize,
   MinSizeUndefinedInsteadOfAuto = YGErrataMinSizeUndefinedInsteadOfAuto,
   FlexFirstPassUsesRunningTotals = YGErrataFlexFirstPassUsesRunningTotals,
+  WrapCrossAlignmentIgnoresMarginAndInset = YGErrataWrapCrossAlignmentIgnoresMarginAndInset,
   All = YGErrataAll,
   Classic = YGErrataClassic,
 };

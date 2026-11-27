@@ -69,6 +69,7 @@ YG_ENUM_DECL(
     YGErrataAbsolutePercentAgainstInnerSize = 4,
     YGErrataMinSizeUndefinedInsteadOfAuto = 8,
     YGErrataFlexFirstPassUsesRunningTotals = 16,
+    YGErrataWrapCrossAlignmentIgnoresMarginAndInset = 32,
     YGErrataAll = 2147483647,
     YGErrataClassic = 2147483646)
 YG_DEFINE_ENUM_FLAG_OPERATORS(YGErrata)
