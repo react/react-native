@@ -14,6 +14,7 @@
 #include <react/renderer/css/CSSPercentage.h>
 #include <react/renderer/css/CSSValueParser.h>
 #include <react/renderer/graphics/RectangleEdges.h>
+#include <iterator>
 #include <utility>
 
 namespace facebook::react {
@@ -280,15 +281,20 @@ IntersectionObserver::updateIntersectionObservation(
         rootMarginBoundingRect, targetBoundingRect, {}, time);
   }
 
-  auto targetToRootAncestors = hasExplicitRoot
-      ? targetShadowNodeFamily_->getAncestors(*getShadowNode(rootAncestors))
-      : targetAncestors;
+  ShadowNodeFamily::AncestorList targetToRootAncestors;
+  if (hasExplicitRoot && targetAncestors.size() > rootAncestors.size() &&
+      &targetAncestors[rootAncestors.size()].first.get() ==
+          getShadowNode(rootAncestors).get()) {
+    targetToRootAncestors.assign(
+        targetAncestors.begin() + std::ssize(rootAncestors),
+        targetAncestors.end());
+  }
 
   auto intersection = computeIntersection(
       rootBoundingRect,
       rootClipRect,
       targetBoundingRect,
-      targetToRootAncestors,
+      hasExplicitRoot ? targetToRootAncestors : targetAncestors,
       hasExplicitRoot,
       scrollMargins_);
 

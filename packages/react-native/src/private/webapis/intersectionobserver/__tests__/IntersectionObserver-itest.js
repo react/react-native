@@ -5195,6 +5195,51 @@ describe('IntersectionObserver', () => {
     root.destroy();
   });
 
+  it('should resolve explicit roots through the target ancestor path', () => {
+    const observationRootRef = createRef<HostInstance>();
+    const targetRef = createRef<HostInstance>();
+    const unrelatedRootRef = createRef<HostInstance>();
+    const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 100});
+    Fantom.runTask(() => {
+      root.render(
+        <>
+          <View ref={observationRootRef} style={{width: 100, height: 100}}>
+            <View>
+              <View>
+                <View ref={targetRef} style={{width: 20, height: 20}} />
+              </View>
+            </View>
+          </View>
+          <View
+            ref={unrelatedRootRef}
+            style={{position: 'absolute', width: 100, height: 100}}
+          />
+        </>,
+      );
+    });
+    const target = nullthrows(targetRef.current);
+    const observationRoot = nullthrows(observationRootRef.current);
+    const cases: ReadonlyArray<[HostInstance, number]> = [
+      [observationRoot, 1],
+      [nullthrows(unrelatedRootRef.current), 0],
+      [target, 0],
+    ];
+    for (const [candidateRoot, expectedRatio] of cases) {
+      const callback = jest.fn();
+      Fantom.runTask(() => {
+        observer = new IntersectionObserver(callback, {root: candidateRoot});
+        observer.observe(target);
+      });
+      expect(callback).toHaveBeenCalledTimes(1);
+      const entry = callback.mock.lastCall[0][0];
+      expect(entry.target).toBe(target);
+      expect(entry.intersectionRatio).toBe(expectedRatio);
+      expect(entry.isIntersecting).toBe(expectedRatio === 1);
+      Fantom.runTask(() => observer.disconnect());
+    }
+    root.destroy();
+  });
+
   describe('disconnect', () => {
     it('should do nothing if no targets are observed (not fail)', () => {
       const callback = jest.fn();
