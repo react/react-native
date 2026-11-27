@@ -6,6 +6,8 @@
  */
 
 #import "RCTMountingManager.h"
+#import <mutex>
+#import <vector>
 
 #import <QuartzCore/QuartzCore.h>
 
@@ -145,6 +147,9 @@ static void RCTPerformMountInstructions(
   BOOL _transactionInFlight;
   BOOL _followUpTransactionRequired;
   std::shared_ptr<const ContextContainer> _contextContainer;
+  std::mutex _preallocationMutex;
+  std::vector<ComponentHandle> _pendingPreallocations;
+  BOOL _preallocationDrainScheduled;
 }
 
 - (instancetype)init
@@ -182,6 +187,38 @@ static void RCTPerformMountInstructions(
   [_componentViewRegistry enqueueComponentViewWithComponentHandle:RootShadowNode::Handle()
                                                               tag:surfaceId
                                           componentViewDescriptor:rootViewDescriptor];
+}
+
+- (void)preallocateComponentViewWithComponentHandle:(ComponentHandle)componentHandle
+{
+  BOOL schedule = NO;
+  {
+    std::lock_guard<std::mutex> lock(_preallocationMutex);
+    _pendingPreallocations.push_back(componentHandle);
+    if (!_preallocationDrainScheduled) {
+      _preallocationDrainScheduled = YES;
+      schedule = YES;
+    }
+  }
+  if (!schedule) {
+    return;
+  }
+  __weak __typeof(self) weakSelf = self;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    __strong __typeof(self) strongSelf = weakSelf;
+    if (!strongSelf) {
+      return;
+    }
+    std::vector<ComponentHandle> handles;
+    {
+      std::lock_guard<std::mutex> lock(strongSelf->_preallocationMutex);
+      std::swap(handles, strongSelf->_pendingPreallocations);
+      strongSelf->_preallocationDrainScheduled = NO;
+    }
+    for (auto handle : handles) {
+      [strongSelf->_componentViewRegistry preallocateComponentViewWithComponentHandle:handle];
+    }
+  });
 }
 
 - (void)scheduleTransaction:(std::shared_ptr<const MountingCoordinator>)mountingCoordinator
