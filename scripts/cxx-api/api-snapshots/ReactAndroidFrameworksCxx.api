@@ -2065,7 +2065,6 @@ class facebook::react::HostPlatformScrollViewProps : public facebook::react::Bas
 
 class facebook::react::HostPlatformViewProps : public facebook::react::BaseViewProps {
   public HostPlatformViewProps() = default;
-  public HostPlatformViewProps(const facebook::react::PropsParserContext& context, const facebook::react::HostPlatformViewProps& sourceProps, const facebook::react::RawProps& rawProps);
   public HostPlatformViewProps(const facebook::react::PropsParserContext& context, const facebook::react::HostPlatformViewProps& sourceProps, const facebook::react::RawProps& rawProps, const std::function<bool(const std::string&)>& filterObjectKeys = nullptr);
   public bool focusable;
   public bool needsOffscreenAlphaCompositing;
