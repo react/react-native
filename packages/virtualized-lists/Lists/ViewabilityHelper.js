@@ -99,6 +99,7 @@ class ViewabilityHelper {
    */
   dispose() {
     this._timers.forEach(clearTimeout);
+    this.resetViewableIndices();
   }
 
   /**
