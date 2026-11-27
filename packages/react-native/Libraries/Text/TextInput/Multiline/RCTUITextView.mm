@@ -58,6 +58,16 @@ static UIColor *defaultPlaceholderColor(void)
     self.textColor = [UIColor blackColor];
     // This line actually removes 5pt (default value) left and right padding in UITextView.
     self.textContainer.lineFragmentPadding = 0;
+    // Lay out lines without the font's leading, as `RCTTextLayoutManager` measures them.
+    if (@available(iOS 16.0, *)) {
+      if (self.textLayoutManager != nil) {
+        self.textLayoutManager.usesFontLeading = NO;
+      } else {
+        self.layoutManager.usesFontLeading = NO;
+      }
+    } else {
+      self.layoutManager.usesFontLeading = NO;
+    }
 #if !TARGET_OS_TV
     self.scrollsToTop = NO;
 #endif
