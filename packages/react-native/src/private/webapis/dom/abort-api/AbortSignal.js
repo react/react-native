@@ -42,6 +42,18 @@ import {AbortController} from './AbortController';
 const ABORTED_KEY = Symbol('aborted');
 const REASON_KEY = Symbol('reason');
 
+type DependentSignalLinks = {
+  readonly signalRef: WeakRef<AbortSignal>,
+  readonly sourceSignalRefs: ReadonlyArray<WeakRef<AbortSignal>>,
+};
+
+const dependentSignalRefs: WeakMap<
+  AbortSignal,
+  Set<WeakRef<AbortSignal>>,
+> = new WeakMap();
+const dependentSignalLinks: WeakMap<AbortSignal, DependentSignalLinks> =
+  new WeakMap();
+
 /**
  * The signal class.
  * @see https://dom.spec.whatwg.org/#abortsignal
@@ -111,22 +123,41 @@ export class AbortSignal extends EventTarget {
       }
     }
 
-    // Third pass: none of the signals is aborted, so subscribe to all of them
-    // and abort the resulting signal when any of them aborts.
-    const controller = new AbortController();
-    const listeners = [];
-    const cleanup = () => listeners.forEach(unsubscribe => unsubscribe());
+    const resultSignal = createAbortSignal();
+    const resultSources: Set<AbortSignal> = new Set();
 
     for (let i = 0; i < signals.length; i++) {
       const signal = signals[i];
-      const onAbort = () => {
-        controller.abort(signal.reason);
-        cleanup();
-      };
-      signal.addEventListener('abort', onAbort);
-      listeners.push(() => signal.removeEventListener('abort', onAbort));
+      const links = dependentSignalLinks.get(signal);
+      if (links == null) {
+        resultSources.add(signal);
+      } else {
+        for (const sourceRef of links.sourceSignalRefs) {
+          const sourceSignal = sourceRef.deref();
+          if (sourceSignal != null) {
+            resultSources.add(sourceSignal);
+          }
+        }
+      }
     }
-    return controller.signal;
+
+    const resultSignalRef = new WeakRef(resultSignal);
+    const resultSourceRefs: Array<WeakRef<AbortSignal>> = [];
+    for (const sourceSignal of resultSources) {
+      let dependentRefs = dependentSignalRefs.get(sourceSignal);
+      if (dependentRefs == null) {
+        dependentRefs = new Set();
+        dependentSignalRefs.set(sourceSignal, dependentRefs);
+      }
+      dependentRefs.add(resultSignalRef);
+      resultSourceRefs.push(new WeakRef(sourceSignal));
+    }
+    dependentSignalLinks.set(resultSignal, {
+      signalRef: resultSignalRef,
+      sourceSignalRefs: resultSourceRefs,
+    });
+
+    return resultSignal;
   }
 
   [ABORTED_KEY]: boolean = false;
@@ -193,7 +224,44 @@ export function abortSignal(
   }
   signal[ABORTED_KEY] = true;
   signal[REASON_KEY] = reason;
+
+  const dependentSignalsToAbort: Array<AbortSignal> = [];
+  const dependentRefs = dependentSignalRefs.get(signal);
+  if (dependentRefs != null) {
+    dependentSignalRefs.delete(signal);
+    for (const dependentRef of dependentRefs) {
+      const dependentSignal = dependentRef.deref();
+      // $FlowExpectedError[invalid-compare]
+      // $FlowExpectedError[prop-missing]
+      if (dependentSignal != null && dependentSignal[ABORTED_KEY] === false) {
+        // $FlowExpectedError[prop-missing]
+        dependentSignal[ABORTED_KEY] = true;
+        // $FlowExpectedError[prop-missing]
+        dependentSignal[REASON_KEY] = reason;
+        unregisterDependentSignal(dependentSignal);
+        dependentSignalsToAbort.push(dependentSignal);
+      }
+    }
+  }
+
   dispatchTrustedEvent(signal, new Event('abort'));
+  for (const dependentSignal of dependentSignalsToAbort) {
+    dispatchTrustedEvent(dependentSignal, new Event('abort'));
+  }
+}
+
+function unregisterDependentSignal(dependentSignal: AbortSignal): void {
+  const links = dependentSignalLinks.get(dependentSignal);
+  if (links == null) {
+    return;
+  }
+  dependentSignalLinks.delete(dependentSignal);
+  for (const sourceRef of links.sourceSignalRefs) {
+    const sourceSignal = sourceRef.deref();
+    if (sourceSignal != null) {
+      dependentSignalRefs.get(sourceSignal)?.delete(links.signalRef);
+    }
+  }
 }
 
 // Properties should be enumerable.
