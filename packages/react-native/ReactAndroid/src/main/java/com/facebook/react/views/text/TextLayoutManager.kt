@@ -69,6 +69,7 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.round
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -1565,9 +1566,15 @@ internal object TextLayoutManager {
         }
     currentFontSize = max(currentFontSize, minimumFontSize)
 
+    // Every font size is scaled from its original size, so that rounding does not compound across
+    // iterations. Text that fits keeps its original sizes. Shrunk text scales every size by one
+    // ratio and clamps it to the minimum, matching scaleFontSizeWithRatio on iOS.
+    val originalFontSize = currentFontSize
+    val originalSpanSizes = IntArray(spans.size) { spans[it].size }
+    val originalPaintTextSize = paint.textSize
+
     var intervalStart = minimumFontSize
     var intervalEnd = currentFontSize
-    var previousFontSize = currentFontSize
 
     // `true` instead of `intervalStart != intervalEnd` so that the last iteration where both are at
     // the same size goes through and updates all relevant objects with the final font size
@@ -1578,18 +1585,27 @@ internal object TextLayoutManager {
       // we always end up doing two measurements to check whether intervalEnd would fit.
       val currentFontSize = (intervalStart + intervalEnd + 1) / 2
 
-      val ratio = currentFontSize.toFloat() / previousFontSize.toFloat()
-      paint.textSize = max((paint.textSize * ratio).toInt(), minimumFontSize).toFloat()
+      val isShrunk = currentFontSize < originalFontSize
+      val ratio = currentFontSize.toFloat() / originalFontSize.toFloat()
+      paint.textSize =
+          if (isShrunk) max(round(originalPaintTextSize * ratio), minimumFontSize.toFloat())
+          else originalPaintTextSize
 
-      val sizeSpans = text.getSpans(0, text.length, ReactAbsoluteSizeSpan::class.java)
-      for (span in sizeSpans) {
+      for (i in spans.indices) {
+        val span = spans[i]
+        val resizedSpan =
+            ReactAbsoluteSizeSpan(
+                if (isShrunk) max(round(originalSpanSizes[i] * ratio).toInt(), minimumFontSize)
+                else originalSpanSizes[i]
+            )
         text.setSpan(
-            ReactAbsoluteSizeSpan(max((span.size * ratio).toInt(), minimumFontSize)),
+            resizedSpan,
             text.getSpanStart(span),
             text.getSpanEnd(span),
             text.getSpanFlags(span),
         )
         text.removeSpan(span)
+        spans[i] = resizedSpan
       }
       if (boring != null) {
         boring = isBoring(text, paint)
@@ -1639,8 +1655,6 @@ internal object TextLayoutManager {
         // Text fits the constraints
         intervalStart = currentFontSize
       }
-
-      previousFontSize = currentFontSize
     }
   }
 
