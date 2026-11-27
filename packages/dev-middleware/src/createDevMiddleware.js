@@ -177,15 +177,16 @@ function createWrappedEventReporter(
             case 'not_implemented':
               break;
             case 'unexpected_error': {
+              // Preparation failures are not fatal: the debugger falls back to
+              // opening in a browser window, so log a warning, not an error.
               let message =
                 event.result.humanReadableMessage ??
-                'An unknown error occurred while installing React Native DevTools.';
+                'An unknown error occurred while installing React Native DevTools. ' +
+                  'Using a fallback version instead.';
               if (event.result.verboseInfo != null) {
                 message += ` Details:\n\n${event.result.verboseInfo}`;
-              } else {
-                message += '.';
               }
-              logger?.error(message);
+              logger?.warn(message);
               break;
             }
             case 'possible_corruption':
