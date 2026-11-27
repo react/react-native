@@ -12,6 +12,7 @@ import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
 
+import useMergeRefs from '../../../Utilities/useMergeRefs';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
@@ -146,6 +147,123 @@ describe('<ScrollView>', () => {
       expect(refA.mock.lastCall[0]).toBe(null);
       expect(refB.mock.lastCall[0]).toBeInstanceOf(HTMLElement);
     });
+  });
+
+  describe('React 19 ref cleanup', () => {
+    for (const refProp of ['ref', 'innerViewRef']) {
+      it(`calls the ${refProp} cleanup instead of passing null on unmount`, () => {
+        const root = Fantom.createRoot();
+        const cleanup = jest.fn();
+        const ref = jest.fn((_instance: HostInstance | null) => cleanup);
+
+        Fantom.runTask(() => {
+          root.render(
+            refProp === 'ref' ? (
+              <ScrollView ref={ref} />
+            ) : (
+              <ScrollView innerViewRef={ref} />
+            ),
+          );
+        });
+
+        expect(ref).toHaveBeenCalledTimes(1);
+        expect(ref.mock.calls[0][0]).not.toBe(null);
+        expect(cleanup).not.toHaveBeenCalled();
+
+        Fantom.runTask(() => {
+          root.render(<></>);
+        });
+
+        expect(cleanup).toHaveBeenCalledTimes(1);
+        expect(ref).toHaveBeenCalledTimes(1);
+      });
+
+      it(`composes cleanup, legacy and object refs through ${refProp}`, () => {
+        const root = Fantom.createRoot();
+        const cleanup = jest.fn();
+        const cleanupRef = jest.fn((_instance: HostInstance | null) => cleanup);
+        const legacyRef = jest.fn();
+        const objectRef = createRef<HostInstance>();
+        function Example(): React.Node {
+          const ref = useMergeRefs(cleanupRef, legacyRef, objectRef);
+          return refProp === 'ref' ? (
+            <ScrollView ref={ref} />
+          ) : (
+            <ScrollView innerViewRef={ref} />
+          );
+        }
+
+        Fantom.runTask(() => root.render(<Example />));
+        const instance = objectRef.current;
+        expect(instance).not.toBe(null);
+        expect(cleanupRef.mock.lastCall[0]).toBe(instance);
+        expect(legacyRef.mock.lastCall[0]).toBe(instance);
+
+        Fantom.runTask(() => root.render(<Example />));
+        expect(cleanupRef).toHaveBeenCalledTimes(1);
+        expect(legacyRef).toHaveBeenCalledTimes(1);
+        expect(cleanup).not.toHaveBeenCalled();
+
+        Fantom.runTask(() => root.render(<></>));
+        expect(cleanup).toHaveBeenCalledTimes(1);
+        expect(cleanupRef).toHaveBeenCalledTimes(1);
+        expect(legacyRef).toHaveBeenCalledTimes(2);
+        expect(legacyRef.mock.lastCall[0]).toBe(null);
+        expect(objectRef.current).toBe(null);
+      });
+
+      it(`cleans up the previous ${refProp} before attaching its replacement`, () => {
+        const root = Fantom.createRoot();
+        const calls = [];
+        const refA = jest.fn((_instance: HostInstance | null) => {
+          calls.push('attach A');
+          return () => {
+            calls.push('cleanup A');
+          };
+        });
+        const refB = jest.fn((_instance: HostInstance | null) => {
+          calls.push('attach B');
+          return () => {
+            calls.push('cleanup B');
+          };
+        });
+        const renderScrollView = (ref: React.RefSetter<HostInstance>) => {
+          root.render(
+            refProp === 'ref' ? (
+              <ScrollView ref={ref} />
+            ) : (
+              <ScrollView innerViewRef={ref} />
+            ),
+          );
+        };
+
+        Fantom.runTask(() => renderScrollView(refA));
+        Fantom.runTask(() => renderScrollView(refB));
+        expect(calls).toEqual(['attach A', 'cleanup A', 'attach B']);
+        expect(refA).toHaveBeenCalledTimes(1);
+        expect(refB).toHaveBeenCalledTimes(1);
+
+        Fantom.runTask(() => renderScrollView(refA));
+        expect(calls).toEqual([
+          'attach A',
+          'cleanup A',
+          'attach B',
+          'cleanup B',
+          'attach A',
+        ]);
+        expect(refA).toHaveBeenCalledTimes(2);
+
+        Fantom.runTask(() => root.render(<></>));
+        expect(calls).toEqual([
+          'attach A',
+          'cleanup A',
+          'attach B',
+          'cleanup B',
+          'attach A',
+          'cleanup A',
+        ]);
+      });
+    }
   });
 
   describe('getInnerViewRef', () => {
