@@ -17,7 +17,7 @@ import type {HostInstance} from 'react-native';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
-import {ScrollView, View} from 'react-native';
+import {ScrollView, Text, View} from 'react-native';
 
 describe('ViewFlattening', () => {
   /**
@@ -591,6 +591,52 @@ describe('unchanged children', () => {
     expect(root.takeMountingManagerLogs()).toEqual([
       'Update {type: "ScrollView", nativeID: "scrollView"}',
     ]);
+  });
+
+  test('a text whose string changes next to unchanged children is updated', () => {
+    const root = Fantom.createRoot();
+    const render = (value: number) =>
+      Fantom.runTask(() => {
+        root.render(
+          <View nativeID="parent">
+            <Unchanged nativeID="A" />
+            <Text nativeID="label">Value {value}</Text>
+            <Unchanged nativeID="B" />
+          </View>,
+        );
+      });
+
+    render(1);
+    root.takeMountingManagerLogs();
+
+    // React gives the changed string a new raw text node, which doesn't form
+    // a view, so only the paragraph is updated.
+    render(2);
+    expect(root.takeMountingManagerLogs()).toEqual([
+      'Update {type: "Paragraph", nativeID: "label"}',
+    ]);
+  });
+
+  test('an empty view that is remounted next to unchanged children causes no mutations', () => {
+    const root = Fantom.createRoot();
+    const render = (version: number) =>
+      Fantom.runTask(() => {
+        root.render(
+          <View nativeID="parent">
+            <Unchanged nativeID="A" />
+            <View key={version} />
+            <Unchanged nativeID="B" />
+          </View>,
+        );
+      });
+
+    render(1);
+    root.takeMountingManagerLogs();
+
+    // The new key gives the empty view a new tag. It is flattened and has no
+    // children, so it doesn't form a view and nothing is mounted for it.
+    render(2);
+    expect(root.takeMountingManagerLogs()).toEqual([]);
   });
 
   test('a child added next to unchanged children is inserted', () => {
