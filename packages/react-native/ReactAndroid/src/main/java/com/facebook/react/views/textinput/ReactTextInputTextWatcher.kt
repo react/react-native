@@ -40,7 +40,11 @@ internal class ReactTextInputTextWatcher(
     }
 
     val newText = s.toString().substring(start, start + count)
-    val oldText = checkNotNull(previousText).substring(start, start + before)
+    // previousText can be stale (another text change can run between beforeTextChanged and
+    // onTextChanged), so the replaced range may not exist in it. Treat that as a real change
+    // instead of crashing.
+    val oldText =
+        previousText?.takeIf { start + before <= it.length }?.substring(start, start + before)
     // Don't send same text changes
     if (count == before && newText == oldText) {
       return
