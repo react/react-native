@@ -28,6 +28,7 @@ class ScrollViewState final {
   Point contentOffset;
   Rect contentBoundingRect;
   int scrollAwayPaddingTop{0};
+  int scrollAwayPaddingBottom{0};
 
   /*
    * View Culling has to be disabled when accessibility features are used.
@@ -46,12 +47,13 @@ class ScrollViewState final {
   ScrollViewState(const ScrollViewState &previousState, folly::dynamic data)
       : contentOffset({(Float)data["contentOffsetLeft"].getDouble(), (Float)data["contentOffsetTop"].getDouble()}),
         contentBoundingRect({}),
-        scrollAwayPaddingTop((Float)data["scrollAwayPaddingTop"].getDouble()) {};
+        scrollAwayPaddingTop((Float)data["scrollAwayPaddingTop"].getDouble()),
+        scrollAwayPaddingBottom((Float)data["scrollAwayPaddingBottom"].getDouble()) {};
 
   folly::dynamic getDynamic() const
   {
     return folly::dynamic::object("contentOffsetLeft", contentOffset.x)("contentOffsetTop", contentOffset.y)(
-        "scrollAwayPaddingTop", scrollAwayPaddingTop);
+        "scrollAwayPaddingTop", scrollAwayPaddingTop)("scrollAwayPaddingBottom", scrollAwayPaddingBottom);
   };
 #endif
 };
