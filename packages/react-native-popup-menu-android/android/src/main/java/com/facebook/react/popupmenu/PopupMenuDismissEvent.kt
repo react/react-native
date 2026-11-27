@@ -15,7 +15,7 @@ public class PopupMenuDismissEvent(surfaceId: Int, viewId: Int) :
 
   override fun getEventName(): String = EVENT_NAME
 
-  override fun getEventData(): WritableMap? = null
+  protected override fun getEventData(): WritableMap? = null
 
   public companion object {
     public const val EVENT_NAME: String = "topPopupMenuDismiss"
