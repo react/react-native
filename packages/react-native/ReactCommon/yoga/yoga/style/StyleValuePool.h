@@ -179,9 +179,8 @@ class StyleValuePool {
   static constexpr bool isIntegerPackable(float f) {
     constexpr uint16_t kMaxInlineAbsValue = (1 << 11) - 1;
 
-    auto i = static_cast<int32_t>(f);
-    return static_cast<float>(i) == f && i >= -kMaxInlineAbsValue &&
-        i <= +kMaxInlineAbsValue;
+    return f >= -kMaxInlineAbsValue && f <= +kMaxInlineAbsValue &&
+        static_cast<float>(static_cast<int32_t>(f)) == f;
   }
 
   static constexpr uint16_t packInlineInteger(float value) {
