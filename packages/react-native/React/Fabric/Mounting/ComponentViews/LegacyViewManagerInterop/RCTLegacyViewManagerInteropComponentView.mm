@@ -174,17 +174,19 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
 
 - (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
 {
-  if (_adapter && index == _adapter.paperView.reactSubviews.count) {
-    // This is a new child view that is being added to the end of the children array.
-    // After the children is added, we need to call didUpdateReactSubviews to make sure that it is rendered.
-    // Without this change, the new child will not be rendered right away because the didUpdateReactSubviews is not
-    // called and the `finalizeUpdate` is not invoked.
+  if (_adapter) {
+    // The child is inserted right away, wherever it goes, so that the paper view's `reactSubviews` stay in step with
+    // the Fabric children. A mount that waited for `finalizeUpdates:` would be applied late (the host view is not
+    // updated by every transaction that changes its children) and would shift the position of every later child. After
+    // the child is added, we need to call didUpdateReactSubviews to make sure that it is rendered. Without this change,
+    // the new child will not be rendered right away because the didUpdateReactSubviews is not called and the
+    // `finalizeUpdate` is not invoked.
+    UIView *target = childComponentView;
     if ([childComponentView isKindOfClass:[RCTLegacyViewManagerInteropComponentView class]]) {
-      UIView *target = ((RCTLegacyViewManagerInteropComponentView *)childComponentView).contentView;
-      [_adapter.paperView insertReactSubview:target atIndex:index];
-    } else {
-      [_adapter.paperView insertReactSubview:childComponentView atIndex:index];
+      target = ((RCTLegacyViewManagerInteropComponentView *)childComponentView).contentView;
     }
+    [_adapter.paperView insertReactSubview:target
+                                   atIndex:MIN(index, (NSInteger)_adapter.paperView.reactSubviews.count)];
     [_adapter.paperView didUpdateReactSubviews];
   } else {
     [_viewsToBeMounted addObject:@{
@@ -196,10 +198,29 @@ static NSString *const kRCTLegacyInteropChildIndexKey = @"index";
 
 - (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
 {
-  if (_adapter && index < _adapter.paperView.reactSubviews.count) {
-    [_adapter.paperView removeReactSubview:_adapter.paperView.reactSubviews[index]];
+  // The child named by the mutation is looked up instead of using `index` as a position in the paper view's
+  // `reactSubviews`: the two differ whenever a mount is still queued in `_viewsToBeMounted`.
+
+  // A child whose mount is still queued never reached the paper view: forget the mount.
+  for (NSDictionary *mountInstruction in [_viewsToBeMounted copy]) {
+    if (mountInstruction[kRCTLegacyInteropChildComponentKey] == childComponentView) {
+      [_viewsToBeMounted removeObject:mountInstruction];
+      return;
+    }
+  }
+
+  // `mountChildComponentView:index:` inserts the content view of a child that is itself an interop view.
+  UIView *target = childComponentView;
+  if ([childComponentView isKindOfClass:[RCTLegacyViewManagerInteropComponentView class]]) {
+    target = ((RCTLegacyViewManagerInteropComponentView *)childComponentView).contentView ?: childComponentView;
+  }
+
+  if (_adapter && [_adapter.paperView.reactSubviews containsObject:target]) {
+    // Removed right away: a `Delete` mutation of this child in the same transaction recycles it before
+    // `finalizeUpdates:` runs, and a recycled view must not have a superview.
+    [_adapter.paperView removeReactSubview:target];
   } else {
-    [_viewsToBeUnmounted addObject:childComponentView];
+    [_viewsToBeUnmounted addObject:target];
   }
 }
 
