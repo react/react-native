@@ -85,9 +85,17 @@ internal class DebugServerException : RuntimeException {
       }
       try {
         val jsonObject = JSONObject(str)
+        val message = jsonObject.getString("message")
+        if (
+            !jsonObject.has("filename") ||
+                !jsonObject.has("lineNumber") ||
+                !jsonObject.has("column")
+        ) {
+          return DebugServerException(message)
+        }
         val fullFileName = jsonObject.getString("filename")
         return DebugServerException(
-            jsonObject.getString("message"),
+            message,
             shortenFileName(fullFileName),
             jsonObject.getInt("lineNumber"),
             jsonObject.getInt("column"),
