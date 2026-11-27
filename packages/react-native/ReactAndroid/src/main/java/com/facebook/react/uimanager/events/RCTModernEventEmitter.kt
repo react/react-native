@@ -30,7 +30,7 @@ public interface RCTModernEventEmitter : RCTEventEmitter {
 
   @Deprecated("Use the overload with eventTimestamp parameter instead.")
   public fun receiveEvent(surfaceId: Int, targetTag: Int, eventName: String, params: WritableMap?) {
-    // We assume this event can't be coalesced. `customCoalesceKey` has no meaning in Fabric.
+    // We assume this event can't be coalesced.
     receiveEvent(surfaceId, targetTag, eventName, false, 0, params, EventCategoryDef.UNSPECIFIED)
   }
 
