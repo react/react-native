@@ -627,6 +627,9 @@ RCT_EXPORT_MODULE()
   // we only send progress updates and not incremental data updates to JS here.
   RCTURLRequestIncrementalDataBlock incrementalDataBlock = nil;
   RCTURLRequestProgressBlock downloadProgressBlock = nil;
+  // For incremental text updates, the task usually does not keep the response (see below). The completion
+  // block then has no data to measure, so count the bytes here.
+  __block int64_t incrementalDataLength = 0;
   if (incrementalUpdates) {
     if ([responseType isEqualToString:@"text"]) {
       // We need this to carry over bytes, which could not be decoded into text (such as broken UTF-8 characters).
@@ -634,6 +637,7 @@ RCT_EXPORT_MODULE()
       NSMutableData *incrementalDataCarry = [NSMutableData new];
 
       incrementalDataBlock = ^(NSData *data, int64_t progress, int64_t total) {
+        incrementalDataLength = progress;
         NSUInteger initialCarryLength = incrementalDataCarry.length;
 
         id responseString = [RCTNetworking decodeTextData:data
@@ -693,7 +697,8 @@ RCT_EXPORT_MODULE()
     if (error != nullptr) {
       [RCTInspectorNetworkReporter reportRequestFailed:task.devToolsRequestId cancelled:NO];
     } else {
-      [RCTInspectorNetworkReporter reportResponseEnd:task.devToolsRequestId encodedDataLength:data.length];
+      [RCTInspectorNetworkReporter reportResponseEnd:task.devToolsRequestId
+                                   encodedDataLength:data ? data.length : incrementalDataLength];
     }
     [strongSelf sendEventWithName:@"didCompleteNetworkResponse" body:responseJSON];
     [strongSelf->_tasksByRequestID removeObjectForKey:task.requestID];
@@ -704,6 +709,13 @@ RCT_EXPORT_MODULE()
   task.incrementalDataBlock = incrementalDataBlock;
   task.responseBlock = responseBlock;
   task.uploadProgressBlock = uploadProgressBlock;
+
+  // Incremental text updates send each chunk to JS as it arrives, so the full response is only needed
+  // at completion by a text response handler. Without one, keeping it would let a long-lived response,
+  // for example a stream of server-sent events, use more memory until it ends.
+  if (incrementalDataBlock && ![self hasTextResponseHandlerForRequest:request]) {
+    task.buffersResponseData = NO;
+  }
 
   if (task.requestID) {
     if (!_tasksByRequestID) {
@@ -744,6 +756,16 @@ RCT_EXPORT_MODULE()
     _textResponseHandlers = [NSMutableArray new];
   }
   [_textResponseHandlers addObject:handler];
+}
+
+- (BOOL)hasTextResponseHandlerForRequest:(NSURLRequest *)request
+{
+  for (id<RCTNetworkingTextResponseHandler> handler in _textResponseHandlers) {
+    if ([handler canHandleNetworkingTextResponseForRequest:request]) {
+      return YES;
+    }
+  }
+  return NO;
 }
 
 - (void)removeRequestHandler:(id<RCTNetworkingRequestHandler>)handler

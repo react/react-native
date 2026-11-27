@@ -36,6 +36,15 @@ typedef NS_ENUM(NSInteger, RCTNetworkTaskStatus) {
 @property (nonatomic, copy) RCTURLRequestResponseBlock responseBlock;
 @property (nonatomic, copy) RCTURLRequestProgressBlock uploadProgressBlock;
 
+/**
+ * Whether the task keeps the response data it receives, to give it to the completion block.
+ * The default is YES. Set it to NO before `start` when the incremental data block uses each chunk
+ * and the completion block does not need the full response. The completion block then gets nil data.
+ * This stops a long-lived response, for example a stream of server-sent events, from keeping all of
+ * its data in memory until it ends.
+ */
+@property (nonatomic, assign) BOOL buffersResponseData;
+
 @property (atomic, readonly) RCTNetworkTaskStatus status;
 
 - (instancetype)initWithRequest:(NSURLRequest *)request

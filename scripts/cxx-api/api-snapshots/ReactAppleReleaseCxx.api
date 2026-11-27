@@ -1424,6 +1424,7 @@ interface RCTNativeAnimatedTurboModule : public RCTEventEmitter <RCTBridgeModule
 }
 
 interface RCTNetworkTask : public NSObject <RCTURLRequestDelegate> {
+  public @property (assign) BOOL buffersResponseData;
   public @property (assign, readonly) NSNumber* requestID;
   public @property (assign, readonly) NSString* devToolsRequestId;
   public @property (assign, readonly) NSURLRequest* request;
