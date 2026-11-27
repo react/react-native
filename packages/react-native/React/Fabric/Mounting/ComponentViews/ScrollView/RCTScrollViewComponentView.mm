@@ -347,7 +347,10 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics
            oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
 {
-  [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
+  // Resizing the scroll view makes UIKit clamp `contentOffset`, which drops an overscroll that a drag holds.
+  [self _preserveContentOffsetIfNeededWithBlock:^{
+    [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
+  }];
   if (layoutMetrics.layoutDirection != oldLayoutMetrics.layoutDirection) {
     CGAffineTransform transform = (layoutMetrics.layoutDirection == LayoutDirection::LeftToRight)
         ? CGAffineTransformIdentity
