@@ -17,6 +17,9 @@ const {
   buildDepsHeadersXcframework,
   stubSlicesFromXcframework,
 } = require('../../../packages/react-native/scripts/ios-prebuild/headers-xcframework');
+const {
+  stripLocalSymbols,
+} = require('../../../packages/react-native/scripts/ios-prebuild/strip-symbols');
 const {HEADERS_FOLDER, TARGET_FOLDER} = require('./constants');
 const {execSync} = require('node:child_process');
 const fs = require('node:fs');
@@ -74,7 +77,7 @@ async function createFramework(
 
   // Copy Symbols to symbols folder - copy before headers since we're using the folders inside the xcframework
   // to get the arch slices.
-  copySymbols(scheme, output, frameworkPaths);
+  copySymbols(scheme, output, frameworkPaths, configuration);
 
   // Copy headers to the framework - start by building the Header folder
   copyHeaders(scheme, dependencies, rootFolder);
@@ -206,6 +209,7 @@ function copySymbols(
   scheme /*: string */,
   outputFolder /*:string*/,
   frameworkPaths /*:Array<string>*/,
+  configuration /*: string */,
 ) {
   console.log('Copying dSym files...');
 
@@ -259,6 +263,15 @@ function copySymbols(
     );
     fs.mkdirSync(targetSymbolPath, {recursive: true});
     execSync(`cp -r "${sourceSymbolPath}/" "${targetSymbolPath}"`);
+    // Strip only once the slice's dSYM is safely copied: it is generated
+    // from the unstripped binary and is the only source of those symbols.
+    if (configuration === 'Release') {
+      stripLocalSymbols(
+        path.join(targetFolder, `${scheme}.framework`),
+        scheme,
+        message => console.log(` ${message}`),
+      );
+    }
   });
 }
 

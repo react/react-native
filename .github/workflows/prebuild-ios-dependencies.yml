@@ -134,7 +134,7 @@ jobs:
             packages/react-native/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
             packages/react-native/third-party/ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
             packages/react-native/third-party/Symbols/ReactNativeDependencies${{ matrix.flavor }}.framework.dSYM.tar.gz
-          key: v6-ios-dependencies-xcframework-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/**/*', 'scripts/releases/prepare-ios-prebuilds.js', 'packages/react-native/scripts/ios-configure-glog.sh', 'packages/react-native/third-party-podspecs/**/PrivacyInfo.xcprivacy', '.github/workflows/prebuild-ios-dependencies.yml', '.github/actions/setup-xcode/action.yml', 'packages/react-native/scripts/ios-prebuild/headers-xcframework.js', 'packages/react-native/scripts/ios-prebuild/headers-spec.js') }}
+          key: v6-ios-dependencies-xcframework-${{ matrix.flavor }}-${{ hashfiles('scripts/releases/ios-prebuild/**/*', 'scripts/releases/prepare-ios-prebuilds.js', 'packages/react-native/scripts/ios-configure-glog.sh', 'packages/react-native/third-party-podspecs/**/PrivacyInfo.xcprivacy', '.github/workflows/prebuild-ios-dependencies.yml', '.github/actions/setup-xcode/action.yml', 'packages/react-native/scripts/ios-prebuild/headers-xcframework.js', 'packages/react-native/scripts/ios-prebuild/headers-spec.js', 'packages/react-native/scripts/ios-prebuild/strip-symbols.js') }}
       # If cache hit, we already have our binary. We don't need to do anything.
       - name: Yarn Install
         if: steps.restore-xcframework.outputs.cache-hit != 'true'
@@ -167,10 +167,10 @@ jobs:
           p12-password: ${{ secrets.REACT_ORG_CODE_SIGNING_P12_CERT_PWD }}
       - name: Create XCFramework
         if: ${{ steps.restore-xcframework.outputs.cache-hit != 'true' && env.REACT_ORG_CODE_SIGNING_P12_CERT == '' }}
-        run: node scripts/releases/prepare-ios-prebuilds.js -c
+        run: node scripts/releases/prepare-ios-prebuilds.js -c -r ${{ matrix.flavor }}
       - name: Create and Sign XCFramework
         if: ${{ steps.restore-xcframework.outputs.cache-hit != 'true' && env.REACT_ORG_CODE_SIGNING_P12_CERT != '' }}
-        run: node scripts/releases/prepare-ios-prebuilds.js -c -i "React Org"
+        run: node scripts/releases/prepare-ios-prebuilds.js -c -r ${{ matrix.flavor }} -i "React Org"
       - name: Compress and Rename XCFramework
         if: steps.restore-xcframework.outputs.cache-hit != 'true'
         run: |

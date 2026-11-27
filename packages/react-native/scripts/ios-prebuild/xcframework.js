@@ -13,6 +13,7 @@
 const {
   generateFBReactNativeSpecIOS,
 } = require('../codegen/generate-artifacts-executor/generateFBReactNativeSpecIOS');
+const {stripLocalSymbols} = require('./strip-symbols');
 const utils = require('./utils');
 const childProcess = require('node:child_process');
 const fs = require('node:fs');
@@ -104,7 +105,7 @@ function buildXCFrameworks(
   }
 
   // Copy Symbols to symbols folder
-  copySymbols(outputPath, frameworkFolders);
+  const symbolicatedSlices = copySymbols(outputPath, frameworkFolders);
 
   // Emit the headers-spec layout into every slice's React.framework and build
   // the ReactNativeHeaders headers-only xcframework beside it. This is the only
@@ -143,6 +144,19 @@ function buildXCFrameworks(
     hermesHeaders,
     overlayDir,
   );
+
+  // Strip only slices whose dSYM was copied (it is made from the unstripped
+  // binary), and only after the headers are emitted: the re-sign seals the
+  // framework's final contents.
+  if (buildType === 'Release') {
+    symbolicatedSlices.forEach(slice =>
+      stripLocalSymbols(
+        path.join(slice, 'React.framework'),
+        'React',
+        frameworkLog,
+      ),
+    );
+  }
 
   if (identity) {
     signXCFramework(identity, outputPath);
@@ -214,7 +228,7 @@ function buildXCFrameworks(
 function copySymbols(
   outputPath /*:string*/,
   frameworkFolders /*:Array<string>*/,
-) {
+) /*: Array<string> */ {
   frameworkLog('Copying symbols to symbols folder...');
   const targetArchFolders = fs
     .readdirSync(outputPath)
@@ -228,6 +242,7 @@ function copySymbols(
     });
 
   const symbolOutput = path.join(outputPath, '..', 'Symbols');
+  const symbolicatedSlices = [];
   frameworkFolders.forEach(frameworkFolder => {
     // Get archs for current symbol slice
     const frameworkPlatforms = getArchsFromFramework(
@@ -257,13 +272,18 @@ function copySymbols(
         '..',
         'React.framework.dSYM',
       );
+      if (!fs.existsSync(sourceSymbolPath)) {
+        throw new Error(`dSYM folder ${sourceSymbolPath} not found`);
+      }
       console.log(
         `  ${path.relative(outputPath, sourceSymbolPath)} → ${path.basename(targetFolder)}`,
       );
       fs.mkdirSync(targetSymbolPath, {recursive: true});
       execSync(`cp -r ${sourceSymbolPath} ${targetSymbolPath}`);
+      symbolicatedSlices.push(targetFolder);
     }
   });
+  return symbolicatedSlices;
 }
 
 function getArchsFromFramework(frameworkPath /*:string*/) {
