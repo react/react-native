@@ -879,6 +879,9 @@ fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std:
         auto valueUnit = toValueUnit(bottomIt->second);
         if (valueUnit) {
           backgroundPosition.bottom = valueUnit;
+          if (topIt == positionMap.end()) {
+            backgroundPosition.top.reset();
+          }
         }
       }
 
@@ -895,6 +898,9 @@ fromRawValue(const PropsParserContext & /*context*/, const RawValue &value, std:
         auto valueUnit = toValueUnit(rightIt->second);
         if (valueUnit) {
           backgroundPosition.right = valueUnit;
+          if (leftIt == positionMap.end()) {
+            backgroundPosition.left.reset();
+          }
         }
       }
 
