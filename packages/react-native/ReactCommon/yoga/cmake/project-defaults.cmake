@@ -38,6 +38,8 @@ add_compile_options(
     $<$<COMPILE_LANGUAGE:CXX>:-frtti>
     # Use -O2 (prioritize speed)
     $<$<CONFIG:RELEASE>:-O2>
+    # Enable link-time-optimization if building in release
+    $<$<CONFIG:RELEASE>:-flto>
     # Enable separate sections per function/data item
     $<$<CONFIG:RELEASE>:-ffunction-sections>
     $<$<CONFIG:RELEASE>:-fdata-sections>)
