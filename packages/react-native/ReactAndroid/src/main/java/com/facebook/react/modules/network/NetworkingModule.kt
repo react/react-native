@@ -574,8 +574,9 @@ public class NetworkingModule(
           )
           return
         }
-        val fileInputStream = RequestBodyUtil.getFileInputStream(getReactApplicationContext(), uri)
-        if (fileInputStream == null) {
+        requestBody =
+            RequestBodyUtil.create(getReactApplicationContext(), MediaType.parse(contentType), uri)
+        if (requestBody == null) {
           NetworkEventUtil.onRequestError(
               reactApplicationContext,
               requestId,
@@ -585,7 +586,6 @@ public class NetworkingModule(
           )
           return
         }
-        requestBody = RequestBodyUtil.create(MediaType.parse(contentType), fileInputStream)
       }
       data.hasKey(REQUEST_BODY_KEY_FORMDATA) -> {
         if (contentType == null) {
@@ -997,9 +997,9 @@ public class NetworkingModule(
           )
           return null
         }
-        val fileInputStream =
-            RequestBodyUtil.getFileInputStream(getReactApplicationContext(), fileContentUriStr)
-        if (fileInputStream == null) {
+        val fileBody =
+            RequestBodyUtil.create(getReactApplicationContext(), partContentType, fileContentUriStr)
+        if (fileBody == null) {
           NetworkEventUtil.onRequestError(
               reactApplicationContext,
               requestId,
@@ -1009,7 +1009,7 @@ public class NetworkingModule(
           )
           return null
         }
-        multipartBuilder.addPart(headers, RequestBodyUtil.create(partContentType, fileInputStream))
+        multipartBuilder.addPart(headers, fileBody)
       } else {
         NetworkEventUtil.onRequestError(
             reactApplicationContext,
