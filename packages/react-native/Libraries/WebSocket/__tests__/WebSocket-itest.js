@@ -28,8 +28,12 @@ describe('WebSocket', function () {
     // $FlowFixMe[prop-missing]
     const id = socket._socketId;
     const events: Array<string> = [];
-    socket.onopen = () => events.push('open');
-    socket.onclose = () => events.push('close');
+    socket.onopen = () => {
+      events.push('open');
+    };
+    socket.onclose = () => {
+      events.push('close');
+    };
 
     socket.close();
     DeviceEventEmitter.emit('websocketOpen', {id, protocol: ''});
