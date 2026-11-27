@@ -1,0 +1,53 @@
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import org.gradle.api.GradleException
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+
+// Keep the normal build on the version in the catalog. This init script is only
+// used by the compatibility job, so its compile and test classpaths use OkHttp 3.
+// This catches new OkHttp 4-only calls before they need reverting (e.g. #60318).
+gradle.beforeProject { project ->
+  if (project.path != ':packages:react-native:ReactAndroid') {
+    return
+  }
+
+  def okhttpVersion = '3.14.9'
+  project.configurations.configureEach { configuration ->
+    configuration.resolutionStrategy.eachDependency { details ->
+      if (details.requested.group == 'com.squareup.okhttp3') {
+        details.useVersion(okhttpVersion)
+        details.because('Check ReactAndroid source compatibility with OkHttp 3')
+      }
+    }
+  }
+
+  project.plugins.withId('com.android.library') {
+    project.tasks.register('verifyOkHttp3Compatibility') { task ->
+      task.group = 'verification'
+      task.description = 'Compiles and tests ReactAndroid against OkHttp 3.14.9.'
+      task.dependsOn('testDebugUnitTest')
+      task.doLast {
+        [
+          'debugCompileClasspath',
+          'debugRuntimeClasspath',
+          'debugUnitTestCompileClasspath',
+          'debugUnitTestRuntimeClasspath',
+        ].each { name ->
+          def configuration = project.configurations.getByName(name)
+          def modules = configuration.incoming.resolutionResult.allComponents
+              .collect { it.id }
+              .findAll { it instanceof ModuleComponentIdentifier && it.group == 'com.squareup.okhttp3' }
+          if (modules.isEmpty() || modules.any { it.version != okhttpVersion }) {
+            throw new GradleException("Expected OkHttp ${okhttpVersion} on ${project.path}:${name}, found: ${modules}")
+          }
+          project.logger.lifecycle("Verified ${project.path}:${name}: ${modules}")
+        }
+      }
+    }
+  }
+}

@@ -399,6 +399,41 @@ jobs:
           release-type: dry-run
           gradle-cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
 
+  test_android_okhttp3:
+    runs-on: 8-core-ubuntu
+    needs: check_code_changes
+    if: |
+      needs.check_code_changes.outputs.any_code_change == 'true' &&
+      needs.check_code_changes.outputs.should_test_android == 'true'
+    container:
+      image: reactnativecommunity/react-native-android:latest
+      env:
+        LC_ALL: C.UTF8
+        TERM: 'dumb'
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup node.js
+        uses: ./.github/actions/setup-node
+      - name: Install node dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Setup gradle
+        uses: ./.github/actions/setup-gradle
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
+      - name: Compile and test ReactAndroid with OkHttp 3.14.9
+        run: |
+          ./gradlew --init-script .github/workflow-scripts/okhttp3-compat.gradle \
+            :packages:react-native:ReactAndroid:verifyOkHttp3Compatibility
+      - name: Upload test results
+        if: ${{ always() }}
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: android-okhttp3-results
+          path: packages/react-native/ReactAndroid/build/reports/tests/testDebugUnitTest/
+          if-no-files-found: ignore
+
   test_e2e_android_rntester:
     needs: build_android
     if: ${{ needs.build_android.result == 'success' }}
