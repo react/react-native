@@ -15,6 +15,7 @@ import android.graphics.Rect
 import android.os.Build
 import android.text.Layout
 import android.text.Spanned
+import android.text.TextUtils
 import android.text.style.ClickableSpan
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -75,6 +76,10 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
         }
 
         hasClickableSpansCache = null
+        if (!TextUtils.equals(field?.sourceText, effectiveValue?.sourceText)) {
+          (ViewCompat.getAccessibilityDelegate(this) as? ReactTextViewAccessibilityDelegate)
+              ?.resetTextTraversal()
+        }
 
         field = effectiveValue
         invalidate()
@@ -111,8 +116,6 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     lastFrameTimeNanos = 0L
     preparedLayout = null
     hasClickableSpansCache = null
-    (ViewCompat.getAccessibilityDelegate(this) as? ReactTextViewAccessibilityDelegate)
-        ?.resetTextTraversal()
   }
 
   override fun onVisibilityChanged(changedView: View, visibility: Int) {

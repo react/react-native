@@ -11,7 +11,6 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.text.Layout
 import android.text.Spanned
-import android.text.TextUtils
 import android.text.style.ClickableSpan
 import android.view.View
 import android.view.accessibility.AccessibilityEvent
@@ -32,7 +31,6 @@ internal class ReactTextViewAccessibilityDelegate(
     originalImportantForAccessibility: Int,
 ) : ReactAccessibilityDelegate(view, originalFocus, originalImportantForAccessibility) {
   private var accessibilityLinks: AccessibilityLinks? = null
-  private var traversedText: String? = null
   private var textCursor = -1
   private var breaks: BreakIterator? = null
   private var breaksGranularity = 0
@@ -256,18 +254,12 @@ internal class ReactTextViewAccessibilityDelegate(
   }
 
   internal fun resetTextTraversal() {
-    traversedText = null
     textCursor = -1
     breaks = null
   }
 
   private fun traverseText(host: PreparedLayoutTextView, action: Int, granularity: Int): Boolean {
     val text = host.text ?: return false
-    if (!TextUtils.equals(text, traversedText)) {
-      resetTextTraversal()
-      traversedText = text.toString()
-    }
-    val string = traversedText ?: return false
     val locale = host.resources.configuration.locales[0]
     val breaks =
         this.breaks?.takeIf { breaksGranularity == granularity }
@@ -278,12 +270,12 @@ internal class ReactTextViewAccessibilityDelegate(
                   BreakIterator.getWordInstance(locale)
               else -> return false
             }.also {
-              it.setText(string)
+              it.setText(text.toString())
               this.breaks = it
               breaksGranularity = granularity
             }
     val forward = action == AccessibilityNodeInfoCompat.ACTION_NEXT_AT_MOVEMENT_GRANULARITY
-    var from = if (textCursor >= 0) textCursor else if (forward) 0 else string.length
+    var from = if (textCursor >= 0) textCursor else if (forward) 0 else text.length
     while (true) {
       val to = if (forward) breaks.following(from) else breaks.preceding(from)
       if (to == BreakIterator.DONE) {
