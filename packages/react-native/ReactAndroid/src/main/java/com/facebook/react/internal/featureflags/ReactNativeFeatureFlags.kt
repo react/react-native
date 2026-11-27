@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0128ee1e6f9a35114e76a548f1ccc8ab>>
+ * @generated SignedSource<<cc68e7adf1ed7bb1ac93c652d3cd4477>>
  */
 
 /**
@@ -89,12 +89,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun disableMountItemReorderingAndroid(): Boolean = accessor.disableMountItemReorderingAndroid()
-
-  /**
-   * Force disable subview clipping for ReactViewGroup on Android
-   */
-  @JvmStatic
-  public fun disableSubviewClippingAndroid(): Boolean = accessor.disableSubviewClippingAndroid()
 
   /**
    * Turns off the global measurement cache used by TextLayoutManager on Android.

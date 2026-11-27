@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8606a8e4878360df1538b4218534377a>>
+ * @generated SignedSource<<e6d19d43db273fcff2c2729ee18806d4>>
  */
 
 /**
@@ -47,8 +47,6 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun disableImageViewPreallocationAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun disableMountItemReorderingAndroid(): Boolean
-
-  @DoNotStrip @JvmStatic public external fun disableSubviewClippingAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun disableTextLayoutManagerCacheAndroid(): Boolean
 

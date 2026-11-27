@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<59361ec9827f932f3f0ff8400d262580>>
+ * @generated SignedSource<<0f31187b4caa1bb444fed05d268eb06d>>
  */
 
 /**
@@ -90,11 +90,6 @@ class ReactNativeFeatureFlags {
    * Prevent FabricMountingManager from reordering mountItems, which may lead to invalid state on the UI thread
    */
   RN_EXPORT static bool disableMountItemReorderingAndroid();
-
-  /**
-   * Force disable subview clipping for ReactViewGroup on Android
-   */
-  RN_EXPORT static bool disableSubviewClippingAndroid();
 
   /**
    * Turns off the global measurement cache used by TextLayoutManager on Android.

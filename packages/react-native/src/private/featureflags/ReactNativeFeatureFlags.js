@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<22b28ed43914155e9274821135c34ccb>>
+ * @generated SignedSource<<fa8df32a9dd652de3d2a069c37727650>>
  * @flow strict
  * @noformat
  */
@@ -58,7 +58,6 @@ export type ReactNativeFeatureFlags = Readonly<{
   disableIdleMountItemFrameCallbackRearmAndroid: Getter<boolean>,
   disableImageViewPreallocationAndroid: Getter<boolean>,
   disableMountItemReorderingAndroid: Getter<boolean>,
-  disableSubviewClippingAndroid: Getter<boolean>,
   disableTextLayoutManagerCacheAndroid: Getter<boolean>,
   disableViewPreallocationAndroid: Getter<boolean>,
   enableAccessibilityOrder: Getter<boolean>,
@@ -260,10 +259,6 @@ export const disableImageViewPreallocationAndroid: Getter<boolean> = createNativ
  * Prevent FabricMountingManager from reordering mountItems, which may lead to invalid state on the UI thread
  */
 export const disableMountItemReorderingAndroid: Getter<boolean> = createNativeFlagGetter('disableMountItemReorderingAndroid', false);
-/**
- * Force disable subview clipping for ReactViewGroup on Android
- */
-export const disableSubviewClippingAndroid: Getter<boolean> = createNativeFlagGetter('disableSubviewClippingAndroid', false);
 /**
  * Turns off the global measurement cache used by TextLayoutManager on Android.
  */

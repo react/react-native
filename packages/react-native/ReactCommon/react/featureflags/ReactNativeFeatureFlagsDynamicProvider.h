@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f06aa9c4b4027083a00720ea796a5d43>>
+ * @generated SignedSource<<ab14241623537198e195a1c462edf7d1>>
  */
 
 /**
@@ -135,15 +135,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::disableMountItemReorderingAndroid();
-  }
-
-  bool disableSubviewClippingAndroid() override {
-    auto value = values_["disableSubviewClippingAndroid"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::disableSubviewClippingAndroid();
   }
 
   bool disableTextLayoutManagerCacheAndroid() override {

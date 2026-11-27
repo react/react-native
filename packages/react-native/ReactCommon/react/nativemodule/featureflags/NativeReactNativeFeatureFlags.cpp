@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ba133ff3d53077a74e57be7f3b53ddd6>>
+ * @generated SignedSource<<c888f94a7886be688d6452d10651b889>>
  */
 
 /**
@@ -92,11 +92,6 @@ bool NativeReactNativeFeatureFlags::disableImageViewPreallocationAndroid(
 bool NativeReactNativeFeatureFlags::disableMountItemReorderingAndroid(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::disableMountItemReorderingAndroid();
-}
-
-bool NativeReactNativeFeatureFlags::disableSubviewClippingAndroid(
-    jsi::Runtime& /*runtime*/) {
-  return ReactNativeFeatureFlags::disableSubviewClippingAndroid();
 }
 
 bool NativeReactNativeFeatureFlags::disableTextLayoutManagerCacheAndroid(
