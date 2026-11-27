@@ -7,8 +7,11 @@
 
 package com.facebook.react.views.image
 
+import android.app.Activity
 import android.graphics.Color
 import android.util.DisplayMetrics
+import android.view.View
+import android.widget.LinearLayout
 import com.facebook.common.logging.FLog
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilder
@@ -49,6 +52,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -98,6 +102,44 @@ class ReactImagePropertyTest {
     val view = viewManager.createViewInstance(themeContext)
     viewManager.setAccessible(view, true)
     assertThat(view.isFocusable).isTrue()
+  }
+
+  @Test
+  fun testFocusableFalseKeepsAccessibleImageOutOfKeyboardFocus() {
+    val viewManager = ReactImageManager()
+    val view = viewManager.createViewInstance(themeContext)
+    viewManager.updateProperties(view, buildStyles("accessible", true, "focusable", false))
+
+    val focusables = ArrayList<View>()
+    view.addFocusables(focusables, View.FOCUS_FORWARD, View.FOCUSABLES_ALL)
+    assertThat(focusables).isEmpty()
+    assertThat(view.requestFocus(View.FOCUS_DOWN, null)).isFalse()
+    assertThat(view.isFocusable).isTrue()
+
+    viewManager.updateProperties(view, buildStyles("focusable", true))
+    view.addFocusables(focusables, View.FOCUS_FORWARD, View.FOCUSABLES_ALL)
+    assertThat(focusables).containsExactly(view)
+  }
+
+  @Test
+  fun testFocusableFalseImageHandsFocusToNextView() {
+    val viewManager = ReactImageManager()
+    val image = viewManager.createViewInstance(themeContext)
+    viewManager.updateProperties(image, buildStyles("accessible", true, "focusable", false))
+    val next = View(themeContext).apply { isFocusable = true }
+    val root = LinearLayout(themeContext).apply { orientation = LinearLayout.VERTICAL }
+    root.addView(image, LinearLayout.LayoutParams(50, 50))
+    root.addView(next, LinearLayout.LayoutParams(50, 50))
+    Robolectric.buildActivity(Activity::class.java).setup().get().setContentView(root)
+    root.measure(
+        View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY),
+        View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY),
+    )
+    root.layout(0, 0, 100, 100)
+
+    assertThat(image.requestFocus(View.FOCUS_DOWN, null)).isTrue()
+    assertThat(next.isFocused).isTrue()
+    assertThat(image.isFocused).isFalse()
   }
 
   @Test
