@@ -22,6 +22,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 
+@UntrackedTask(because = "Gradle can't replicate Metro's cache invalidation")
 abstract class BundleHermesCTask : DefaultTask() {
 
   init {
