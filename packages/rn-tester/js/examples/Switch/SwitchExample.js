@@ -267,6 +267,26 @@ class ContainerBackgroundColorStyleExample extends React.Component<
   }
 }
 
+function ThumbColorOnMountExample() {
+  return (
+    <View>
+      <Switch
+        testID="thumb-color-initial-on"
+        style={{marginBottom: 10}}
+        thumbColor="#000000"
+        trackColor={{true: '#ffffff'}}
+        value={true}
+      />
+      <Switch
+        testID="thumb-color-initial-off"
+        thumbColor="#000000"
+        trackColor={{true: '#ffffff'}}
+        value={false}
+      />
+    </View>
+  );
+}
+
 function TransparentExample() {
   return (
     <View>
@@ -315,6 +335,13 @@ exports.examples = [
     name: 'custom-colors',
     render(): React.MixedElement {
       return <ColorSwitchExample />;
+    },
+  },
+  {
+    title: 'Custom thumb colors are drawn on mount',
+    name: 'thumb-color-on-mount',
+    render(): React.MixedElement {
+      return <ThumbColorOnMountExample />;
     },
   },
   {

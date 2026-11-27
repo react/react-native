@@ -92,3 +92,38 @@ appId: ${APP_ID}
     path: ${VISUAL_OUTPUT_DIR}/switch/custom-colors/toggled
     cropOn:
       id: 'example-container'
+- runFlow:
+    file: ../helpers/open-example.yml
+    env:
+      EXAMPLE_URL: rntester://example/SwitchExample/thumb-color-on-mount
+- extendedWaitUntil:
+    visible:
+      id: 'thumb-color-initial-on'
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: 'thumb-color-initial-off'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot:
+    path: ${VISUAL_OUTPUT_DIR}/switch/thumb-color-on-mount/default
+    cropOn:
+      id: 'example-container'
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - pressKey: Home
+      - launchApp:
+          stopApp: false
+      - extendedWaitUntil:
+          visible:
+            id: 'thumb-color-initial-on'
+          timeout: 15000
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - takeScreenshot:
+          path: ${VISUAL_OUTPUT_DIR}/switch/thumb-color-on-mount/foregrounded
+          cropOn:
+            id: 'example-container'
