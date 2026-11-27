@@ -118,7 +118,7 @@ internal object FilterHelper {
   // https://www.w3.org/TR/filter-effects-1/#blurEquivalent
   fun createBlurEffect(sigma: Float, chainedEffects: RenderEffect? = null): RenderEffect? {
     if (sigma <= 0.5) {
-      return null
+      return chainedEffects
     }
 
     val radius: Float = sigmaToRadius(sigma)
