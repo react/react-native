@@ -174,11 +174,18 @@ public class TextAttributeProps private constructor() {
 
   public var letterSpacing: Float
     get() {
+      if (letterSpacingInput.isNaN()) {
+        return Float.NaN
+      }
+      // A font size of 0 or less (e.g. computed from a width that is still 0) has no em to convert
+      // the spacing to, so the text is laid out without letter spacing.
+      if (fontSize <= 0) {
+        return 0f
+      }
       val letterSpacingPixels =
           if (allowFontScaling) toPixelFromSP(letterSpacingInput, maxFontSizeMultiplier)
           else toPixelFromDIP(letterSpacingInput)
 
-      require(fontSize > 0) { "FontSize should be a positive value. Current value: $fontSize" }
       // `letterSpacingPixels` and `fontSize` are both in pixels,
       // yielding an accurate em value.
       return letterSpacingPixels / fontSize
