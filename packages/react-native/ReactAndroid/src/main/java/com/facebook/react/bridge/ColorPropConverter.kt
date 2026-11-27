@@ -23,6 +23,7 @@ public object ColorPropConverter {
   private fun supportWideGamut(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
 
   private const val JSON_KEY = "resource_paths"
+  private const val FALLBACK_KEY = "fallback"
   private const val PREFIX_RESOURCE = "@"
   private const val PREFIX_ATTR = "?"
   private const val PACKAGE_DELIMITER = ":"
@@ -65,15 +66,18 @@ public object ColorPropConverter {
         }
       }
 
+      val fallback = resolveFallback(value)
+      if (fallback != null) {
+        return fallback
+      }
+
       val attemptedPaths = (0 until resourcePaths.size()).map { resourcePaths.getString(it) }
       FLog.w(
           ReactConstants.TAG,
           "ColorValue: Failed to resolve resource paths: ${attemptedPaths.joinToString(", ")}",
       )
 
-      throw JSApplicationCausedNativeException(
-          "ColorValue: None of the paths in the `$JSON_KEY` array resolved to a color resource.",
-      )
+      return Color.TRANSPARENT
     }
 
     throw JSApplicationCausedNativeException("ColorValue: the value must be a number or Object.")
@@ -121,11 +125,20 @@ public object ColorPropConverter {
         }
       }
 
+      val fallback = resolveFallback(value)
+      if (supportWideGamut() && fallback != null) {
+        return Color.valueOf(fallback)
+      }
+
       val attemptedPaths = (0 until resourcePaths.size()).map { resourcePaths.getString(it) }
       FLog.w(
           ReactConstants.TAG,
           "ColorValue: Failed to resolve resource paths: ${attemptedPaths.joinToString(", ")}",
       )
+
+      if (supportWideGamut()) {
+        return Color.valueOf(Color.TRANSPARENT)
+      }
 
       throw JSApplicationCausedNativeException(
           "ColorValue: None of the paths in the `$JSON_KEY` array resolved to a color resource.",
@@ -160,6 +173,14 @@ public object ColorPropConverter {
       FLog.w(ReactConstants.TAG, e, "Error converting ColorValue")
       defaultInt
     }
+  }
+
+  private fun resolveFallback(value: ReadableMap): Int? {
+    if (!value.hasKey(FALLBACK_KEY)) {
+      return null
+    }
+    val fallback = value.getString(FALLBACK_KEY) ?: return null
+    return RawColorParser.nativeParse(fallback)
   }
 
   @JvmStatic
