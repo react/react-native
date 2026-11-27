@@ -156,7 +156,7 @@ Scheduler::Scheduler(
       std::weak_ptr<const ComponentDescriptorRegistry>(
           componentDescriptorRegistry_));
 
-  delegate_ = delegate;
+  setDelegate(delegate);
   commitHooks_ = schedulerToolbox.commitHooks;
 
   // Layout events (`onLayout`) are emitted as a standalone consumer of the
@@ -278,6 +278,10 @@ Scheduler::findComponentDescriptorByHandle_DO_NOT_USE_THIS_IS_BROKEN(
 #pragma mark - Delegate
 
 void Scheduler::setDelegate(SchedulerDelegate* delegate) {
+  {
+    std::lock_guard lock(delegateBox_->mutex);
+    delegateBox_->delegate = delegate;
+  }
   delegate_ = delegate;
 }
 
@@ -311,9 +315,13 @@ void Scheduler::uiManagerDidFinishTransaction(
 
       runtimeScheduler_->scheduleRenderingUpdate(
           surfaceId,
-          [delegate = delegate_,
+          [box = delegateBox_,
+           delegate = delegate_,
            mountingCoordinator = std::move(mountingCoordinator)]() {
-            delegate->schedulerShouldRenderTransactions(mountingCoordinator);
+            std::lock_guard lock(box->mutex);
+            if (box->delegate == delegate) {
+              delegate->schedulerShouldRenderTransactions(mountingCoordinator);
+            }
           });
     } else {
       delegate_->schedulerShouldRenderTransactions(mountingCoordinator);
@@ -337,11 +345,16 @@ void Scheduler::uiManagerDidDispatchCommand(
     auto shadowView = ShadowView(*shadowNode);
     runtimeScheduler_->scheduleRenderingUpdate(
         shadowNode->getSurfaceId(),
-        [delegate = delegate_,
+        [box = delegateBox_,
+         delegate = delegate_,
          shadowView = std::move(shadowView),
          commandName,
          args]() {
-          delegate->schedulerDidDispatchCommand(shadowView, commandName, args);
+          std::lock_guard lock(box->mutex);
+          if (box->delegate == delegate) {
+            delegate->schedulerDidDispatchCommand(
+                shadowView, commandName, args);
+          }
         });
   }
 }
@@ -430,7 +443,11 @@ void Scheduler::uiManagerDidFinishReactCommit(const ShadowTree& shadowTree) {
 
   auto surfaceId = shadowTree.getSurfaceId();
   runtimeScheduler_->scheduleRenderingUpdate(
-      surfaceId, [surfaceId, uiManager = uiManager_, delegate = delegate_]() {
+      surfaceId,
+      [surfaceId,
+       uiManager = uiManager_,
+       box = delegateBox_,
+       delegate = delegate_]() {
         bool promoted = false;
 
         uiManager->getShadowTreeRegistry().visit(
@@ -439,7 +456,10 @@ void Scheduler::uiManagerDidFinishReactCommit(const ShadowTree& shadowTree) {
             });
 
         if (promoted) {
-          delegate->schedulerShouldMergeReactRevision(surfaceId);
+          std::lock_guard lock(box->mutex);
+          if (box->delegate == delegate) {
+            delegate->schedulerShouldMergeReactRevision(surfaceId);
+          }
         }
       });
 }
