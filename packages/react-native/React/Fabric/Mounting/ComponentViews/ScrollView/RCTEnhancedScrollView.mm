@@ -36,9 +36,9 @@
     // and keeps it as an opt-in behavior.
     self.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
 
-    // We intentionally force `UIScrollView`s `semanticContentAttribute` to `LTR` here
-    // because this attribute affects a position of vertical scrollbar; we don't want this
-    // scrollbar flip because we also flip it with whole `UIScrollView` flip.
+    // Left-to-right is the default. `semanticContentAttribute` decides on which side the vertical
+    // scroll indicator sits; RCTScrollViewComponentView keeps it left-to-right only while it mirrors
+    // the whole `UIScrollView` (a horizontal view in RTL) and switches it to right-to-left otherwise in RTL.
     self.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
 
     __weak __typeof(self) weakSelf = self;

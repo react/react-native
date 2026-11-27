@@ -16,6 +16,7 @@
 		5C60EB1C226440DB0018C04F /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5C60EB1B226440DB0018C04F /* AppDelegate.mm */; };
 		602160B9478DAFF2BAB56595 /* RCTUtilsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D5D13FB1445C5C19639921CC /* RCTUtilsTests.m */; };
 		79B29C2E2E607A99007612A5 /* SceneDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 79B29C2D2E607A99007612A5 /* SceneDelegate.mm */; };
+		A1B2C3D4E5F60718293A4B5C /* RCTScrollViewComponentViewRTLTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* RCTScrollViewComponentViewRTLTests.mm */; };
 		7F806D4D4D97AD6403558B35 /* RCTStatusBarAppearanceTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 67B0814814F7C07E196BC295 /* RCTStatusBarAppearanceTests.mm */; };
 		A8717727467541429C262C63 /* RCTTimingClockChangeTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = A8717727467541429C262C64 /* RCTTimingClockChangeTests.mm */; };
 		8145AE06241172D900A3F8DA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8145AE05241172D900A3F8DA /* LaunchScreen.storyboard */; };
@@ -89,6 +90,7 @@
 		4C706D402EE4AF9BE838CBA9 /* libPods-RNTester.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		51BC9297B6C3163C14532020 /* Pods-RNTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester.release.xcconfig"; path = "Target Support Files/Pods-RNTester/Pods-RNTester.release.xcconfig"; sourceTree = "<group>"; };
 		5C60EB1B226440DB0018C04F /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = RNTester/AppDelegate.mm; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5D /* RCTScrollViewComponentViewRTLTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTScrollViewComponentViewRTLTests.mm; sourceTree = "<group>"; };
 		67B0814814F7C07E196BC295 /* RCTStatusBarAppearanceTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTStatusBarAppearanceTests.mm; sourceTree = "<group>"; };
 		A8717727467541429C262C64 /* RCTTimingClockChangeTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTTimingClockChangeTests.mm; sourceTree = "<group>"; };
 		79B29C2C2E607A99007612A5 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = RNTester/SceneDelegate.h; sourceTree = "<group>"; };
@@ -319,6 +321,7 @@
 				E7DB20D022B2BAA5005AC45F /* RCTURLUtilsTests.m */,
 				D5D13FB1445C5C19639921CC /* RCTUtilsTests.m */,
 				E7DB20B322B2BAA4005AC45F /* RNTesterUnitTestsBundle.js */,
+				A1B2C3D4E5F60718293A4B5D /* RCTScrollViewComponentViewRTLTests.mm */,
 				67B0814814F7C07E196BC295 /* RCTStatusBarAppearanceTests.mm */,
 				A8717727467541429C262C64 /* RCTTimingClockChangeTests.mm */,
 			);
@@ -639,6 +642,7 @@
 				E7DB20EB22B2BAA6005AC45F /* RCTConvert_YGValueTests.m in Sources */,
 				E7DB20D822B2BAA6005AC45F /* RCTJSONTests.m in Sources */,
 				602160B9478DAFF2BAB56595 /* RCTUtilsTests.m in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* RCTScrollViewComponentViewRTLTests.mm in Sources */,
 				7F806D4D4D97AD6403558B35 /* RCTStatusBarAppearanceTests.mm in Sources */,
 				A8717727467541429C262C63 /* RCTTimingClockChangeTests.mm in Sources */,
 			);
