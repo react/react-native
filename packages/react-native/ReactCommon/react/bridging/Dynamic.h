@@ -11,6 +11,7 @@
 
 #include <folly/dynamic.h>
 #include <jsi/JSIDynamic.h>
+#include <react/bridging/Base.h>
 
 namespace facebook::react {
 

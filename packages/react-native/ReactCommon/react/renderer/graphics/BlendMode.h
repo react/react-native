@@ -10,6 +10,7 @@
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
 #include <optional>
+#include <string>
 #include <string_view>
 
 namespace facebook::react {

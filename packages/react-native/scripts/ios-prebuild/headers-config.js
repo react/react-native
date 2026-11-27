@@ -58,6 +58,7 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
         headerPatterns: ['react/renderer/animated/**/*.h'],
         excludePatterns: ['react/renderer/animated/tests'],
         headerDir: 'react/renderer/animated',
+        preservePaths: ['react/renderer/animated/**/*.h'],
       },
 
       {
@@ -203,6 +204,7 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
         headerPatterns: ['react/renderer/mounting/**/*.h'],
         excludePatterns: ['react/renderer/mounting/tests'],
         headerDir: 'react/renderer/mounting',
+        preservePaths: ['react/renderer/mounting/**/*.h'],
       },
 
       {
@@ -430,6 +432,9 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
           {
             name: 'textinput',
             headerPatterns: ['react/renderer/components/textinput/**/*.h'],
+            excludePatterns: [
+              'react/renderer/components/textinput/platform/android',
+            ],
             headerDir: 'react/renderer/components/textinput',
           },
 
@@ -625,6 +630,14 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
     ],
   },
   'React.podspec': {disabled: true},
+  // Private headers (PrivateGuard.h), included only by .cpp files. Shipping
+  // them would also require the private observers/{intersection,mutation,resize}.
+  'ReactCommon/react/nativemodule/intersectionobserver/React-intersectionobservernativemodule.podspec':
+    {disabled: true},
+  'ReactCommon/react/nativemodule/mutationobserver/React-mutationobservernativemodule.podspec':
+    {disabled: true},
+  'ReactCommon/react/nativemodule/resizeobserver/React-resizeobservernativemodule.podspec':
+    {disabled: true},
   'ReactCommon/react/timing/React-timing.podspec': {
     name: 'React-timing',
     headerPatterns: [],

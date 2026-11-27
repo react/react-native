@@ -10,6 +10,7 @@
 #include <react/cxxstableapi/UmbrellaGuard.h>
 
 #include <react/renderer/core/LayoutPrimitives.h>
+#include <react/renderer/graphics/Size.h>
 
 namespace facebook::react {
 
