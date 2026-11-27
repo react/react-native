@@ -20,6 +20,9 @@ const AccessibilityInfo = {
   isAccessibilityServiceEnabled: jest.fn(() =>
     Promise.resolve(false),
   ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
+  getEnabledAccessibilityServices: jest.fn(() =>
+    Promise.resolve([]),
+  ) as JestMockFn<$FlowFixMe, $FlowFixMe>,
   isShowBordersEnabled: jest.fn(() => Promise.resolve(false)) as JestMockFn<
     $FlowFixMe,
     $FlowFixMe,

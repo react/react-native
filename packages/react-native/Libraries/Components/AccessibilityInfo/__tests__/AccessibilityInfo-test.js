@@ -121,6 +121,12 @@ const mockIsInvertColorsEnabled = jest.fn(onSuccess => onSuccess(true));
 const mockIsReduceMotionEnabled = jest.fn(onSuccess => onSuccess(true));
 const mockIsTouchExplorationEnabled = jest.fn(onSuccess => onSuccess(true));
 const mockIsAccessibilityServiceEnabled = jest.fn(onSuccess => onSuccess(true));
+const ANDROID_ENABLED_ACCESSIBILITY_SERVICES = [
+  'com.google.android.marvin.talkback/.TalkBackService',
+];
+const mockGetEnabledAccessibilityServices = jest.fn(onSuccess =>
+  onSuccess(ANDROID_ENABLED_ACCESSIBILITY_SERVICES),
+);
 const mockGetRecommendedTimeoutMillis = jest.fn((originalTimeout, onSuccess) =>
   onSuccess(ANDROID_RECOMMENDED_TIMEOUT),
 );
@@ -149,6 +155,10 @@ let mockNativeAccessibilityInfoAndroid: {
     [onSuccess: (isAccessibilityServiceEnabled: boolean) => void],
     void,
   > | null,
+  getEnabledAccessibilityServices: JestMockFn<
+    [onSuccess: (enabledAccessibilityServices: Array<string>) => void],
+    void,
+  > | null,
   getRecommendedTimeoutMillis: JestMockFn<
     [originalTimeout: number, onSuccess: (recommendedTimeout: number) => void],
     void,
@@ -160,6 +170,7 @@ let mockNativeAccessibilityInfoAndroid: {
   isReduceMotionEnabled: mockIsReduceMotionEnabled,
   isTouchExplorationEnabled: mockIsTouchExplorationEnabled,
   isAccessibilityServiceEnabled: mockIsAccessibilityServiceEnabled,
+  getEnabledAccessibilityServices: mockGetEnabledAccessibilityServices,
   getRecommendedTimeoutMillis: mockGetRecommendedTimeoutMillis,
 };
 
@@ -553,6 +564,87 @@ describe('AccessibilityInfo', () => {
     });
   });
 
+  describe('getEnabledAccessibilityServices', () => {
+    describe('Android', () => {
+      it('should call getEnabledAccessibilityServices if available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        const enabledAccessibilityServices =
+          await AccessibilityInfo.getEnabledAccessibilityServices();
+
+        expect(mockGetEnabledAccessibilityServices).toHaveBeenCalled();
+        expect(enabledAccessibilityServices).toEqual(
+          ANDROID_ENABLED_ACCESSIBILITY_SERVICES,
+        );
+      });
+
+      it('should throw error if getEnabledAccessibilityServices is not available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        mockNativeAccessibilityInfoAndroid.getEnabledAccessibilityServices =
+          null;
+
+        const result: unknown =
+          await AccessibilityInfo.getEnabledAccessibilityServices().catch(
+            e => e,
+          );
+
+        invariant(
+          result instanceof Error,
+          'Expected getEnabledAccessibilityServices to reject',
+        );
+        expect(result.message).toEqual(
+          'NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices is not available',
+        );
+      });
+
+      it('should throw error if NativeAccessibilityInfoAndroid is not available', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'android';
+
+        const nativeAccessibilityInfoModule = jest.requireMock(
+          '../NativeAccessibilityInfo',
+        );
+        nativeAccessibilityInfoModule.default = null;
+
+        const result: unknown =
+          await AccessibilityInfo.getEnabledAccessibilityServices().catch(
+            e => e,
+          );
+
+        invariant(
+          result instanceof Error,
+          'Expected getEnabledAccessibilityServices to reject',
+        );
+        expect(result.message).toEqual(
+          'NativeAccessibilityInfoAndroid.getEnabledAccessibilityServices is not available',
+        );
+      });
+    });
+
+    describe('iOS', () => {
+      it('should reject because getEnabledAccessibilityServices is only available on Android', async () => {
+        /* $FlowFixMe[incompatible-type] */
+        Platform.OS = 'ios';
+
+        const result: unknown =
+          await AccessibilityInfo.getEnabledAccessibilityServices().catch(
+            e => e,
+          );
+
+        invariant(
+          result instanceof Error,
+          'Expected getEnabledAccessibilityServices to reject',
+        );
+        expect(result.message).toEqual(
+          'getEnabledAccessibilityServices is only available on Android',
+        );
+      });
+    });
+  });
+
   describe('isReduceMotionEnabled', () => {
     describe('Android', () => {
       it('should call isReduceMotionEnabled if available', async () => {
@@ -866,6 +958,7 @@ describe('AccessibilityInfo', () => {
       isReduceMotionEnabled: mockIsReduceMotionEnabled,
       isTouchExplorationEnabled: mockIsTouchExplorationEnabled,
       isAccessibilityServiceEnabled: mockIsAccessibilityServiceEnabled,
+      getEnabledAccessibilityServices: mockGetEnabledAccessibilityServices,
       getRecommendedTimeoutMillis: mockGetRecommendedTimeoutMillis,
     };
     jest.requireMock('../NativeAccessibilityInfo').default =
