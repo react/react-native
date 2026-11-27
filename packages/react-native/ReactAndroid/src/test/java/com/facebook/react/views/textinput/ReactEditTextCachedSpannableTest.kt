@@ -9,7 +9,9 @@ package com.facebook.react.views.textinput
 
 import android.provider.Settings
 import android.text.Spannable
+import android.graphics.text.LineBreakConfig
 import android.text.method.PasswordTransformationMethod
+import android.text.style.LineBreakConfigSpan
 import android.util.DisplayMetrics
 import androidx.core.content.res.ResourcesCompat.ID_NULL
 import com.facebook.react.bridge.ReactTestHelper.createTestReactApplicationContext
@@ -61,6 +63,30 @@ class ReactEditTextCachedSpannableTest {
         .contains(PasswordTransformationMethod::class.java)
     assertThat(spanOwners(getCachedSpannable(view.id)))
         .doesNotContain(PasswordTransformationMethod::class.java)
+  }
+
+  @Test
+  @Config(sdk = [35])
+  fun testCachedSpannableKeepsLineBreakConfigSpan() {
+    Settings.System.putInt(
+        RuntimeEnvironment.getApplication().contentResolver,
+        Settings.System.TEXT_SHOW_PASSWORD,
+        1,
+    )
+    view.transformationMethod = PasswordTransformationMethod.getInstance()
+
+    view.text?.append("a")
+    view.text?.setSpan(
+        LineBreakConfigSpan(LineBreakConfig.Builder().build()),
+        0,
+        1,
+        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+    )
+    view.text?.append("b")
+
+    val cached = getCachedSpannable(view.id)
+    assertThat(cached.getSpans(0, cached.length, LineBreakConfigSpan::class.java)).hasSize(1)
+    assertThat(spanOwners(cached)).doesNotContain(PasswordTransformationMethod::class.java)
   }
 
   private fun spanOwners(text: Spannable): List<Class<*>?> =

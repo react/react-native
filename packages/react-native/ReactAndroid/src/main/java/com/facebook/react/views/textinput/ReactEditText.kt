@@ -33,6 +33,7 @@ import android.text.TextWatcher
 import android.text.method.KeyListener
 import android.text.method.QwertyKeyListener
 import android.text.style.CharacterStyle
+import android.text.style.LineBreakConfigSpan
 import android.text.style.ParagraphStyle
 import android.util.TypedValue
 import android.view.ActionMode
@@ -1246,7 +1247,10 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
       }
       // Drop editor spans like PasswordTransformationMethod.Visible, which hold on to this view
       stripSpansOfKind(sb, Any::class.java) { span ->
-        span !is CharacterStyle && span !is ParagraphStyle && span !is ReactSpan
+        span !is CharacterStyle &&
+            span !is ParagraphStyle &&
+            span !is ReactSpan &&
+            !isLineBreakConfigSpan(span)
       }
     }
 
@@ -1425,6 +1429,9 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     public val DEBUG_MODE: Boolean = ReactBuildConfig.DEBUG && false
 
     private val keyListener: KeyListener = QwertyKeyListener.getInstanceForFullKeyboard()
+
+    private fun isLineBreakConfigSpan(span: Any): Boolean =
+        Build.VERSION.SDK_INT >= 35 && span is LineBreakConfigSpan
 
     private fun sameTextForSpan(
         oldText: Editable,
