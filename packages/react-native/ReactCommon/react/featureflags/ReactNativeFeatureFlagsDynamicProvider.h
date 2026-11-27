@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f06aa9c4b4027083a00720ea796a5d43>>
+ * @generated SignedSource<<bb0753e9d6e3f2913f254e423cda9fac>>
  */
 
 /**
@@ -513,6 +513,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableResizeObserverByDefault();
+  }
+
+  bool enableSetNativePropsBatching() override {
+    auto value = values_["enableSetNativePropsBatching"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableSetNativePropsBatching();
   }
 
   bool enableSwiftUIBasedFilters() override {

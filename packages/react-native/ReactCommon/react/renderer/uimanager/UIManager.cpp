@@ -46,6 +46,49 @@ namespace facebook::react {
 // used by getNativeState method)
 ShadowNodeListWrapper::~ShadowNodeListWrapper() = default;
 
+namespace {
+
+void updateNativeProps(
+    const ShadowNodeFamily& family,
+    const folly::dynamic& rawProps) {
+  std::lock_guard<std::mutex> lock(family.nativePropsMutex);
+  if (family.nativeProps_DEPRECATED) {
+    // Values in `rawProps` patch (take precedence over)
+    // `nativeProps_DEPRECATED`. For example, if both
+    // `nativeProps_DEPRECATED` and `rawProps` contain key 'A'. Value from
+    // `rawProps` overrides what was previously in `nativeProps_DEPRECATED`.
+    family.nativeProps_DEPRECATED =
+        std::make_unique<ShadowNodeFamily::NativeProps_DEPRECATED>(
+            mergeDynamicProps(
+                family.nativeProps_DEPRECATED->props,
+                rawProps,
+                NullValueStrategy::Override));
+  } else {
+    family.nativeProps_DEPRECATED =
+        std::make_unique<ShadowNodeFamily::NativeProps_DEPRECATED>(rawProps);
+  }
+}
+
+} // namespace
+
+// Commits the nodes queued by `setNativeProps` before returning a revision, so
+// JS reads see every earlier call.
+class UIManager::PendingNativePropsRevisionProvider final
+    : public ShadowTreeRevisionProvider {
+ public:
+  explicit PendingNativePropsRevisionProvider(const UIManager& uiManager)
+      : uiManager_(uiManager) {}
+
+  RootShadowNode::Shared getCurrentRevision(SurfaceId surfaceId) override {
+    uiManager_.commitPendingNativeProps();
+    return uiManager_.lazyShadowTreeRevisionConsistencyManager_
+        ->getCurrentRevision(surfaceId);
+  }
+
+ private:
+  const UIManager& uiManager_;
+};
+
 UIManager::UIManager(
     const RuntimeExecutor& runtimeExecutor,
     std::shared_ptr<const ContextContainer> contextContainer)
@@ -55,7 +98,9 @@ UIManager::UIManager(
       leakChecker_(constructLeakCheckerIfNeeded(runtimeExecutor)),
       lazyShadowTreeRevisionConsistencyManager_(
           std::make_unique<LazyShadowTreeRevisionConsistencyManager>(
-              shadowTreeRegistry_)) {}
+              shadowTreeRegistry_)),
+      pendingNativePropsRevisionProvider_(
+          std::make_unique<PendingNativePropsRevisionProvider>(*this)) {}
 
 UIManager::~UIManager() {
   LOG(WARNING) << "UIManager::~UIManager() was called (address: " << this
@@ -361,7 +406,15 @@ UIManager::getShadowTreeRevisionConsistencyManager() {
   return lazyShadowTreeRevisionConsistencyManager_.get();
 }
 
+bool UIManager::isSetNativePropsBatchingEnabled() {
+  return ReactNativeFeatureFlags::enableSetNativePropsBatching() &&
+      ReactNativeFeatureFlags::enableBridgelessArchitecture();
+}
+
 ShadowTreeRevisionProvider* UIManager::getShadowTreeRevisionProvider() {
+  if (isSetNativePropsBatchingEnabled()) {
+    return pendingNativePropsRevisionProvider_.get();
+  }
   return lazyShadowTreeRevisionConsistencyManager_.get();
 }
 
@@ -464,25 +517,7 @@ void UIManager::setNativeProps_DEPRECATED(
     const std::shared_ptr<const ShadowNode>& shadowNode,
     RawProps rawProps) const {
   auto& family = shadowNode->getFamily();
-  {
-    std::lock_guard<std::mutex> lock(family.nativePropsMutex);
-    if (family.nativeProps_DEPRECATED) {
-      // Values in `rawProps` patch (take precedence over)
-      // `nativeProps_DEPRECATED`. For example, if both
-      // `nativeProps_DEPRECATED` and `rawProps` contain key 'A'. Value from
-      // `rawProps` overrides what was previously in `nativeProps_DEPRECATED`.
-      family.nativeProps_DEPRECATED =
-          std::make_unique<ShadowNodeFamily::NativeProps_DEPRECATED>(
-              mergeDynamicProps(
-                  family.nativeProps_DEPRECATED->props,
-                  (folly::dynamic)rawProps,
-                  NullValueStrategy::Override));
-    } else {
-      family.nativeProps_DEPRECATED =
-          std::make_unique<ShadowNodeFamily::NativeProps_DEPRECATED>(
-              (folly::dynamic)rawProps);
-    }
-  }
+  updateNativeProps(family, (folly::dynamic)rawProps);
 
   shadowTreeRegistry_.visit(
       family.getSurfaceId(), [&](const ShadowTree& shadowTree) {
@@ -512,6 +547,118 @@ void UIManager::setNativeProps_DEPRECATED(
             },
             {/* default commit options */});
       });
+}
+
+void UIManager::setNativeProps_DEPRECATED(
+    jsi::Runtime& runtime,
+    const std::shared_ptr<const ShadowNode>& shadowNode,
+    RawProps rawProps) const {
+  if (!isSetNativePropsBatchingEnabled()) {
+    setNativeProps_DEPRECATED(shadowNode, std::move(rawProps));
+    return;
+  }
+
+  auto& family = shadowNode->getFamily();
+  auto props = (folly::dynamic)rawProps;
+  updateNativeProps(family, props);
+
+  bool isFirstInBatch = false;
+  {
+    std::lock_guard<std::mutex> lock(pendingNativePropsMutex_);
+    isFirstInBatch = pendingNativeProps_.empty();
+    auto& pendingNames = pendingNativeProps_[family.getSurfaceId()]
+                                            [shadowNode->getFamilyShared()];
+    for (const auto& name : props.keys()) {
+      pendingNames.insert(name.getString());
+    }
+  }
+  if (isFirstInBatch) {
+    // Committing in a microtask keeps these calls ahead of the observers and
+    // mount that follow them in the task.
+    runtime.queueMicrotask(
+        jsi::Function::createFromHostFunction(
+            runtime,
+            jsi::PropNameID::forAscii(runtime, "commitPendingNativeProps"),
+            0,
+            [this](
+                jsi::Runtime&, const jsi::Value&, const jsi::Value*, size_t) {
+              commitPendingNativeProps();
+              return jsi::Value::undefined();
+            }));
+  }
+}
+
+void UIManager::commitPendingNativeProps() const {
+  decltype(pendingNativeProps_) pendingNativeProps;
+  {
+    std::lock_guard<std::mutex> lock(pendingNativePropsMutex_);
+    pendingNativeProps.swap(pendingNativeProps_);
+  }
+
+  for (const auto& surfacePendingNames : pendingNativeProps) {
+    // Not a structured binding, which lambdas can't capture before Clang 16.
+    auto surfaceId = surfacePendingNames.first;
+    const auto& pendingNames = surfacePendingNames.second;
+    TraceSection s(
+        "UIManager::commitPendingNativeProps",
+        "surfaceId",
+        surfaceId,
+        "nodes",
+        pendingNames.size());
+
+    std::unordered_set<std::shared_ptr<const ShadowNodeFamily>> families;
+    for (const auto& [family, names] : pendingNames) {
+      families.insert(family);
+    }
+
+    // The node's props with the props set in this batch applied, taking their
+    // current values, which React may have updated since. Other nodes get
+    // placeholder props, as in the unbatched path.
+    PropsParserContext propsParserContext{surfaceId, *contextContainer_};
+    auto propsWithPendingProps =
+        [&](const ShadowNode& shadowNode) -> Props::Shared {
+      auto it = pendingNames.find(shadowNode.getFamilyShared());
+      if (it == pendingNames.end()) {
+        return ShadowNodeFragment::propsPlaceholder();
+      }
+      folly::dynamic currentProps = folly::dynamic::object;
+      {
+        const auto& family = *it->first;
+        std::lock_guard<std::mutex> lock(family.nativePropsMutex);
+        for (const auto& name : it->second) {
+          currentProps[name] = family.nativeProps_DEPRECATED->props.at(name);
+        }
+      }
+      return shadowNode.getComponentDescriptor().cloneProps(
+          propsParserContext,
+          shadowNode.getProps(),
+          RawProps(std::move(currentProps)));
+    };
+
+    shadowTreeRegistry_.visit(surfaceId, [&](const ShadowTree& shadowTree) {
+      // With commit branching, a React commit earlier in the task replaces the
+      // main branch when it's merged, so these go on top of it instead.
+      ShadowTree::CommitOptions commitOptions;
+      if (shadowTree.getCurrentReactRevision().has_value()) {
+        commitOptions = {
+            .mountSynchronously = false,
+            .source = ShadowTree::CommitSource::React};
+      }
+      shadowTree.commit(
+          [&](const RootShadowNode& oldRootShadowNode) {
+            return std::static_pointer_cast<RootShadowNode>(
+                oldRootShadowNode.cloneMultiple(
+                    families,
+                    [&](const ShadowNode& oldShadowNode,
+                        const ShadowNodeFragment& fragment) {
+                      return oldShadowNode.clone(
+                          {.props = propsWithPendingProps(oldShadowNode),
+                           .children = fragment.children});
+                    }));
+          },
+          commitOptions);
+    });
+  }
 }
 
 void UIManager::sendAccessibilityEvent(

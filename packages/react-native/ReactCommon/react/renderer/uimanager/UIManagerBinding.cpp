@@ -319,6 +319,9 @@ jsi::Value UIManagerBinding::get(
           auto locationY = (Float)arguments[2].getNumber();
           auto onSuccessFunction =
               arguments[3].getObject(runtime).getFunction(runtime);
+          if (UIManager::isSetNativePropsBatchingEnabled()) {
+            uiManager->commitPendingNativeProps();
+          }
           auto targetNode = uiManager->findNodeAtPoint(
               node, Point{.x = locationX, .y = locationY});
 
@@ -547,6 +550,9 @@ jsi::Value UIManagerBinding::get(
             size_t count) -> jsi::Value {
           validateArgumentCount(runtime, methodName, paramCount, count);
 
+          if (UIManager::isSetNativePropsBatchingEnabled()) {
+            uiManager->commitPendingNativeProps();
+          }
           auto layoutMetrics = uiManager->getRelativeLayoutMetrics(
               *Bridging<std::shared_ptr<const ShadowNode>>::fromJs(
                   runtime, arguments[0]),
@@ -604,6 +610,7 @@ jsi::Value UIManagerBinding::get(
           validateArgumentCount(runtime, methodName, paramCount, count);
 
           uiManager->setNativeProps_DEPRECATED(
+              runtime,
               Bridging<std::shared_ptr<const ShadowNode>>::fromJs(
                   runtime, arguments[0]),
               RawProps(runtime, arguments[1]));

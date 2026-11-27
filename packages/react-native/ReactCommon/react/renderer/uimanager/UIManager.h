@@ -28,9 +28,11 @@
 #include <react/renderer/uimanager/primitives.h>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <shared_mutex>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace facebook::react {
@@ -204,6 +206,16 @@ class UIManager final : public ShadowTreeDelegate {
 
   void setNativeProps_DEPRECATED(const std::shared_ptr<const ShadowNode> &shadowNode, RawProps rawProps) const;
 
+  /*
+   * `setNativeProps` called from JS. With `enableSetNativePropsBatching` and
+   * bridgeless, the calls made in a task are committed together, in a
+   * microtask.
+   */
+  void setNativeProps_DEPRECATED(
+      jsi::Runtime &runtime,
+      const std::shared_ptr<const ShadowNode> &shadowNode,
+      RawProps rawProps) const;
+
   void sendAccessibilityEvent(const std::shared_ptr<const ShadowNode> &shadowNode, const std::string &eventType);
 
   /*
@@ -236,6 +248,20 @@ class UIManager final : public ShadowTreeDelegate {
   friend class UIManagerBinding;
   friend class Scheduler;
   friend class SurfaceHandler;
+
+  class PendingNativePropsRevisionProvider;
+
+  /*
+   * Whether `setNativeProps` calls from JS are batched. Batching relies on the
+   * runtime draining microtasks, which it does only when bridgeless.
+   */
+  static bool isSetNativePropsBatchingEnabled();
+
+  /*
+   * Commits the nodes queued by batched `setNativeProps` calls: in a microtask
+   * queued by the first of them, or earlier if JS reads the shadow tree.
+   */
+  void commitPendingNativeProps() const;
 
   /**
    * Configure a LayoutAnimation to happen on the next commit.
@@ -270,6 +296,15 @@ class UIManager final : public ShadowTreeDelegate {
   std::unique_ptr<LeakChecker> leakChecker_;
 
   std::unique_ptr<LazyShadowTreeRevisionConsistencyManager> lazyShadowTreeRevisionConsistencyManager_;
+  std::unique_ptr<PendingNativePropsRevisionProvider> pendingNativePropsRevisionProvider_;
+
+  // The names of the props that batched `setNativeProps` calls set, by surface
+  // and node.
+  mutable std::mutex pendingNativePropsMutex_;
+  mutable std::unordered_map<
+      SurfaceId,
+      std::unordered_map<std::shared_ptr<const ShadowNodeFamily>, std::unordered_set<std::string>>>
+      pendingNativeProps_;
 
   std::shared_ptr<UIManagerAnimationBackend> animationBackend_;
 };

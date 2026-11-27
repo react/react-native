@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ba133ff3d53077a74e57be7f3b53ddd6>>
+ * @generated SignedSource<<10ba079ca6ecdd4686b6b8fc2dbd66ae>>
  */
 
 /**
@@ -302,6 +302,11 @@ bool NativeReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid(
 bool NativeReactNativeFeatureFlags::enableResizeObserverByDefault(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableResizeObserverByDefault();
+}
+
+bool NativeReactNativeFeatureFlags::enableSetNativePropsBatching(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableSetNativePropsBatching();
 }
 
 bool NativeReactNativeFeatureFlags::enableSwiftUIBasedFilters(

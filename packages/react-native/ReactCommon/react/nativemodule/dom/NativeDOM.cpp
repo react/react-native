@@ -484,7 +484,7 @@ void NativeDOM::setNativeProps(
     std::shared_ptr<const ShadowNode> shadowNode,
     jsi::Value updatePayload) {
   getUIManagerFromRuntime(rt).setNativeProps_DEPRECATED(
-      shadowNode, RawProps(rt, updatePayload));
+      rt, shadowNode, RawProps(rt, updatePayload));
 }
 
 } // namespace facebook::react
