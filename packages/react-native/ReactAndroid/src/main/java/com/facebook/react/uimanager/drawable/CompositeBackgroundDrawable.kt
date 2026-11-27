@@ -37,7 +37,7 @@ internal class CompositeBackgroundDrawable(
     val originalBackground: Drawable? = null,
 
     /** Non-inset box shadows */
-    val outerShadows: List<Drawable> = emptyList(),
+    val outerShadows: List<OutsetBoxShadowDrawable> = emptyList(),
 
     /** Background rendering Layer */
     val background: BackgroundDrawable? = null,
@@ -52,7 +52,7 @@ internal class CompositeBackgroundDrawable(
     val feedbackUnderlay: Drawable? = null,
 
     /** Inset box-shadows */
-    val innerShadows: List<Drawable> = emptyList(),
+    val innerShadows: List<InsetBoxShadowDrawable> = emptyList(),
 
     /** Outline */
     val outline: OutlineDrawable? = null,
@@ -118,8 +118,8 @@ internal class CompositeBackgroundDrawable(
   }
 
   fun withNewShadows(
-      outerShadows: List<Drawable>,
-      innerShadows: List<Drawable>,
+      outerShadows: List<OutsetBoxShadowDrawable>,
+      innerShadows: List<InsetBoxShadowDrawable>,
   ): CompositeBackgroundDrawable {
     return CompositeBackgroundDrawable(
         context,
