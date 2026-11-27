@@ -19,6 +19,15 @@ void RCTAccessibilityManagerSetIsVoiceOverEnabled(
     RCTAccessibilityManager *accessibilityManager,
     BOOL isVoiceOverEnabled);
 
+// Returns whether Switch Control is running.
+typedef BOOL (^RCTSwitchControlReader)(void);
+
+// Replaces how this module reads whether Switch Control is running, for
+// getRecommendedTimeoutMillis. Pass nil to read the system again.
+void RCTAccessibilityManagerSetSwitchControlReader(
+    RCTAccessibilityManager *accessibilityManager,
+    RCTSwitchControlReader _Nullable switchControlReader);
+
 RCT_EXTERN_C_END
 
 NS_ASSUME_NONNULL_END
