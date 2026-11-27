@@ -47,6 +47,7 @@ struct ShadowViewMutation final {
    * Creates and returns an `Insert` mutation.
    * @deprecated Pass parentTag instead of parentShadowView.
    */
+  [[deprecated("Pass parentTag instead of parentShadowView.")]]
   static ShadowViewMutation InsertMutation(const ShadowView &parentShadowView, ShadowView childShadowView, int index)
   {
     return InsertMutation(parentShadowView.tag, childShadowView, index);
@@ -61,6 +62,7 @@ struct ShadowViewMutation final {
    * Creates and returns a `Remove` mutation.
    * @deprecated Pass parentTag instead of parentShadowView.
    */
+  [[deprecated("Pass parentTag instead of parentShadowView.")]]
   static ShadowViewMutation RemoveMutation(const ShadowView &parentShadowView, ShadowView childShadowView, int index)
   {
     return RemoveMutation(parentShadowView.tag, childShadowView, index);
@@ -75,6 +77,7 @@ struct ShadowViewMutation final {
    * Creates and returns an `Update` mutation.
    * @deprecated Pass parentTag instead of parentShadowView.
    */
+  [[deprecated("Pass parentTag instead of parentShadowView.")]]
   static ShadowViewMutation
   UpdateMutation(ShadowView oldChildShadowView, ShadowView newChildShadowView, const ShadowView &parentShadowView)
   {
