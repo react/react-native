@@ -239,6 +239,31 @@ public abstract class YogaNode : YogaProps {
    */
   public open fun setNodeType(nodeType: YogaNodeType) {}
 
+  /**
+   * Sets whether this node's measure function sizes as [YogaMeasureFunction] describes for each
+   * [YogaMeasureMode]: [YogaMeasureMode.UNDEFINED] as max-content, [YogaMeasureMode.AT_MOST] as
+   * fit-content and [YogaMeasureMode.EXACTLY] as stretch-fit. True by default.
+   *
+   * When false, Yoga infers nothing about the node from a measurement under other constraints:
+   * - It reuses a measurement only under the same constraints.
+   * - For automatic minimum sizing (enabled by clearing
+   *   [YogaErrata.MIN_SIZE_UNDEFINED_INSTEAD_OF_AUTO]), the measure function isn't called with
+   *   [YogaMeasureMode.AT_MOST] 0. The node's min-content size is the one set by
+   *   [setMinContentWidth] / [setMinContentHeight], if any; else its padding and border plus what
+   *   its [setMinContentMeasureFunction] function returns, or plus 0 without one.
+   *
+   * Set it false for a measure function that sizes itself otherwise, for example one that fills the
+   * space it is given or picks a layout by it. Has no effect on the layout of a node without a
+   * measure function. Marks the node dirty when the value changes.
+   *
+   * Does nothing by default, so a subclass built against an earlier [YogaNode] keeps working.
+   */
+  public open fun setMeasureFunctionFollowsMeasureModes(followsMeasureModes: Boolean) {}
+
+  /** Whether this node's measure function sizes as the measure modes describe. True by default. */
+  public open val measureFunctionFollowsMeasureModes: Boolean
+    get() = true
+
   abstract override fun setMinContentMeasureFunction(measureFunction: YogaMeasureFunction?)
 
   abstract override fun setMinContentWidth(minContentWidth: Float)

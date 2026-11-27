@@ -221,6 +221,36 @@ YG_EXPORT void YGNodeSetMeasureFunc(YGNodeRef node, YGMeasureFunc measureFunc);
 YG_EXPORT bool YGNodeHasMeasureFunc(YGNodeConstRef node);
 
 /**
+ * Sets whether the node's measure function sizes as `YGMeasureFunc` describes
+ * for each `YGMeasureMode`: `YGMeasureModeUndefined` as max-content,
+ * `YGMeasureModeAtMost` as fit-content and `YGMeasureModeExactly` as
+ * stretch-fit. True by default.
+ *
+ * When false, Yoga infers nothing about the node from a measurement under other
+ * constraints:
+ *   - It reuses a measurement only under the same constraints.
+ *   - For automatic minimum sizing (enabled by clearing
+ *     `YGErrataMinSizeUndefinedInsteadOfAuto`), the measure function isn't
+ *     called with `AtMost 0`. The node's min-content size is the one set by
+ *     `YGNodeSetMinContentWidth` / `YGNodeSetMinContentHeight`, if any; else
+ *     its padding and border plus what its `YGMinContentMeasureFunc` returns,
+ *     or plus 0 without one.
+ *
+ * Set it false for a measure function that sizes itself otherwise, for example
+ * one that fills the space it is given or picks a layout by it. Has no effect
+ * on the layout of a node without a measure function. Marks the node dirty when
+ * the value changes.
+ */
+YG_EXPORT void YGNodeSetMeasureFuncFollowsMeasureModes(
+    YGNodeRef node,
+    bool measureFuncFollowsMeasureModes);
+
+/**
+ * Whether the node's measure function sizes as the measure modes describe.
+ */
+YG_EXPORT bool YGNodeGetMeasureFuncFollowsMeasureModes(YGNodeConstRef node);
+
+/**
  * Optional companion to `YGMeasureFunc` invoked by the CSS Flexbox §4.5
  * automatic minimum sizing path when probing this node for its min-content
  * size along the main axis.
@@ -233,7 +263,9 @@ YG_EXPORT bool YGNodeHasMeasureFunc(YGNodeConstRef node);
  *
  * When unset, the algorithm falls back to the regular `YGMeasureFunc`
  * invoked with the same `AtMost 0` constraint — preserving today's
- * behavior. Setting this is a perf opt-in for Primitives whose min-content
+ * behavior — unless the node's measure function doesn't follow the measure
+ * modes (`YGNodeSetMeasureFuncFollowsMeasureModes`), whose content then
+ * contributes 0. Setting this is a perf opt-in for Primitives whose min-content
  * size is cheap to compute or differs from what the regular measure would
  * return. Its results are kept, as a measure function's are, until the node is
  * marked dirty.
@@ -273,7 +305,8 @@ YG_EXPORT bool YGNodeHasMinContentMeasureFunc(YGNodeConstRef node);
  * Precedence inside the probe is:
  *   1. Static value via `YGNodeSetMinContentWidth/Height` (this API)
  *   2. Dynamic callback via `YGNodeSetMinContentMeasureFunc`
- *   3. Regular `YGMeasureFunc` with `AtMost 0` (today's default)
+ *   3. Regular `YGMeasureFunc` with `AtMost 0` (today's default), if it
+ *      follows the measure modes; else 0 for the content
  *   4. Container recursion (sum on main axis, max on cross)
  *
  * Static is preferred for known-constant values because it skips the JNI

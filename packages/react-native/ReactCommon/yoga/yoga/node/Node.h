@@ -67,6 +67,10 @@ class YG_EXPORT Node : public ::YGNode {
     return measureFunc_ != nullptr;
   }
 
+  bool measureFuncFollowsMeasureModes() const noexcept {
+    return measureFuncFollowsMeasureModes_;
+  }
+
   YGSize measure(
       float availableWidth,
       MeasureMode widthMode,
@@ -238,6 +242,10 @@ class YG_EXPORT Node : public ::YGNode {
 
   void setMeasureFunc(YGMeasureFunc measureFunc);
 
+  void setMeasureFuncFollowsMeasureModes(bool measureFuncFollowsMeasureModes) {
+    measureFuncFollowsMeasureModes_ = measureFuncFollowsMeasureModes;
+  }
+
   void setMinContentMeasureFunc(YGMinContentMeasureFunc minContentMeasureFunc) {
     minContentMeasureFunc_ = minContentMeasureFunc;
   }
@@ -343,6 +351,7 @@ class YG_EXPORT Node : public ::YGNode {
   bool isReferenceBaseline_ : 1 = false;
   bool isDirty_ : 1 = true;
   bool alwaysFormsContainingBlock_ : 1 = false;
+  bool measureFuncFollowsMeasureModes_ : 1 = true;
   NodeType nodeType_ : bitCount<NodeType>() = NodeType::Default;
   void* context_ = nullptr;
   YGMeasureFunc measureFunc_ = nullptr;

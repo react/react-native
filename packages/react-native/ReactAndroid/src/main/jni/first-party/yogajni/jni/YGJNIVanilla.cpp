@@ -239,6 +239,23 @@ static jboolean jni_YGNodeIsReferenceBaselineJNI(
       YGNodeIsReferenceBaseline(_jlong2YGNodeRef(nativePointer)));
 }
 
+static void jni_YGNodeSetMeasureFuncFollowsMeasureModesJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer,
+    jboolean followsMeasureModes) {
+  YGNodeSetMeasureFuncFollowsMeasureModes(
+      _jlong2YGNodeRef(nativePointer), static_cast<bool>(followsMeasureModes));
+}
+
+static jboolean jni_YGNodeGetMeasureFuncFollowsMeasureModesJNI(
+    JNIEnv* /*env*/,
+    jobject /*obj*/,
+    jlong nativePointer) {
+  return static_cast<jboolean>(
+      YGNodeGetMeasureFuncFollowsMeasureModes(_jlong2YGNodeRef(nativePointer)));
+}
+
 static void jni_YGNodeRemoveAllChildrenJNI(
     JNIEnv* /*env*/,
     jobject /*obj*/,
@@ -880,6 +897,12 @@ static JNINativeMethod methods[] = {
     {"jni_YGNodeIsReferenceBaselineJNI",
      "(J)Z",
      (void*)jni_YGNodeIsReferenceBaselineJNI},
+    {"jni_YGNodeSetMeasureFuncFollowsMeasureModesJNI",
+     "(JZ)V",
+     (void*)jni_YGNodeSetMeasureFuncFollowsMeasureModesJNI},
+    {"jni_YGNodeGetMeasureFuncFollowsMeasureModesJNI",
+     "(J)Z",
+     (void*)jni_YGNodeGetMeasureFuncFollowsMeasureModesJNI},
     {"jni_YGNodeRemoveAllChildrenJNI",
      "(J)V",
      (void*)jni_YGNodeRemoveAllChildrenJNI},

@@ -25,6 +25,7 @@ bool canUseCachedMeasurement(
     float lastComputedHeight,
     float marginRow,
     float marginColumn,
-    const yoga::Config* config);
+    const yoga::Config* config,
+    bool measureFuncFollowsMeasureModes);
 
 } // namespace facebook::yoga
