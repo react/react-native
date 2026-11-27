@@ -22,6 +22,7 @@
 #include <react/renderer/components/image/ImageProps.h>
 #include <react/renderer/components/image/ImageState.h>
 #include <react/renderer/components/scrollview/ScrollViewState.h>
+#include <react/renderer/components/text/ParagraphProps.h>
 #include <react/renderer/components/text/ParagraphState.h>
 #include <react/renderer/core/ConcreteState.h>
 #include <algorithm>
@@ -314,7 +315,7 @@ void paintView(
   }
 
   const std::string_view name(view.componentName ? view.componentName : "");
-  if (name == "Paragraph" && view.state) {
+  if ((name == "Paragraph" || name == "SelectableParagraph") && view.state) {
     const auto& state =
         static_cast<const ConcreteState<ParagraphState>&>(*view.state)
             .getData();
@@ -327,7 +328,9 @@ void paintView(
         layoutText(
             &canvas,
             state.attributedString,
-            state.paragraphAttributes,
+            // As on iOS, from the props: the state keeps the attributes it was
+            // created with when only they change.
+            static_cast<const ParagraphProps&>(*view.props).paragraphAttributes,
             frame.size.width),
         frame.size.width);
     canvas.restore();

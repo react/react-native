@@ -9,7 +9,7 @@ Object {
 
 exports[`Fantom screen snapshots captures the feed and its scrolled viewport 1`] = `
 Object {
-  "hash": "a71fd606e25d99e9afc33d276138ae2db1d42352ec0995d23bdaefab811eba17",
+  "hash": "16b6dd92373af0ffaa0b670193ed834214e9c14f21d5b3cf693138e977141112",
   "type": "Screenshot",
 }
 `;
