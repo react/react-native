@@ -51,6 +51,7 @@ import com.facebook.react.uimanager.BackgroundStyleApplicator.setFeedbackUnderla
 import com.facebook.react.uimanager.BackgroundStyleApplicator.updatePaddingBoxClip
 import com.facebook.react.uimanager.BlendModeHelper.needsIsolatedLayer
 import com.facebook.react.uimanager.HasElevatedDescendantCache
+import com.facebook.react.uimanager.HiddenSubtreeFocusHelper
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.MeasureSpecAssertions.assertExplicitMeasureSpec
@@ -585,6 +586,16 @@ public open class ReactViewGroup public constructor(context: Context?) :
     calculateClippingRect(this, clippingRect)
     updateClippingToRect(clippingRect, excludedViews)
   }
+
+  override fun addFocusables(views: ArrayList<View>, direction: Int, focusableMode: Int) {
+    val firstAddedIndex = views.size
+    super.addFocusables(views, direction, focusableMode)
+    HiddenSubtreeFocusHelper.removeHiddenFocusables(this, views, firstAddedIndex)
+  }
+
+  override fun onRequestFocusInDescendants(direction: Int, previouslyFocusedRect: Rect?): Boolean =
+      !HiddenSubtreeFocusHelper.hidesDescendants(this) &&
+          super.onRequestFocusInDescendants(direction, previouslyFocusedRect)
 
   internal fun requestFocusFromJS() {
     if (isAttachedToWindow) {
