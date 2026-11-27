@@ -8,6 +8,7 @@
 #import <React/RCTEnhancedScrollView.h>
 #import <React/RCTScrollContentViewComponentView.h>
 #import <React/RCTScrollViewComponentView.h>
+#import <React/RCTViewComponentView.h>
 #import <XCTest/XCTest.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
@@ -27,6 +28,7 @@
 #import <utility>
 
 using facebook::react::Props;
+using facebook::react::ScrollViewMaintainVisibleContentPosition;
 using facebook::react::ScrollViewProps;
 using facebook::react::ScrollViewShadowNode;
 
@@ -160,6 +162,8 @@ class ScrollContentStateDispatch {
 
 @interface RCTScrollViewComponentView (Tests)
 - (void)_keyboardWillChangeFrame:(NSNotification *)notification;
+- (void)_prepareForMaintainVisibleScrollPosition;
+- (void)_adjustForMaintainVisibleContentPosition;
 @end
 
 @interface RCTInsetTestScrollView : RCTEnhancedScrollView
@@ -226,6 +230,31 @@ class ScrollContentStateDispatch {
   [view updateProps:props oldProps:nullptr];
   [view _keyboardWillChangeFrame:notification];
   XCTAssertEqual(view.scrollView.contentInset.bottom, 50);
+}
+
+- (void)testMaintainVisibleContentPositionWithoutAnchorDoesNotReuseThePreviousOne
+{
+  RCTScrollViewComponentView *view = [[RCTScrollViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  auto props = std::make_shared<ScrollViewProps>();
+  props->maintainVisibleContentPosition = ScrollViewMaintainVisibleContentPosition{.minIndexForVisible = 1};
+  [view updateProps:props oldProps:ScrollViewShadowNode::defaultSharedProps()];
+
+  RCTViewComponentView *contentView = [[RCTViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 100, 1000)];
+  [view mountChildComponentView:contentView index:0];
+  UIView *header = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
+  UIView *row = [[UIView alloc] initWithFrame:CGRectMake(0, 50, 100, 50)];
+  [contentView addSubview:header];
+  [contentView addSubview:row];
+
+  [view _prepareForMaintainVisibleScrollPosition];
+  [header removeFromSuperview];
+  row.frame = CGRectMake(0, 0, 100, 50);
+  [view _adjustForMaintainVisibleContentPosition];
+  XCTAssertEqual(view.scrollView.contentOffset.y, -50);
+
+  [view _prepareForMaintainVisibleScrollPosition];
+  [view _adjustForMaintainVisibleContentPosition];
+  XCTAssertEqual(view.scrollView.contentOffset.y, -50);
 }
 
 // XCTest assertion macros use variadic reporting and catch framework exceptions by value.
