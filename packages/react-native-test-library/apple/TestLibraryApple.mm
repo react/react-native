@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
+
 #import "TestLibraryApple.h"
 
 // Synth library products are emitted as .library(type: .dynamic, ...), so SPM
@@ -25,3 +27,5 @@ RCT_EXPORT_METHOD(
 }
 
 @end
+
+#endif // !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)

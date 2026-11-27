@@ -125,7 +125,11 @@ RCT_EXPORT_MODULE(Appearance)
   }
 }
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSString *, getColorScheme)
+#else
+- (NSString *)getColorScheme
+#endif
 {
   return _currentColorScheme;
 }

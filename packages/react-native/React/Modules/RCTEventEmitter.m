@@ -113,7 +113,11 @@
   }
 }
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 RCT_EXPORT_METHOD(addListener : (NSString *)eventName)
+#else
+- (void)addListener:(NSString *)eventName
+#endif
 {
   if (_observationDisabled) {
     return;
@@ -132,7 +136,11 @@ RCT_EXPORT_METHOD(addListener : (NSString *)eventName)
   }
 }
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 RCT_EXPORT_METHOD(removeListeners : (double)count)
+#else
+- (void)removeListeners:(double)count
+#endif
 {
   if (_observationDisabled) {
     return;

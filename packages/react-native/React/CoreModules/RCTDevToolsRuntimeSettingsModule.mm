@@ -37,7 +37,11 @@ RCT_EXPORT_MODULE(ReactDevToolsRuntimeSettingsModule)
   }
 }
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getReloadAndProfileConfig)
+#else
+- (id)getReloadAndProfileConfig
+#endif
 {
   return @{
     @"shouldReloadAndProfile" : @(_config.shouldReloadAndProfile),

@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
+
 #import "TestLibraryCommon.h"
 
 @implementation TestLibraryCommon
@@ -22,3 +24,5 @@ RCT_EXPORT_METHOD(version : (RCTPromiseResolveBlock)resolve reject : (RCTPromise
 }
 
 @end
+
+#endif // !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)

@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#if !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
+
 #import "RCTSampleLegacyModule.h"
 
 @implementation RCTSampleLegacyModule
@@ -202,3 +204,5 @@ RCT_EXPORT_METHOD(
 }
 
 @end
+
+#endif // !defined(RCT_REMOVE_LEGACY_MODULE_INTEROP) || !defined(RCT_REMOVE_LEGACY_COMPONENT_INTEROP)
