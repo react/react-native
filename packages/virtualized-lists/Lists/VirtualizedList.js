@@ -1548,6 +1548,20 @@ class VirtualizedList extends StateSafePureComponent<
           JSON.stringify(props.refreshing ?? 'undefined') +
           '`',
       );
+
+      // When the list is inverted, the scaleY: -1 transform causes the
+      // RefreshControl to appear at the visual bottom instead of the visual
+      // top. We use progressViewOffset to reposition the refresh indicator
+      // at the visual top of the list. The offset is the visible height of
+      // the scroll view so the indicator moves from the physical top
+      // (visual bottom) to the physical bottom (visual top).
+      const progressViewOffset =
+        props.isInvertedVirtualizedList &&
+        props.progressViewOffset == null &&
+        this._scrollMetrics.visibleLength > 0
+          ? this._scrollMetrics.visibleLength
+          : props.progressViewOffset;
+
       return (
         <ScrollView
           {...props}
@@ -1556,7 +1570,7 @@ class VirtualizedList extends StateSafePureComponent<
               <RefreshControl
                 refreshing={props.refreshing}
                 onRefresh={onRefresh}
-                progressViewOffset={props.progressViewOffset}
+                progressViewOffset={progressViewOffset}
               />
             ) : (
               props.refreshControl
