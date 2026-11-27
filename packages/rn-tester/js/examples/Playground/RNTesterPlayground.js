@@ -10,23 +10,23 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
-import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Button, ScrollView, StyleSheet} from 'react-native';
 
 function Playground() {
   return (
-    <View style={styles.container}>
-      <RNTesterText>
-        Edit "RNTesterPlayground.js" to change this file
-      </RNTesterText>
-    </View>
+    <ScrollView contentContainerStyle={styles.container} scrollEnabled={false}>
+      <Button title={'Button1'} />
+      <Button title={'Button2'} />
+      <Button title={'Button3'} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
+    padding: 100,
+    gap: 20,
   },
 });
 
