@@ -208,6 +208,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   const auto &newTextInputProps = static_cast<const TextInputProps &>(*props);
 
   // Traits:
+  BOOL needsReloadInputViews = NO;
+
   if (newTextInputProps.multiline != oldTextInputProps.multiline) {
     [self _setMultiline:newTextInputProps.multiline];
   }
@@ -215,11 +217,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (newTextInputProps.traits.autocapitalizationType != oldTextInputProps.traits.autocapitalizationType) {
     _backedTextInputView.autocapitalizationType =
         RCTUITextAutocapitalizationTypeFromAutocapitalizationType(newTextInputProps.traits.autocapitalizationType);
+    needsReloadInputViews = YES;
   }
 
   if (newTextInputProps.traits.autoCorrect != oldTextInputProps.traits.autoCorrect) {
     _backedTextInputView.autocorrectionType =
         RCTUITextAutocorrectionTypeFromOptionalBool(newTextInputProps.traits.autoCorrect);
+    needsReloadInputViews = YES;
   }
 
   if (newTextInputProps.traits.contextMenuHidden != oldTextInputProps.traits.contextMenuHidden) {
@@ -251,6 +255,14 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (newTextInputProps.traits.spellCheck != oldTextInputProps.traits.spellCheck) {
     _backedTextInputView.spellCheckingType =
         RCTUITextSpellCheckingTypeFromOptionalBool(newTextInputProps.traits.spellCheck);
+    needsReloadInputViews = YES;
+  }
+
+  // Without the call to reloadInputViews, a change to the capitalization, autocorrection or spell checking of the
+  // focused field (the first responder) doesn't reach the keyboard until the field loses and regains focus. One
+  // reload covers all three when they change together.
+  if (needsReloadInputViews && _backedTextInputView.isFirstResponder) {
+    [_backedTextInputView reloadInputViews];
   }
 
   if (newTextInputProps.traits.caretHidden != oldTextInputProps.traits.caretHidden) {
