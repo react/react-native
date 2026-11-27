@@ -968,6 +968,145 @@ TEST_F(FontScaleLayoutTest, fontScaleChangeLaysOutInputLikeNodeWithoutModal) {
   expectLaidOutWithFontScale(*smallerRootShadowNode, 1);
 }
 
+TEST_F(FontScaleLayoutTest, fontScaleAndResizeInvalidatePercentageFlexBasis) {
+  auto rootShadowNode = std::shared_ptr<RootShadowNode>{};
+  auto element =
+      Element<RootShadowNode>()
+          .reference(rootShadowNode)
+          .tag(1)
+          .props([] {
+            auto props = std::make_shared<RootProps>();
+            props->layoutConstraints = {
+                .minimumSize = {.width = 100, .height = 100},
+                .maximumSize = {.width = 100, .height = 100}};
+            props->yogaStyle.setDimension(
+                yoga::Dimension::Width, yoga::StyleSizeLength::points(100));
+            props->yogaStyle.setDimension(
+                yoga::Dimension::Height, yoga::StyleSizeLength::points(100));
+            return props;
+          })
+          .children(
+              {Element<ViewShadowNode>()
+                   .tag(2)
+                   .props([] {
+                     auto props = std::make_shared<ViewProps>();
+                     props->yogaStyle.setDimension(
+                         yoga::Dimension::Width,
+                         yoga::StyleSizeLength::percent(100));
+                     props->yogaStyle.setFlexDirection(
+                         yoga::FlexDirection::Row);
+                     props->yogaStyle.setAlignItems(yoga::Align::FlexStart);
+                     return props;
+                   })
+                   .children(
+                       {Element<FontScaledTextShadowNode>().tag(3).props([] {
+                         auto props = std::make_shared<ViewProps>();
+                         props->yogaStyle.setFlexBasis(
+                             yoga::StyleSizeLength::percent(50));
+                         props->yogaStyle.setFlexGrow(yoga::FloatOptional(0));
+                         props->yogaStyle.setFlexShrink(yoga::FloatOptional(0));
+                         props->yogaStyle.setDimension(
+                             yoga::Dimension::Height,
+                             yoga::StyleSizeLength::points(10));
+                         return props;
+                       })})});
+  builder_.build(element);
+  EXPECT_TRUE(rootShadowNode->layoutIfNeeded());
+
+  auto leafSize = [](const RootShadowNode& root) {
+    return static_cast<const LayoutableShadowNode&>(
+               *root.getChildren().at(0)->getChildren().at(0))
+        .getLayoutMetrics()
+        .frame.size;
+  };
+  EXPECT_EQ(leafSize(*rootShadowNode).width, 50);
+
+  auto constraints = rootShadowNode->getConcreteProps().layoutConstraints;
+  constraints.minimumSize.width = 200;
+  constraints.maximumSize.width = 200;
+  auto context = rootShadowNode->getConcreteProps().layoutContext;
+  context.fontSizeMultiplier = 1.5;
+  auto largerRoot = rootShadowNode->clone(parserContext_, constraints, context);
+  EXPECT_TRUE(largerRoot->layoutIfNeeded());
+  EXPECT_EQ(leafSize(*largerRoot).width, 100);
+  EXPECT_EQ(leafSize(*largerRoot).height, 10);
+
+  auto restoredRoot = largerRoot->clone(
+      parserContext_,
+      rootShadowNode->getConcreteProps().layoutConstraints,
+      rootShadowNode->getConcreteProps().layoutContext);
+  EXPECT_TRUE(restoredRoot->layoutIfNeeded());
+  EXPECT_EQ(leafSize(*restoredRoot).width, 50);
+  EXPECT_EQ(leafSize(*restoredRoot).height, 10);
+}
+
+TEST_F(FontScaleLayoutTest, fontScaleAndResizeInvalidateAncestorFlexBasis) {
+  auto rootShadowNode = std::shared_ptr<RootShadowNode>{};
+  auto element =
+      Element<RootShadowNode>()
+          .reference(rootShadowNode)
+          .tag(1)
+          .props([] {
+            auto props = std::make_shared<RootProps>();
+            props->layoutConstraints = {
+                .minimumSize = {.width = 100, .height = 100},
+                .maximumSize = {.width = 100, .height = 100}};
+            return props;
+          })
+          .children(
+              {Element<ViewShadowNode>()
+                   .tag(2)
+                   .props([] {
+                     auto props = std::make_shared<ViewProps>();
+                     props->yogaStyle.setDimension(
+                         yoga::Dimension::Width,
+                         yoga::StyleSizeLength::percent(100));
+                     props->yogaStyle.setFlexDirection(
+                         yoga::FlexDirection::Row);
+                     return props;
+                   })
+                   .children({Element<ViewShadowNode>()
+                                  .tag(3)
+                                  .props([] {
+                                    auto props = std::make_shared<ViewProps>();
+                                    props->yogaStyle.setFlexBasis(
+                                        yoga::StyleSizeLength::percent(50));
+                                    props->yogaStyle.setFlexGrow(
+                                        yoga::FloatOptional(0));
+                                    props->yogaStyle.setFlexShrink(
+                                        yoga::FloatOptional(0));
+                                    return props;
+                                  })
+                                  .children({Element<FontScaledTextShadowNode>()
+                                                 .tag(4)})})});
+  builder_.build(element);
+  EXPECT_TRUE(rootShadowNode->layoutIfNeeded());
+
+  auto wrapperWidth = [](const RootShadowNode& root) {
+    return static_cast<const LayoutableShadowNode&>(
+               *root.getChildren().at(0)->getChildren().at(0))
+        .getLayoutMetrics()
+        .frame.size.width;
+  };
+  EXPECT_EQ(wrapperWidth(*rootShadowNode), 50);
+
+  auto constraints = rootShadowNode->getConcreteProps().layoutConstraints;
+  constraints.minimumSize.width = 200;
+  constraints.maximumSize.width = 200;
+  auto context = rootShadowNode->getConcreteProps().layoutContext;
+  context.fontSizeMultiplier = 1.5;
+  auto largerRoot = rootShadowNode->clone(parserContext_, constraints, context);
+  EXPECT_TRUE(largerRoot->layoutIfNeeded());
+  EXPECT_EQ(wrapperWidth(*largerRoot), 100);
+
+  auto restoredRoot = largerRoot->clone(
+      parserContext_,
+      rootShadowNode->getConcreteProps().layoutConstraints,
+      rootShadowNode->getConcreteProps().layoutContext);
+  EXPECT_TRUE(restoredRoot->layoutIfNeeded());
+  EXPECT_EQ(wrapperWidth(*restoredRoot), 50);
+}
+
 TEST_F(FontScaleLayoutTest, fontScaleChangeSkipsHiddenSubtreeUntilShown) {
   auto rootShadowNode = std::shared_ptr<RootShadowNode>{};
   auto hiddenShadowNode = std::shared_ptr<ViewShadowNode>{};
