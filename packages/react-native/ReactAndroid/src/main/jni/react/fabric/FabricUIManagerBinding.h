@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <shared_mutex>
 #include <unordered_map>
 
@@ -17,6 +18,7 @@
 #include <react/jni/JRuntimeScheduler.h>
 #include <react/jni/ReadableNativeMap.h>
 #include <react/renderer/scheduler/SchedulerDelegate.h>
+#include <react/renderer/scheduler/SchedulerToolbox.h>
 #include <react/renderer/scheduler/SurfaceHandler.h>
 #include <react/renderer/uimanager/LayoutAnimationStatusDelegate.h>
 #include <react/renderer/uimanager/primitives.h>
@@ -67,6 +69,26 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
       jni::alias_ref<JFabricUIManager::javaobject> javaUIManager,
       EventBeatManager *eventBeatManager,
       ComponentFactory *componentsRegistry);
+
+  /*
+   * First half of `installFabricUIManager`: creates the mounting manager and
+   * the `UIManager` and schedules its JS binding, which has to run on the JS
+   * thread before the bundle is evaluated. Cheap. Must be followed by
+   * `completeFabricUIManagerInstall`, which may run after the bundle load has
+   * been posted so that the JS thread does not wait for it.
+   */
+  void prepareFabricUIManager(
+      jni::alias_ref<JRuntimeExecutor::javaobject> runtimeExecutorHolder,
+      jni::alias_ref<JRuntimeScheduler::javaobject> runtimeSchedulerHolder,
+      jni::alias_ref<JFabricUIManager::javaobject> javaUIManager,
+      EventBeatManager *eventBeatManager,
+      ComponentFactory *componentsRegistry);
+
+  /*
+   * Second half of `installFabricUIManager`: builds the Scheduler (component
+   * registry, event dispatcher, animation driver).
+   */
+  void completeFabricUIManagerInstall();
 
   void startSurface(jint surfaceId, jni::alias_ref<jstring> moduleName, NativeMap *initialProps);
 
@@ -147,6 +169,10 @@ class FabricUIManagerBinding : public jni::HybridClass<FabricUIManagerBinding>,
   std::shared_mutex installMutex_;
   std::shared_ptr<FabricMountingManager> mountingManager_;
   std::shared_ptr<Scheduler> scheduler_;
+
+  // State between prepareFabricUIManager and completeFabricUIManagerInstall.
+  std::optional<SchedulerToolbox> pendingToolbox_;
+  std::shared_ptr<UIManager> pendingUIManager_;
 
   std::shared_ptr<FabricMountingManager> getMountingManager(const char *locationHint);
 

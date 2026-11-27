@@ -32,12 +32,36 @@
 
 namespace facebook::react {
 
+std::shared_ptr<UIManager> Scheduler::createUIManagerWithBinding(
+    const SchedulerToolbox& schedulerToolbox) {
+  auto uiManager = std::make_shared<UIManager>(
+      schedulerToolbox.runtimeExecutor, schedulerToolbox.contextContainer);
+  auto bindingsExecutor =
+      schedulerToolbox.bridgelessBindingsExecutor.has_value()
+      ? schedulerToolbox.bridgelessBindingsExecutor.value()
+      : schedulerToolbox.runtimeExecutor;
+  bindingsExecutor([uiManager](jsi::Runtime& runtime) {
+    UIManagerBinding::createAndInstallIfNeeded(runtime, uiManager);
+  });
+  return uiManager;
+}
+
 Scheduler::Scheduler(
     const SchedulerToolbox& schedulerToolbox,
     UIManagerAnimationDelegate* animationDelegate,
     SchedulerDelegate* delegate)
+    : Scheduler(schedulerToolbox, animationDelegate, delegate, nullptr) {}
+
+Scheduler::Scheduler(
+    const SchedulerToolbox& schedulerToolbox,
+    UIManagerAnimationDelegate* animationDelegate,
+    SchedulerDelegate* delegate,
+    std::shared_ptr<UIManager> uiManager)
     : runtimeExecutor_(schedulerToolbox.runtimeExecutor),
       contextContainer_(schedulerToolbox.contextContainer) {
+  // A UIManager passed in already has its binding scheduled (see
+  // createUIManagerWithBinding).
+  const bool installBinding = uiManager == nullptr;
   // Creating a container for future `EventDispatcher` instance.
   eventDispatcher_ = std::make_shared<std::optional<const EventDispatcher>>();
 
@@ -62,8 +86,10 @@ Scheduler::Scheduler(
   eventPerformanceLogger_ =
       std::make_shared<EventPerformanceLogger>(performanceEntryReporter_);
 
-  auto uiManager =
-      std::make_shared<UIManager>(runtimeExecutor_, contextContainer_);
+  if (uiManager == nullptr) {
+    uiManager =
+        std::make_shared<UIManager>(runtimeExecutor_, contextContainer_);
+  }
 
   auto eventOwnerBox = std::make_shared<EventBeat::OwnerBox>();
   eventOwnerBox->owner = eventDispatcher_;
@@ -140,13 +166,15 @@ Scheduler::Scheduler(
     uiManager->unstable_setAnimationBackend(animationBackend);
   }
 
-  auto bindingsExecutor =
-      schedulerToolbox.bridgelessBindingsExecutor.has_value()
-      ? schedulerToolbox.bridgelessBindingsExecutor.value()
-      : runtimeExecutor_;
-  bindingsExecutor([uiManager](jsi::Runtime& runtime) {
-    UIManagerBinding::createAndInstallIfNeeded(runtime, uiManager);
-  });
+  if (installBinding) {
+    auto bindingsExecutor =
+        schedulerToolbox.bridgelessBindingsExecutor.has_value()
+        ? schedulerToolbox.bridgelessBindingsExecutor.value()
+        : runtimeExecutor_;
+    bindingsExecutor([uiManager](jsi::Runtime& runtime) {
+      UIManagerBinding::createAndInstallIfNeeded(runtime, uiManager);
+    });
+  }
 
   auto componentDescriptorRegistryKey =
       "ComponentDescriptorRegistry_DO_NOT_USE_PRETTY_PLEASE";
