@@ -9,8 +9,14 @@
 
 package com.facebook.react.uimanager
 
+import android.app.Activity
 import android.os.Bundle
+import android.view.View
+import android.view.accessibility.AccessibilityManager
 import android.view.accessibility.AccessibilityNodeInfo
+import android.widget.EditText
+import android.widget.TextView
+import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import com.facebook.react.R
 import com.facebook.react.bridge.JavaOnlyArray
@@ -39,7 +45,9 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @Config(shadows = [ShadowArguments::class, ShadowSoLoader::class])
@@ -57,6 +65,152 @@ class ReactAccessibilityDelegateTest {
     themedReactContext = ThemedReactContext(reactContext, reactContext, null, -1)
     view = ReactViewGroup(themedReactContext).apply { id = 100 }
     accessibilityDelegate = ReactAccessibilityDelegate(view, false, 0)
+  }
+
+  @Test
+  fun testGetTalkbackDescription_initializesEachNestedDelegateOnce() {
+    val groups = List(8) { ReactViewGroup(themedReactContext) }
+    val delegates = groups.map { installCountingDelegate(it) }
+    groups.zipWithNext { parent, child -> parent.addView(child) }
+    val text = TextView(themedReactContext).apply { this.text = "Nested label" }
+    val textDelegate = installCountingDelegate(text)
+    groups.last().addView(text)
+
+    val info = ReactAccessibilityDelegate.createNodeInfoFromView(groups.first())
+
+    assertThat(info?.contentDescription?.toString()).isEqualTo("Nested label")
+    assertThat((delegates + textDelegate).map { it.initializationCount }).containsOnly(1)
+  }
+
+  @Test
+  fun testGetTalkbackDescription_reusesNodeForUnlabelledLayoutWrapper() {
+    installCountingDelegate(view)
+    val child = ReactViewGroup(themedReactContext)
+    val childDelegate = CountingAccessibilityDelegate(child)
+    ViewCompat.setAccessibilityDelegate(child, childDelegate)
+    val text = TextView(themedReactContext).apply { this.text = "Row label" }
+    val textDelegate = installCountingDelegate(text)
+    child.addView(text)
+    view.addView(child)
+
+    val info = ReactAccessibilityDelegate.createNodeInfoFromView(view)
+
+    assertThat(info?.contentDescription?.toString()).isEqualTo("Row label")
+    assertThat(childDelegate.initializationCount).isEqualTo(1)
+    // The speaking-descendant check and description traversal each inspect this text once.
+    assertThat(textDelegate.initializationCount).isEqualTo(2)
+  }
+
+  @Test
+  fun testGetTalkbackDescription_preservesChildOrderAndFocusBoundaries() {
+    installCountingDelegate(view)
+    view.addView(TextView(themedReactContext).apply { text = "First" })
+    view.addView(
+        ReactViewGroup(themedReactContext).apply {
+          contentDescription = "Explicit label"
+          addView(TextView(themedReactContext).apply { text = "Overridden text" })
+        }
+    )
+    view.addView(
+        TextView(themedReactContext).apply {
+          text = "Separate button"
+          isClickable = true
+          installCountingDelegate(this)
+        }
+    )
+    view.addView(
+        TextView(themedReactContext).apply {
+          text = "Separate screen reader target"
+          isScreenReaderFocusable = true
+          installCountingDelegate(this)
+        }
+    )
+    view.addView(
+        ReactViewGroup(themedReactContext).apply {
+          importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+          addView(TextView(themedReactContext).apply { text = "Hidden text" })
+        }
+    )
+    view.addView(TextView(themedReactContext).apply { text = "Last" })
+    Robolectric.buildActivity(Activity::class.java).setup().get().setContentView(view)
+
+    val info = ReactAccessibilityDelegate.createNodeInfoFromView(view)
+
+    assertThat(info?.contentDescription?.toString()).isEqualTo("First, Explicit label, Last")
+  }
+
+  @Test
+  fun testGetTalkbackDescription_prefersEditTextTextToItsContentDescription() {
+    installCountingDelegate(view)
+    val input =
+        EditText(themedReactContext).apply {
+          setText("Entered text")
+          contentDescription = "Input label"
+          isFocusable = false
+          isClickable = false
+          isLongClickable = false
+        }
+    view.addView(input)
+    Robolectric.buildActivity(Activity::class.java).setup().get().setContentView(view)
+    val inputInfo = ReactAccessibilityDelegate.createNodeInfoFromView(input)
+    assertThat(inputInfo?.text?.toString()).isEqualTo("Entered text")
+    assertThat(inputInfo?.contentDescription?.toString()).isEqualTo("Input label")
+
+    val info = ReactAccessibilityDelegate.createNodeInfoFromView(view)
+
+    assertThat(info?.contentDescription?.toString()).isEqualTo("Entered text")
+  }
+
+  @Test
+  fun testGetTalkbackDescription_synthesizesWithoutAnAccessibilityService() {
+    val manager = themedReactContext.getSystemService(AccessibilityManager::class.java)
+    shadowOf(manager).setEnabled(false)
+    shadowOf(manager).setTouchExplorationEnabled(false)
+    view.setTag(R.id.accessibility_role, ReactAccessibilityDelegate.AccessibilityRole.BUTTON)
+    ViewCompat.setAccessibilityDelegate(view, accessibilityDelegate)
+    view.addView(TextView(themedReactContext).apply { text = "Button label" })
+
+    val info = ReactAccessibilityDelegate.createNodeInfoFromView(view)
+
+    assertThat(info?.contentDescription?.toString()).isEqualTo("Button label")
+    assertThat(info?.isClickable).isTrue()
+  }
+
+  @Test
+  fun testGetTalkbackDescription_readsUpdatedTextOnEachRequest() {
+    installCountingDelegate(view)
+    val child = ReactViewGroup(themedReactContext)
+    installCountingDelegate(child)
+    val text = TextView(themedReactContext).apply { this.text = "Before" }
+    child.addView(text)
+    view.addView(child)
+
+    val before = ReactAccessibilityDelegate.createNodeInfoFromView(view)
+    text.text = "After"
+    val after = ReactAccessibilityDelegate.createNodeInfoFromView(view)
+
+    assertThat(before?.contentDescription?.toString()).isEqualTo("Before")
+    assertThat(after?.contentDescription?.toString()).isEqualTo("After")
+  }
+
+  private fun installCountingDelegate(host: View): CountingAccessibilityDelegate {
+    host.setTag(R.id.accessibility_role, ReactAccessibilityDelegate.AccessibilityRole.NONE)
+    return CountingAccessibilityDelegate(host).also {
+      ViewCompat.setAccessibilityDelegate(host, it)
+    }
+  }
+
+  private class CountingAccessibilityDelegate(host: View) :
+      ReactAccessibilityDelegate(host, host.isFocusable, host.importantForAccessibility) {
+    var initializationCount = 0
+      private set
+
+    override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
+      initializationCount++
+      super.onInitializeAccessibilityNodeInfo(host, info)
+      // These views are not attached to a window in the traversal fixture.
+      info.isVisibleToUser = true
+    }
   }
 
   @Test
