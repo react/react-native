@@ -52,4 +52,45 @@ describe('getPlatformBuildCommand', () => {
       ),
     );
   });
+
+  describe('mergeable', () => {
+    const releaseCommand = (mergeable /*: boolean */) =>
+      getPlatformBuildCommand(
+        'ReactNativeDependencies',
+        'Release',
+        'iOS',
+        'build',
+        mergeable,
+      );
+
+    it('makes Release dynamic frameworks mergeable', () => {
+      expect(releaseCommand(true)).toBe(
+        `${releaseCommand(false)} 'MERGEABLE_LIBRARY=$(MERGEABLE_LIBRARY_$(MACH_O_TYPE))' MERGEABLE_LIBRARY_mh_dylib=YES`,
+      );
+    });
+
+    it('leaves the Release command unchanged when off', () => {
+      // The spaces come from the line continuations in the command template.
+      expect(releaseCommand(false)).toBe(
+        'xcodebuild -scheme "ReactNativeDependencies" -destination "generic/platform=iOS" ' +
+          '-derivedDataPath "build" -configuration "Release" ' +
+          'SKIP_INSTALL=NO     BUILD_LIBRARY_FOR_DISTRIBUTION=YES     DEBUG_INFORMATION_FORMAT=dwarf-with-dsym ' +
+          'GCC_OPTIMIZATION_LEVEL=2',
+      );
+    });
+
+    it('leaves the Debug command unchanged', () => {
+      const debugCommand = (mergeable /*: boolean */) =>
+        getPlatformBuildCommand(
+          'ReactNativeDependencies',
+          'Debug',
+          'iOS',
+          'build',
+          mergeable,
+        );
+
+      expect(debugCommand(true)).toBe(debugCommand(false));
+      expect(debugCommand(true)).not.toContain('MERGEABLE_LIBRARY');
+    });
+  });
 });

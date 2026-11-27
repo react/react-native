@@ -80,6 +80,11 @@ const cli = yargs
     describe:
       'Specify the code signing identity to use for signing the frameworks.',
   })
+  .option('mergeable', {
+    type: 'boolean',
+    describe:
+      'Build Release frameworks as mergeable libraries, which Xcode can merge into the app executable.',
+  })
   .help();
 
 /**
@@ -96,6 +101,7 @@ async function getCLIConfiguration() /*: Promise<?{
   dependencies: ReadonlyArray<Dependency>,
   configuration: string,
   identity: ?string,
+  mergeable: boolean,
 }> */ {
   // Run input parsing
   const argv = await cli.argv;
@@ -150,6 +156,7 @@ async function getCLIConfiguration() /*: Promise<?{
     dependencies: resolvedDependencies,
     configuration: argv.configuration,
     identity: argv.identity,
+    mergeable: argv.mergeable ?? false,
   };
 }
 

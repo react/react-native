@@ -63,6 +63,7 @@ async function main() {
           buildType,
           destination,
           outputFolder,
+          cli.mergeable,
         );
       });
     }

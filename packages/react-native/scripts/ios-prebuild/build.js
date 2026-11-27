@@ -56,21 +56,29 @@ function computeFrameworkPaths(
   return frameworkPaths;
 }
 
+// MERGEABLE_LIBRARY=YES would also reach static library targets such as glog
+// and break their link, so enable it only where MACH_O_TYPE is mh_dylib.
+const MERGEABLE_SETTINGS =
+  "'MERGEABLE_LIBRARY=$(MERGEABLE_LIBRARY_$(MACH_O_TYPE))' MERGEABLE_LIBRARY_mh_dylib=YES";
+
 function getSwiftPackageBuildCommand(
   buildType /*: BuildFlavor */,
   platform /*: Destination */,
   outputFolder /*: string */,
+  mergeable /*: boolean */,
 ) /*: string */ {
   const command =
     `xcodebuild -scheme React -destination "generic/platform=${platform}" -derivedDataPath "${outputFolder}" ` +
     `-configuration "${buildType}" SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES OTHER_SWIFT_FLAGS="-no-verify-emitted-module-interface" ` +
     `DEBUG_INFORMATION_FORMAT="dwarf-with-dsym"`;
+  if (buildType !== 'Release') {
+    return command;
+  }
   // Xcode defaults Release to -Os. Android builds React Native at -O2 in
   // Release. A command-line setting applies to every configuration, so add it
   // only to Release builds.
-  return buildType === 'Release'
-    ? `${command} GCC_OPTIMIZATION_LEVEL=2`
-    : command;
+  const releaseCommand = `${command} GCC_OPTIMIZATION_LEVEL=2`;
+  return mergeable ? `${releaseCommand} ${MERGEABLE_SETTINGS}` : releaseCommand;
 }
 
 function buildSwiftPackage(
@@ -79,11 +87,13 @@ function buildSwiftPackage(
   buildType /*: BuildFlavor */,
   platform /*: Destination */,
   outputFolder /*: string */,
+  mergeable /*: boolean */,
 ) {
   const buildCommand = getSwiftPackageBuildCommand(
     buildType,
     platform,
     outputFolder,
+    mergeable,
   );
   buildLog(`Building Swift package for ${buildType}`);
   buildLog(buildCommand);

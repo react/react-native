@@ -41,17 +41,18 @@ If no options are passed, the script executes all the steps in this order:
 
 **Options:**
 
-| Option             | Short | Description                                             |
-| ------------------ | ----: | ------------------------------------------------------- |
-| `--setup`          |  `-s` | Download and setup dependencies                         |
-| `--build`          |  `-b` | Build dependencies for target platforms                 |
-| `--compose`        |  `-c` | Compose XCFrameworks from built artifacts               |
-| `--swiftpackage`   |  `-w` | Generate `Package.swift` file                           |
-| `--platforms`      |  `-p` | Target platforms (ios, macos, catalyst, tvos, visionos) |
-| `--configurations` |  `-g` | Build configurations (Debug, Release)                   |
-| `--dependencies`   |  `-d` | Specific dependencies to process                        |
-| `--clean`          |     — | Clean build folder before building                      |
-| `--identity`       |  `-i` | Signing identity for frameworks                         |
+| Option             | Short | Description                                                                                         |
+| ------------------ | ----: | --------------------------------------------------------------------------------------------------- |
+| `--setup`          |  `-s` | Download and setup dependencies                                                                     |
+| `--build`          |  `-b` | Build dependencies for target platforms                                                             |
+| `--compose`        |  `-c` | Compose XCFrameworks from built artifacts                                                           |
+| `--swiftpackage`   |  `-w` | Generate `Package.swift` file                                                                       |
+| `--platforms`      |  `-p` | Target platforms (ios, macos, catalyst, tvos, visionos)                                             |
+| `--configurations` |  `-g` | Build configurations (Debug, Release)                                                               |
+| `--dependencies`   |  `-d` | Specific dependencies to process                                                                    |
+| `--clean`          |     — | Clean build folder before building                                                                  |
+| `--identity`       |  `-i` | Signing identity for frameworks                                                                     |
+| `--mergeable`      |     — | Build Release frameworks that Xcode can merge into the app executable. Release only, off by default |
 
 ## Integrating in your project with Cocoapods
 

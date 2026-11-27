@@ -37,15 +37,16 @@ If no options are passed, the script executes all the steps in this order:
 
 ### Options
 
-| Option        | Alias | Type    | Default                                    | Description                                                         |
-| ------------- | ----- | ------- | ------------------------------------------ | ------------------------------------------------------------------- |
-| `--setup`     | `-s`  | boolean | -                                          | Download and setup dependencies                                     |
-| `--build`     | `-b`  | boolean | -                                          | Build dependencies/platforms                                        |
-| `--compose`   | `-c`  | boolean | -                                          | Compose XCFramework from built dependencies                         |
-| `--platforms` | `-p`  | array   | `['ios', 'ios-simulator', 'mac-catalyst']` | Specify one or more platforms to build for                          |
-| `--flavor`    | `-f`  | string  | `Debug`                                    | Specify the flavor to build: `Debug` or `Release`                   |
-| `--identity`  | `-i`  | string  | -                                          | Specify the code signing identity to use for signing the frameworks |
-| `--help`      | -     | boolean | -                                          | Show help information                                               |
+| Option        | Alias | Type    | Default                                    | Description                                                                                         |
+| ------------- | ----- | ------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `--setup`     | `-s`  | boolean | -                                          | Download and setup dependencies                                                                     |
+| `--build`     | `-b`  | boolean | -                                          | Build dependencies/platforms                                                                        |
+| `--compose`   | `-c`  | boolean | -                                          | Compose XCFramework from built dependencies                                                         |
+| `--platforms` | `-p`  | array   | `['ios', 'ios-simulator', 'mac-catalyst']` | Specify one or more platforms to build for                                                          |
+| `--flavor`    | `-f`  | string  | `Debug`                                    | Specify the flavor to build: `Debug` or `Release`                                                   |
+| `--identity`  | `-i`  | string  | -                                          | Specify the code signing identity to use for signing the frameworks                                 |
+| `--mergeable` | -     | boolean | -                                          | Build Release frameworks that Xcode can merge into the app executable. Release only, off by default |
+| `--help`      | -     | boolean | -                                          | Show help information                                                                               |
 
 ### Output Structure
 
