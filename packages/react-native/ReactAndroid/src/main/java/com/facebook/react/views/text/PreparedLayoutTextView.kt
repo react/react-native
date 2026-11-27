@@ -111,6 +111,8 @@ internal class PreparedLayoutTextView(context: Context) : ViewGroup(context), Re
     lastFrameTimeNanos = 0L
     preparedLayout = null
     hasClickableSpansCache = null
+    (ViewCompat.getAccessibilityDelegate(this) as? ReactTextViewAccessibilityDelegate)
+        ?.resetTextTraversal()
   }
 
   override fun onVisibilityChanged(changedView: View, visibility: Int) {

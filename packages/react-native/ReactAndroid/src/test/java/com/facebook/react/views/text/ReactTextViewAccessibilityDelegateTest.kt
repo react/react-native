@@ -209,11 +209,14 @@ class ReactTextViewAccessibilityDelegateTest {
     step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD)
     view.preparedLayout = preparedLayoutTextView(SpannableString("Read the docs")).preparedLayout
     step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD)
+    view.recycleView()
+    view.preparedLayout = preparedLayoutTextView(SpannableString("Read the docs")).preparedLayout
+    step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD)
     view.contentDescription = "Delete listing"
     step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD)
 
     assertThat(steps)
-        .containsExactly("Hello", "big", "world", "world", "w", "Hello", "Read", "Delete")
+        .containsExactly("Hello", "big", "world", "world", "w", "Hello", "Read", "Read", "Delete")
   }
 
   private fun delegate(): AccessibilityDelegateCompat? = ViewCompat.getAccessibilityDelegate(view)

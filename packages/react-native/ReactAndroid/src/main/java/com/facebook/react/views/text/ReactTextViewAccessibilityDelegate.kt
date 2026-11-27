@@ -11,6 +11,7 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.text.Layout
 import android.text.Spanned
+import android.text.TextUtils
 import android.text.style.ClickableSpan
 import android.view.View
 import android.view.accessibility.AccessibilityEvent
@@ -31,8 +32,10 @@ internal class ReactTextViewAccessibilityDelegate(
     originalImportantForAccessibility: Int,
 ) : ReactAccessibilityDelegate(view, originalFocus, originalImportantForAccessibility) {
   private var accessibilityLinks: AccessibilityLinks? = null
-  private var textCursor = 0
-  private var cursorText: String? = null
+  private var traversedText: String? = null
+  private var textCursor = -1
+  private var breaks: BreakIterator? = null
+  private var breaksGranularity = 0
 
   init {
     accessibilityLinks = hostView.getTag(R.id.accessibility_links) as AccessibilityLinks?
@@ -238,7 +241,7 @@ internal class ReactTextViewAccessibilityDelegate(
   override fun performAccessibilityAction(host: View, action: Int, args: Bundle?): Boolean {
     if (host is PreparedLayoutTextView && host.contentDescription.isNullOrEmpty()) {
       when (action) {
-        AccessibilityNodeInfoCompat.ACTION_SET_SELECTION -> cursorText = null
+        AccessibilityNodeInfoCompat.ACTION_SET_SELECTION -> textCursor = -1
         AccessibilityNodeInfoCompat.ACTION_NEXT_AT_MOVEMENT_GRANULARITY,
         AccessibilityNodeInfoCompat.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY ->
             return traverseText(
@@ -252,21 +255,35 @@ internal class ReactTextViewAccessibilityDelegate(
     return super.performAccessibilityAction(host, action, args)
   }
 
+  internal fun resetTextTraversal() {
+    traversedText = null
+    textCursor = -1
+    breaks = null
+  }
+
   private fun traverseText(host: PreparedLayoutTextView, action: Int, granularity: Int): Boolean {
     val text = host.text ?: return false
+    if (!TextUtils.equals(text, traversedText)) {
+      resetTextTraversal()
+      traversedText = text.toString()
+    }
+    val string = traversedText ?: return false
     val locale = host.resources.configuration.locales[0]
     val breaks =
-        when (granularity) {
-          AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_CHARACTER ->
-              BreakIterator.getCharacterInstance(locale)
-          AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD ->
-              BreakIterator.getWordInstance(locale)
-          else -> return false
-        }
-    val string = text.toString()
-    breaks.setText(string)
+        this.breaks?.takeIf { breaksGranularity == granularity }
+            ?: when (granularity) {
+              AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_CHARACTER ->
+                  BreakIterator.getCharacterInstance(locale)
+              AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD ->
+                  BreakIterator.getWordInstance(locale)
+              else -> return false
+            }.also {
+              it.setText(string)
+              this.breaks = it
+              breaksGranularity = granularity
+            }
     val forward = action == AccessibilityNodeInfoCompat.ACTION_NEXT_AT_MOVEMENT_GRANULARITY
-    var from = if (string == cursorText) textCursor else if (forward) 0 else text.length
+    var from = if (textCursor >= 0) textCursor else if (forward) 0 else string.length
     while (true) {
       val to = if (forward) breaks.following(from) else breaks.preceding(from)
       if (to == BreakIterator.DONE) {
@@ -279,7 +296,6 @@ internal class ReactTextViewAccessibilityDelegate(
               (start until end).any { Character.isLetterOrDigit(Character.codePointAt(text, it)) }
       ) {
         textCursor = to
-        cursorText = string
         @Suppress("DEPRECATION")
         val event =
             AccessibilityEvent.obtain(
