@@ -73,11 +73,21 @@ internal class WebSocketConnections {
           !connection.closing &&
           !connection.finished
 
-  @Synchronized
-  fun openSocket(id: Int): WebSocket? {
-    val connection = connections[id] ?: return null
-    return if (connection.opened && !connection.closing && !connection.finished) connection.socket
-    else null
+  fun socketForSend(id: Int, onMissing: (Int) -> Unit): WebSocket? {
+    val pendingSocket =
+        synchronized(this) {
+          val connection = connections[id] ?: return@synchronized null
+          if (connection.closing) return null
+          if (connection.opened) return connection.socket
+
+          // The caller reports the error. Retire the slot before cancelling its transport.
+          connections.remove(id)
+          connection.finished = true
+          connection.socket
+        }
+    pendingSocket?.cancel()
+    onMissing(id)
+    return null
   }
 
   fun close(id: Int, code: Int, reason: String) {
@@ -89,19 +99,17 @@ internal class WebSocketConnections {
           Pair(connection.socket, connection.opened)
         }
     val socket = action.first ?: return // attach() cancels a handle that arrives later.
-    if (action.second) socket.close(code, reason) else socket.cancel()
-  }
-
-  /** The caller publishes its own terminal error after retiring the connection. */
-  fun retire(id: Int) {
-    val socket =
-        synchronized(this) {
-          val connection = connections.remove(id) ?: return
-          connection.finished = true
-          connection.closing = true
-          connection.socket
-        }
-    socket?.cancel()
+    if (!action.second) {
+      socket.cancel()
+      return
+    }
+    try {
+      socket.close(code, reason)
+    } catch (error: IllegalArgumentException) {
+      // OkHttp rejected the close frame. Cancellation still delivers a terminal callback.
+      socket.cancel()
+      throw error
+    }
   }
 
   @Synchronized

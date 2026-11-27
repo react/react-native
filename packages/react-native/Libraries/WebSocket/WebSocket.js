@@ -256,7 +256,7 @@ class WebSocket extends EventTarget {
         this.dispatchEvent(new MessageEvent('message', {data}));
       }),
       this._eventEmitter.addListener('websocketOpen', ev => {
-        if (ev.id !== this._socketId) {
+        if (ev.id !== this._socketId || this.readyState !== this.CONNECTING) {
           return;
         }
         this.readyState = this.OPEN;

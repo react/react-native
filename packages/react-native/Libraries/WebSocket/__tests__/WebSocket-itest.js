@@ -23,6 +23,24 @@ describe('WebSocket', function () {
     expect(new WebSocket('wss://echo.websocket.org').CONNECTING).toEqual(0);
   });
 
+  it('should ignore a queued open event after close() while connecting', () => {
+    const socket = new WebSocket('wss://echo.websocket.org');
+    // $FlowFixMe[prop-missing]
+    const id = socket._socketId;
+    const events: Array<string> = [];
+    socket.onopen = () => events.push('open');
+    socket.onclose = () => events.push('close');
+
+    socket.close();
+    DeviceEventEmitter.emit('websocketOpen', {id, protocol: ''});
+    expect(socket.readyState).toEqual(WebSocket.CLOSING);
+    expect(events).toEqual([]);
+
+    DeviceEventEmitter.emit('websocketClosed', {id, code: 1000, reason: ''});
+    expect(socket.readyState).toEqual(WebSocket.CLOSED);
+    expect(events).toEqual(['close']);
+  });
+
   it('should not dispatch message events after close() is called', () => {
     const socket = new WebSocket('wss://echo.websocket.org');
     // $FlowFixMe[prop-missing]

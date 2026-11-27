@@ -16,7 +16,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class WebSocketConnectionsTest {
-  private class Socket : WebSocket {
+  private class Socket(private val rejectClose: Boolean = false) : WebSocket {
     var cancellations = 0
     var closes = 0
 
@@ -29,6 +29,7 @@ class WebSocketConnectionsTest {
     override fun send(bytes: ByteString) = true
 
     override fun close(code: Int, reason: String?): Boolean {
+      if (rejectClose) throw IllegalArgumentException("Invalid close frame")
       closes++
       return true
     }
@@ -48,7 +49,7 @@ class WebSocketConnectionsTest {
     assertEquals(1, socket.cancellations)
     assertEquals(0, socket.closes)
     assertFalse(registry.opened(connection, socket))
-    assertNull(registry.openSocket(1))
+    assertNull(registry.socketForSend(1) { fail("Unexpected missing socket") })
     assertTrue(registry.finish(connection, socket))
     assertFalse(registry.finish(connection, socket))
   }
@@ -72,10 +73,10 @@ class WebSocketConnectionsTest {
     val socket = Socket()
     assertTrue(registry.opened(connection, socket))
     registry.attach(connection, socket)
-    assertSame(socket, registry.openSocket(1))
+    assertSame(socket, registry.socketForSend(1) { fail("Unexpected missing socket") })
     registry.close(1, 1000, "done")
     assertEquals(1, socket.closes)
-    assertNull(registry.openSocket(1))
+    assertNull(registry.socketForSend(1) { fail("Unexpected missing socket") })
     assertFalse(registry.readable(connection, socket))
   }
 
@@ -90,7 +91,7 @@ class WebSocketConnectionsTest {
     registry.attach(connection, socket)
     assertEquals(0, socket.cancellations)
     assertEquals(1, socket.closes)
-    assertNull(registry.openSocket(1))
+    assertNull(registry.socketForSend(1) { fail("Unexpected missing socket") })
     assertTrue(registry.finish(connection, socket))
     assertFalse(registry.finish(connection, socket))
   }
@@ -109,7 +110,7 @@ class WebSocketConnectionsTest {
     val socket = Socket()
     registry.attach(current, socket)
     assertTrue(registry.opened(current, socket))
-    assertSame(socket, registry.openSocket(1))
+    assertSame(socket, registry.socketForSend(1) { fail("Unexpected missing socket") })
   }
 
   @Test
@@ -165,8 +166,9 @@ class WebSocketConnectionsTest {
     val pending = registry.create(1)
     val socket = Socket()
     registry.attach(pending, socket)
-    assertNull(registry.openSocket(1))
-    registry.retire(1)
+    val missing = mutableListOf<Int>()
+    assertNull(registry.socketForSend(1) { missing.add(it) })
+    assertEquals(listOf(1), missing)
     assertEquals(1, socket.cancellations)
     assertFalse(registry.finish(pending, socket))
     assertFalse(registry.opened(pending, socket))
@@ -179,11 +181,48 @@ class WebSocketConnectionsTest {
   fun callerReportedFailureBeforeAttachCancelsLateHandleWithoutAnotherTerminal() {
     val registry = WebSocketConnections()
     val pending = registry.create(1)
-    registry.retire(1)
+    val missing = mutableListOf<Int>()
+    assertNull(registry.socketForSend(1) { missing.add(it) })
+    assertEquals(listOf(1), missing)
     val socket = Socket()
     registry.attach(pending, socket)
     assertEquals(1, socket.cancellations)
     assertFalse(registry.finish(pending, socket))
     assertFalse(registry.opened(pending, socket))
+  }
+
+  @Test
+  fun sendDuringGracefulClosePreservesTransportAndTerminalCallback() {
+    val registry = WebSocketConnections()
+    val connection = registry.create(1)
+    val socket = Socket()
+    assertTrue(registry.opened(connection, socket))
+    registry.close(1, 1000, "done")
+    assertNull(registry.socketForSend(1) { fail("Unexpected missing socket") })
+    assertEquals(0, socket.cancellations)
+    assertEquals(1, socket.closes)
+    assertTrue(registry.finish(connection, socket))
+    assertFalse(registry.finish(connection, socket))
+  }
+
+  @Test
+  fun rejectedCloseCancelsTransportAndPreservesTerminalCallback() {
+    val registry = WebSocketConnections()
+    val connection = registry.create(1)
+    val socket = Socket(rejectClose = true)
+    assertTrue(registry.opened(connection, socket))
+    assertThrows(IllegalArgumentException::class.java) { registry.close(1, 1005, "") }
+    assertEquals(1, socket.cancellations)
+    assertNull(registry.socketForSend(1) { fail("Unexpected missing socket") })
+    assertTrue(registry.finish(connection, socket))
+    assertFalse(registry.finish(connection, socket))
+  }
+
+  @Test
+  fun sendToUnknownSocketReportsMissingId() {
+    val registry = WebSocketConnections()
+    val missing = mutableListOf<Int>()
+    assertNull(registry.socketForSend(42) { missing.add(it) })
+    assertEquals(listOf(42), missing)
   }
 }

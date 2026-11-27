@@ -290,33 +290,16 @@ public class WebSocketModule(context: ReactApplicationContext) :
     val id = socketID.toInt()
     try {
       webSocketConnections.close(id, code.toInt(), reason ?: "")
-      contentHandlers.remove(id)
     } catch (e: Exception) {
       FLog.e(ReactConstants.TAG, "Could not close WebSocket connection for id $id", e)
+    } finally {
+      contentHandlers.remove(id)
     }
   }
 
   override fun send(message: String, socketID: Double) {
     val id = socketID.toInt()
-    val client = webSocketConnections.openSocket(id)
-    if (client == null) {
-      webSocketConnections.retire(id)
-      // This is a programmer error -- display development warning
-      var params = buildReadableMap {
-        put("id", id)
-        put("message", "client is null")
-      }
-      sendEvent("websocketFailed", params)
-      params = buildReadableMap {
-        put("id", id)
-        put("code", 0)
-        put("reason", "client is null")
-      }
-      sendEvent("websocketClosed", params)
-      contentHandlers.remove(id)
-      inspectorRequestIds.remove(id)
-      return
-    }
+    val client = webSocketConnections.socketForSend(id, ::notifyMissingSocket) ?: return
     try {
       reportToInspector(id) { requestId ->
         InspectorNetworkReporter.reportWebSocketMessageSent(requestId, message)
@@ -329,25 +312,7 @@ public class WebSocketModule(context: ReactApplicationContext) :
 
   override fun sendBinary(base64String: String, socketID: Double) {
     val id = socketID.toInt()
-    val client = webSocketConnections.openSocket(id)
-    if (client == null) {
-      webSocketConnections.retire(id)
-      // This is a programmer error -- display development warning
-      var params = buildReadableMap {
-        put("id", id)
-        put("message", "client is null")
-      }
-      sendEvent("websocketFailed", params)
-      params = buildReadableMap {
-        put("id", id)
-        put("code", 0)
-        put("reason", "client is null")
-      }
-      sendEvent("websocketClosed", params)
-      contentHandlers.remove(id)
-      inspectorRequestIds.remove(id)
-      return
-    }
+    val client = webSocketConnections.socketForSend(id, ::notifyMissingSocket) ?: return
     try {
       val decodedString = checkNotNull(ByteString.decodeBase64(base64String)) { "bytes == null" }
       reportToInspector(id) { requestId ->
@@ -360,25 +325,7 @@ public class WebSocketModule(context: ReactApplicationContext) :
   }
 
   public fun sendBinary(byteString: ByteString, id: Int) {
-    val client = webSocketConnections.openSocket(id)
-    if (client == null) {
-      webSocketConnections.retire(id)
-      // This is a programmer error -- display development warning
-      var params = buildReadableMap {
-        put("id", id)
-        put("message", "client is null")
-      }
-      sendEvent("websocketFailed", params)
-      params = buildReadableMap {
-        put("id", id)
-        put("code", 0)
-        put("reason", "client is null")
-      }
-      sendEvent("websocketClosed", params)
-      contentHandlers.remove(id)
-      inspectorRequestIds.remove(id)
-      return
-    }
+    val client = webSocketConnections.socketForSend(id, ::notifyMissingSocket) ?: return
     try {
       reportToInspector(id) { requestId ->
         InspectorNetworkReporter.reportWebSocketMessageSent(requestId, byteString)
@@ -391,30 +338,24 @@ public class WebSocketModule(context: ReactApplicationContext) :
 
   override fun ping(socketID: Double) {
     val id = socketID.toInt()
-    val client = webSocketConnections.openSocket(id)
-    if (client == null) {
-      webSocketConnections.retire(id)
-      // This is a programmer error -- display development warning
-      var params = buildReadableMap {
-        put("id", id)
-        put("message", "client is null")
-      }
-      sendEvent("websocketFailed", params)
-      params = buildReadableMap {
-        put("id", id)
-        put("code", 0)
-        put("reason", "client is null")
-      }
-      sendEvent("websocketClosed", params)
-      contentHandlers.remove(id)
-      inspectorRequestIds.remove(id)
-      return
-    }
+    val client = webSocketConnections.socketForSend(id, ::notifyMissingSocket) ?: return
     try {
       client.send(ByteString.EMPTY)
     } catch (e: Exception) {
       notifyWebSocketFailed(id, e.message)
     }
+  }
+
+  private fun notifyMissingSocket(id: Int) {
+    notifyWebSocketFailed(id, "client is null")
+    val params = buildReadableMap {
+      put("id", id)
+      put("code", 0)
+      put("reason", "client is null")
+    }
+    sendEvent("websocketClosed", params)
+    contentHandlers.remove(id)
+    inspectorRequestIds.remove(id)
   }
 
   private fun notifyWebSocketFailed(id: Int, message: String?) {
