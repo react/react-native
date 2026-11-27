@@ -19,7 +19,7 @@ internal class ViewGroupClickEvent(surfaceId: Int, viewId: Int) :
 
   override fun canCoalesce(): Boolean = false
 
-  override fun getEventData(): WritableMap = Arguments.createMap()
+  protected override fun getEventData(): WritableMap = Arguments.createMap()
 
   private companion object {
     private const val EVENT_NAME: String = "topClick"
