@@ -20,6 +20,14 @@ const invariant = require('invariant');
 const MetroHMRClient = require('metro-runtime/src/modules/HMRClient');
 const prettyFormat = require('pretty-format');
 
+// Internal to React Native's development tooling; it can change without notice.
+declare var global: {
+  __HMR_UPDATE_REPORTER__?: {
+    onUpdate: (update: Readonly<{revisionId: ?string, ...}>) => void,
+  },
+  ...
+};
+
 const pendingEntryPoints = [];
 let hmrClient = null;
 let hmrUnavailableReason: string | null = null;
@@ -224,6 +232,7 @@ Error: ${e.message}`;
     });
 
     let pendingUpdatesCount = 0;
+    let updatedRevisionIds: Array<?string> = [];
     let lastMarkerChangeId: string | null = null;
     client.on('update-start', ({isInitialUpdate}) => {
       pendingUpdatesCount++;
@@ -235,15 +244,21 @@ Error: ${e.message}`;
       }
     });
 
-    client.on('update', ({isInitialUpdate}) => {
+    client.on('update', ({isInitialUpdate, revisionId}) => {
       if (client.isEnabled() && !isInitialUpdate) {
         dismissRedbox();
         LogBox.clearAllLogs();
       }
+      // The client applied the update before this listener runs, or stashed it
+      // until Fast Refresh is enabled. An update that throws is not recorded.
+      updatedRevisionIds.push(revisionId);
     });
 
     client.on('update-done', body => {
       pendingUpdatesCount--;
+      const revisionIds = updatedRevisionIds;
+      updatedRevisionIds = [];
+      revisionIds.forEach(reportUpdate);
       if (pendingUpdatesCount === 0) {
         DevLoadingView.hide();
         const changeId = body?.changeId;
@@ -394,6 +409,14 @@ function showCompileError() {
   // because the stack trace is meaningless:
   error.preventSymbolication = true;
   throw error;
+}
+
+function reportUpdate(revisionId: ?string) {
+  try {
+    global.__HMR_UPDATE_REPORTER__?.onUpdate({revisionId});
+  } catch (error: unknown) {
+    console.warn('HMR update reporter failed:', error);
+  }
 }
 
 function emitFastRefreshCompleteEvents() {
