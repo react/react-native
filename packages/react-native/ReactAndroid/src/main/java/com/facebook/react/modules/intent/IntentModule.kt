@@ -7,7 +7,6 @@
 
 package com.facebook.react.modules.intent
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.nfc.NfcAdapter
@@ -169,7 +168,7 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
   override fun openSettings(promise: Promise) {
     try {
       val intent = Intent()
-      val currentActivity: Activity = checkNotNull(reactApplicationContext.getCurrentActivity())
+      val currentActivity = reactApplicationContext.getCurrentActivity()
       val selfPackageName = reactApplicationContext.packageName
 
       intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -178,7 +177,11 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
       intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-      currentActivity.startActivity(intent)
+      if (currentActivity != null) {
+        currentActivity.startActivity(intent)
+      } else {
+        reactApplicationContext.startActivity(intent)
+      }
 
       promise.resolve(true)
     } catch (e: Exception) {
