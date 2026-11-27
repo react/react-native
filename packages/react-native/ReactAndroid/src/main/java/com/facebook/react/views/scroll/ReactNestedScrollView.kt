@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<557812f5b7859a968d77969161d79133>>
+ * @generated SignedSource<<1d384b60412db920a363fd903634e6d4>>
  */
 
 /**
@@ -149,7 +149,6 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   override var removeClippedSubviews: Boolean
     get() = _removeClippedSubviews
     set(value) {
-      if (ReactNativeFeatureFlags.disableSubviewClippingAndroid()) return
       if (value && clippingRect == null) clippingRect = Rect()
       _removeClippedSubviews = value
       updateClippingRect()
