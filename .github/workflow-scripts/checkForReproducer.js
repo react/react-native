@@ -10,6 +10,8 @@
 const NEEDS_REPRO_LABEL = 'Needs: Repro';
 const NEEDS_AUTHOR_FEEDBACK_LABEL = 'Needs: Author Feedback';
 const SKIP_ISSUES_OLDER_THAN = '2023-07-01T00:00:00Z';
+// The account this workflow runs as; a user account, so actor.type is 'User'.
+const REACT_NATIVE_BOT_LOGIN = 'react-native-bot';
 
 module.exports = async (github, context) => {
   const issueData = {
@@ -82,16 +84,22 @@ function containsPattern(body, pattern) {
   return body.search(regexp) !== -1;
 }
 
-// Prevents the bot from responding when maintainer has changed the 'Needs: Repro' label
+// Prevents the bot from responding when a maintainer has changed the
+// 'Needs: Repro' label. Events from GitHub Apps and react-native-bot itself
+// are automation, not maintainer decisions.
 async function hasMaintainerChangedLabel(github, issueData, author) {
   const timeline = await github.rest.issues.listEventsForTimeline(issueData);
 
   const labeledEvents = timeline.data.filter(
     event => event.event === 'labeled' || event.event === 'unlabeled',
   );
-  const userEvents = labeledEvents.filter(event => event.actor.type !== 'Bot');
+  const maintainerEvents = labeledEvents.filter(
+    event =>
+      event.actor.type !== 'Bot' &&
+      event.actor.login !== REACT_NATIVE_BOT_LOGIN,
+  );
 
-  return userEvents.some(
+  return maintainerEvents.some(
     event =>
       event.actor.login !== author && event.label.name === NEEDS_REPRO_LABEL,
   );
