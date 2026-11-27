@@ -92,7 +92,8 @@ public class NetworkingModule(
   }
 
   private val client: OkHttpClient
-  private val cookieHandler = ForwardingCookieHandler()
+  private val cookieHandler =
+      ForwardingCookieHandler(reactContext.applicationContext ?: reactContext)
   private val defaultUserAgent: String?
   private var cookieJarContainer: CookieJarContainer? = null
   private val requestIds: MutableSet<Int> = HashSet()
