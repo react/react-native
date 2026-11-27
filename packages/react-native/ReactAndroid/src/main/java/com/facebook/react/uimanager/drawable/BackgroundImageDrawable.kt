@@ -32,6 +32,58 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.round
 
+private fun positionToPixels(lengthPercentage: LengthPercentage, availableSpace: Float): Float =
+    if (lengthPercentage.type == LengthPercentageType.PERCENT) {
+      lengthPercentage.resolve(availableSpace)
+    } else {
+      lengthPercentage.resolve(availableSpace).dpToPx()
+    }
+
+
+internal fun calculateBackgroundImageSize(
+    containerWidth: Float,
+    containerHeight: Float,
+    imageWidth: Float,
+    imageHeight: Float,
+    backgroundSize: BackgroundSize?,
+    repeat: BackgroundRepeat?,
+): Pair<Float, Float> {
+  var finalWidth = imageWidth
+  var finalHeight = imageHeight
+
+  if (backgroundSize is BackgroundSize.LengthPercentageAuto) {
+    val w = backgroundSize.lengthPercentage.x
+    val h = backgroundSize.lengthPercentage.y
+    if (w != null) {
+      finalWidth = positionToPixels(w, containerWidth)
+    }
+    if (h != null) {
+      finalHeight = positionToPixels(h, containerHeight)
+    }
+  }
+
+  if (repeat?.x == BackgroundRepeatKeyword.Round && finalWidth > 0) {
+    if (!FloatUtil.floatsEqual(containerWidth.rem(finalWidth), 0f)) {
+      val numRepeats = round(containerWidth / finalWidth)
+      if (numRepeats > 0) {
+        finalWidth = containerWidth / numRepeats
+      }
+    }
+  }
+
+  if (repeat?.y == BackgroundRepeatKeyword.Round && finalHeight > 0) {
+    if (!FloatUtil.floatsEqual(containerHeight.rem(finalHeight), 0f)) {
+      val numRepeats = round(containerHeight / finalHeight)
+      if (numRepeats > 0) {
+        finalHeight = containerHeight / numRepeats
+      }
+    }
+  }
+
+  return finalWidth to finalHeight
+}
+
+
 internal class BackgroundImageDrawable(
     private val context: Context,
     /*
@@ -341,54 +393,6 @@ internal class BackgroundImageDrawable(
       backgroundImageClipPath = Path()
       backgroundImageClipPath?.addRect(paintingArea, Path.Direction.CW)
     }
-  }
-
-  private fun positionToPixels(lengthPercentage: LengthPercentage, availableSpace: Float): Float =
-      if (lengthPercentage.type == LengthPercentageType.PERCENT) {
-        lengthPercentage.resolve(availableSpace)
-      } else {
-        lengthPercentage.resolve(availableSpace).dpToPx()
-      }
-
-  private fun calculateBackgroundImageSize(
-      containerWidth: Float,
-      containerHeight: Float,
-      imageWidth: Float,
-      imageHeight: Float,
-      backgroundSize: BackgroundSize?,
-      repeat: BackgroundRepeat?,
-  ): Pair<Float, Float> {
-    var finalWidth = imageWidth
-    var finalHeight = imageHeight
-
-    if (backgroundSize is BackgroundSize.LengthPercentageAuto) {
-      val w = backgroundSize.lengthPercentage.x
-      val h = backgroundSize.lengthPercentage.y
-      if (w != null && h != null) {
-        finalWidth = positionToPixels(w, containerWidth)
-        finalHeight = positionToPixels(h, containerHeight)
-      }
-    }
-
-    if (repeat?.x == BackgroundRepeatKeyword.Round && finalWidth > 0) {
-      if (!FloatUtil.floatsEqual(containerWidth.rem(finalWidth), 0f)) {
-        val numRepeats = round(containerWidth / finalWidth)
-        if (numRepeats > 0) {
-          finalWidth = containerWidth / numRepeats
-        }
-      }
-    }
-
-    if (repeat?.y == BackgroundRepeatKeyword.Round && finalHeight > 0) {
-      if (!FloatUtil.floatsEqual(containerHeight.rem(finalHeight), 0f)) {
-        val numRepeats = round(containerHeight / finalHeight)
-        if (numRepeats > 0) {
-          finalHeight = containerHeight / numRepeats
-        }
-      }
-    }
-
-    return finalWidth to finalHeight
   }
 
   private fun calculateBackgroundPosition(
