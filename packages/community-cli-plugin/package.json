@@ -40,7 +40,7 @@
     "debug": "^4.4.0",
     "invariant": "^2.2.4",
     "metro": "^0.88.0",
-    "launch-editor": "^2.9.1",
+    "launch-editor": "^2.14.2",
     "nocache": "^3.0.1",
     "open": "^8.4.2",
     "pretty-format": "^29.7.0",
