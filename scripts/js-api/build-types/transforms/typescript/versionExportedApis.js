@@ -238,7 +238,6 @@ function createVersionExportedApis(
           ) {
             const specifiers = nodePath.node.specifiers.map(specifier => {
               // $FlowFixMe[incompatible-type] nodePath is refined above
-              // $FlowFixMe[incompatible-use]
               const name: string = specifier.exported.name;
               if (declarations.has(name)) {
                 const hash = generateTypeHash(name);
@@ -409,7 +408,6 @@ function createVersionExportedApis(
         if (current.right && current.right.name) {
           fullName = '.' + current.right.name + fullName;
         }
-        // $FlowFixMe[prop-missing]
         // $FlowFixMe[incompatible-type]
         current = current.left;
       }

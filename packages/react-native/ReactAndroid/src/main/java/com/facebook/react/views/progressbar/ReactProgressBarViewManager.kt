@@ -11,6 +11,7 @@ package com.facebook.react.views.progressbar
 
 import android.content.Context
 import android.util.Pair
+import android.util.SparseArray
 import android.view.View
 import android.widget.ProgressBar
 import com.facebook.common.logging.FLog
@@ -28,7 +29,6 @@ import com.facebook.react.viewmanagers.AndroidProgressBarManagerDelegate
 import com.facebook.react.viewmanagers.AndroidProgressBarManagerInterface
 import com.facebook.yoga.YogaMeasureMode
 import com.facebook.yoga.YogaMeasureOutput
-import java.util.WeakHashMap
 
 /**
  * Manages instances of [ProgressBar]. [ProgressBar] is wrapped in a [ProgressBarContainerView]
@@ -40,8 +40,7 @@ import java.util.WeakHashMap
 internal class ReactProgressBarViewManager :
     BaseViewManager<ProgressBarContainerView, LayoutShadowNode>(),
     AndroidProgressBarManagerInterface<ProgressBarContainerView> {
-  @Suppress("IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE")
-  private val measuredStyles = WeakHashMap<Int, Pair<Int, Int>>()
+  private val measuredStyles = SparseArray<Pair<Int, Int>>()
 
   private val delegate: ViewManagerDelegate<ProgressBarContainerView> =
       AndroidProgressBarManagerDelegate(this)
@@ -111,11 +110,16 @@ internal class ReactProgressBarViewManager :
   ): Long {
     val style = getStyleFromString(props?.getString(PROP_STYLE))
     val value =
-        measuredStyles.getOrPut(style) {
-          val progressBar = createProgressBar(context, style)
-          val spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-          progressBar.measure(spec, spec)
-          Pair.create(progressBar.measuredWidth, progressBar.measuredHeight)
+        synchronized(measuredStyles) {
+          measuredStyles[style]
+              ?: run {
+                val progressBar = createProgressBar(context, style)
+                val spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                progressBar.measure(spec, spec)
+                Pair.create(progressBar.measuredWidth, progressBar.measuredHeight).also {
+                  measuredStyles.put(style, it)
+                }
+              }
         }
 
     return YogaMeasureOutput.make(

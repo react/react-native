@@ -58,6 +58,9 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
             Spacing.BLOCK,
             Spacing.BLOCK_END,
             Spacing.BLOCK_START,
+            Spacing.INLINE,
+            Spacing.INLINE_END,
+            Spacing.INLINE_START,
         )
     private const val CMD_HOTSPOT_UPDATE = 1
     private const val CMD_SET_PRESSED = 2
@@ -95,6 +98,10 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
   @ReactProp(name = "accessible")
   public open fun setAccessible(view: ReactViewGroup, accessible: Boolean) {
     view.isFocusable = accessible
+  }
+
+  override fun resetDisabledFromAccessibilityState(view: ReactViewGroup) {
+    view.isEnabled = true
   }
 
   @ReactProp(name = ViewProps.ACCESSIBILITY_ORDER)
@@ -376,11 +383,21 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
               ViewProps.BORDER_BOTTOM_WIDTH,
               ViewProps.BORDER_START_WIDTH,
               ViewProps.BORDER_END_WIDTH,
+              ViewProps.BORDER_BLOCK_WIDTH,
+              ViewProps.BORDER_BLOCK_END_WIDTH,
+              ViewProps.BORDER_BLOCK_START_WIDTH,
+              ViewProps.BORDER_INLINE_WIDTH,
+              ViewProps.BORDER_INLINE_END_WIDTH,
+              ViewProps.BORDER_INLINE_START_WIDTH,
           ],
       defaultFloat = Float.NaN,
   )
   public open fun setBorderWidth(view: ReactViewGroup, index: Int, width: Float) {
-    BackgroundStyleApplicator.setBorderWidth(view, LogicalEdge.values()[index], width)
+    BackgroundStyleApplicator.setBorderWidth(
+        view,
+        LogicalEdge.fromSpacingType(SPACING_TYPES[index]),
+        width,
+    )
   }
 
   @ReactPropGroup(
@@ -396,6 +413,9 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
               ViewProps.BORDER_BLOCK_COLOR,
               ViewProps.BORDER_BLOCK_END_COLOR,
               ViewProps.BORDER_BLOCK_START_COLOR,
+              ViewProps.BORDER_INLINE_COLOR,
+              ViewProps.BORDER_INLINE_END_COLOR,
+              ViewProps.BORDER_INLINE_START_COLOR,
           ],
       customType = "Color",
   )

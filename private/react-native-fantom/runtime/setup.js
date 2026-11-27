@@ -10,6 +10,7 @@
 
 import type {CoverageMap} from '../runner/coverage/types.flow';
 import type {BenchmarkResult} from '../src/Benchmark';
+import type {ScreenshotResult} from './ScreenshotContext';
 import type {
   SnapshotConfig,
   TestInlineSnapshotResults,
@@ -20,7 +21,12 @@ import {getConstants} from '../src/Constants';
 import expect from './expect';
 import {createMockFunction} from './mocks';
 import patchWeakRef from './patchWeakRef';
-import {setupSnapshotConfig, snapshotContext} from './snapshotContext';
+import {screenshotContext} from './ScreenshotContext';
+import {
+  ScreenshotSnapshotError,
+  setupSnapshotConfig,
+  snapshotContext,
+} from './snapshotContext';
 
 export type TestCaseResult = {
   ancestorTitles: Array<string>,
@@ -29,10 +35,12 @@ export type TestCaseResult = {
   status: 'passed' | 'failed' | 'pending',
   duration: number,
   failureMessages: Array<string>,
-  failureDetails: Array<FailureDetail>,
+  screenshotFailureMessages?: Array<string | null>,
+  failureDetails: Array<?FailureDetail | null>,
   numPassingAsserts: number,
   snapshotResults: TestSnapshotResults,
   inlineSnapshotResults: TestInlineSnapshotResults,
+  screenshotResults: Array<ScreenshotResult>,
   // location: string,
 };
 
@@ -323,46 +331,57 @@ function runSpec(spec: Spec): TestCaseResult {
     numPassingAsserts: 0,
     snapshotResults: {},
     inlineSnapshotResults: [],
+    screenshotResults: [],
   };
 
   if (!shouldRunSuite(spec)) {
     return result;
   }
 
-  let status: 'passed' | 'failed' | 'pending';
-  let error: unknown;
+  const errors: Array<unknown> = [];
 
   const start = Date.now();
   snapshotContext.setTargetTest(result.fullName);
+  screenshotContext.setTargetTest(result.fullName);
 
   try {
     invokeHooks(spec.parentContext, 'beforeEachHooks');
     spec.implementation();
-    invokeHooks(spec.parentContext, 'afterEachHooks');
-
-    status = 'passed';
   } catch (e: unknown) {
-    error = e;
-    status = 'failed';
+    errors.push(e);
   }
 
-  result.status = status;
+  try {
+    invokeHooks(spec.parentContext, 'afterEachHooks');
+  } catch (e: unknown) {
+    errors.push(e);
+  }
+
+  result.status = errors.length === 0 ? 'passed' : 'failed';
   result.duration = Date.now() - start;
-  if (status === 'failed' && error != null) {
+  for (const error of errors) {
     if (error instanceof Error) {
-      result.failureMessages = [error.stack ?? error.message ?? String(error)];
-      result.failureDetails = [serializeError(error)];
+      result.failureMessages.push(
+        error.stack ?? error.message ?? String(error),
+      );
+      result.failureDetails.push(serializeError(error));
     } else {
-      result.failureMessages = [`Non-error value thrown: ${String(error)}`];
-      result.failureDetails = [];
+      result.failureMessages.push(`Non-error value thrown: ${String(error)}`);
+      result.failureDetails.push(null);
     }
-  } else {
-    result.failureMessages = [];
-    result.failureDetails = [];
+  }
+
+  if (errors.some(error => error instanceof ScreenshotSnapshotError)) {
+    result.screenshotFailureMessages = errors.map(error =>
+      error instanceof ScreenshotSnapshotError
+        ? error.getPreviewMessage()
+        : null,
+    );
   }
 
   result.snapshotResults = snapshotContext.getSnapshotResults();
   result.inlineSnapshotResults = snapshotContext.getInlineSnapshotResults();
+  result.screenshotResults = screenshotContext.getResults();
   return result;
 }
 

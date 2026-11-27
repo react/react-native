@@ -23,7 +23,9 @@ export type {ProgressBarAndroidProps};
 // of ProgressBarAndroidProps. TS's Omit does not distribute over unions, so
 // we define our own version which does. This does not affect Flow.
 // $FlowExpectedError[unclear-type]
-type Omit<T, K> = T extends any ? Pick<T, Exclude<keyof T, K>> : T;
+type Omit<T extends interface {}, K> = T extends any
+  ? Pick<T, Exclude<keyof T, K>>
+  : T;
 
 /**
  * ProgressBarAndroid has been extracted from react-native core and will be removed in a future release.

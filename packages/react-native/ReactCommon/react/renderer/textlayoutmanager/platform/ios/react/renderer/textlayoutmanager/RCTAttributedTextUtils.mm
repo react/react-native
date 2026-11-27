@@ -421,6 +421,10 @@ static NSMutableAttributedString *RCTNSAttributedStringFragmentFromFragment(
 
     string = [NSString stringWithFormat:@"%C", (unichar)NSAttachmentCharacter];
     attributes = [NSMutableDictionary dictionaryWithObject:attachment forKey:NSAttachmentAttributeName];
+    UIFont *font = RCTEffectiveFontFromTextAttributes(fragment.textAttributes);
+    if (font) {
+      attributes[NSFontAttributeName] = font;
+    }
   } else {
     NSString *decoded = [[NSString alloc] initWithBytes:fragment.string.data()
                                                  length:fragment.string.size()

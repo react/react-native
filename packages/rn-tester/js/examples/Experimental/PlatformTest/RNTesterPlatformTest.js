@@ -10,11 +10,12 @@
 
 import type {PlatformTestComponentBaseProps} from './RNTesterPlatformTestTypes';
 
+import RNTesterText from '../../../components/RNTesterText';
 import RNTesterPlatformTestInstructions from './RNTesterPlatformTestInstructions';
 import RNTesterPlatformTestResultView from './RNTesterPlatformTestResultView';
 import usePlatformTestHarness from './usePlatformTestHarness';
 import * as React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 export default component RNTesterPlatformTest(
   title: string,
@@ -28,11 +29,13 @@ export default component RNTesterPlatformTest(
   return (
     <View style={styles.root}>
       <View style={styles.testcaseContainer}>
-        <Text style={[styles.textBlock, styles.title]}>{title}</Text>
+        <RNTesterText style={[styles.textBlock, styles.title]}>
+          {title}
+        </RNTesterText>
         {description !== '' ? (
-          <Text style={[styles.textBlock, styles.description]}>
+          <RNTesterText style={[styles.textBlock, styles.description]}>
             {description}
-          </Text>
+          </RNTesterText>
         ) : null}
         <RNTesterPlatformTestInstructions
           instructions={instructions}

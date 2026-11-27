@@ -85,7 +85,9 @@ if (__DEV__) {
 
       if (global.RN$registerExceptionListener != null) {
         global.RN$registerExceptionListener(
-          (error: ExtendedExceptionData & {preventDefault: () => unknown}) => {
+          (
+            error: ExtendedExceptionData & {preventDefault: () => unknown, ...},
+          ) => {
             if (global.RN$isRuntimeReady?.() || !error.isFatal) {
               error.preventDefault();
               addException(error);
@@ -200,7 +202,6 @@ if (__DEV__) {
           let componentStack = result.componentStack;
           if (
             (!componentStack || componentStack.length === 0) &&
-            // $FlowExpectedError[prop-missing]
             React.captureOwnerStack
           ) {
             const ownerStack = React.captureOwnerStack();

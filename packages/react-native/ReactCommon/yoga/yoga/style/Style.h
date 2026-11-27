@@ -358,6 +358,15 @@ class YG_EXPORT Style {
         maxDimensions_[yoga::to_underlying(Dimension::Height)].isPercent();
   }
 
+  // Kept out of resolvesAgainstOwnerWidth(), which every cache lookup runs.
+  bool hasPercentMargin() const {
+    return anyIsPercent(margin_);
+  }
+
+  bool hasPercentPadding() const {
+    return anyIsPercent(padding_);
+  }
+
   FloatOptional aspectRatio() const {
     return pool_.getNumber(aspectRatio_);
   }

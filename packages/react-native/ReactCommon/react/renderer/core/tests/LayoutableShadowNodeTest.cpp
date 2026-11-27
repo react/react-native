@@ -673,54 +673,66 @@ TEST(LayoutableShadowNodeTest, relativeLayoutMetricsOnTransformedParent) {
  * └────────────────────────┘
  */
 TEST(LayoutableShadowNodeTest, relativeLayoutMetricsOnParentWithClipping) {
-  auto builder = simpleComponentBuilder();
-  auto childShadowNode = std::shared_ptr<ViewShadowNode>{};
-  // clang-format off
-  auto element =
-    Element<RootShadowNode>()
-      .finalize([](RootShadowNode &shadowNode){
-        auto layoutMetrics = EmptyLayoutMetrics;
-        layoutMetrics.frame.size = {.width=900, .height=900};
-        shadowNode.setLayoutMetrics(layoutMetrics);
-      })
-      .children({
-        Element<ViewShadowNode>()
-        .finalize([](ViewShadowNode &shadowNode){
+  for (const auto overflow :
+       {yoga::Overflow::Visible,
+        yoga::Overflow::Hidden,
+        yoga::Overflow::Scroll}) {
+    SCOPED_TRACE(static_cast<int>(overflow));
+    auto builder = simpleComponentBuilder();
+    auto childShadowNode = std::shared_ptr<ViewShadowNode>{};
+    // clang-format off
+    auto element =
+      Element<RootShadowNode>()
+        .finalize([](RootShadowNode &shadowNode){
           auto layoutMetrics = EmptyLayoutMetrics;
-          layoutMetrics.frame.origin = {.x=10, .y=10};
-          layoutMetrics.frame.size = {.width=100, .height=100};
+          layoutMetrics.frame.size = {.width=900, .height=900};
           shadowNode.setLayoutMetrics(layoutMetrics);
         })
         .children({
           Element<ViewShadowNode>()
-          .reference(childShadowNode)
+          .props([overflow] {
+            auto sharedProps = std::make_shared<ViewProps>();
+            sharedProps->yogaStyle.setOverflow(overflow);
+            return sharedProps;
+          })
           .finalize([](ViewShadowNode &shadowNode){
             auto layoutMetrics = EmptyLayoutMetrics;
             layoutMetrics.frame.origin = {.x=10, .y=10};
-            layoutMetrics.frame.size = {.width=150, .height=150};
+            layoutMetrics.frame.size = {.width=100, .height=100};
             shadowNode.setLayoutMetrics(layoutMetrics);
           })
-        })
-    });
-  // clang-format on
+          .children({
+            Element<ViewShadowNode>()
+            .reference(childShadowNode)
+            .finalize([](ViewShadowNode &shadowNode){
+              auto layoutMetrics = EmptyLayoutMetrics;
+              layoutMetrics.frame.origin = {.x=10, .y=10};
+              layoutMetrics.frame.size = {.width=150, .height=150};
+              shadowNode.setLayoutMetrics(layoutMetrics);
+            })
+          })
+      });
+    // clang-format on
 
-  auto parentShadowNode = builder.build(element);
+    auto parentShadowNode = builder.build(element);
 
-  auto relativeLayoutMetrics =
-      LayoutableShadowNode::computeRelativeLayoutMetrics(
-          childShadowNode->getFamily(),
-          *parentShadowNode,
-          {
-              .includeTransform = true,
-              .includeViewportOffset = false,
-              .enableOverflowClipping = true,
-          });
+    const auto relativeLayoutMetrics =
+        LayoutableShadowNode::computeRelativeLayoutMetrics(
+            childShadowNode->getFamily(),
+            *parentShadowNode,
+            {
+                .includeTransform = true,
+                .includeViewportOffset = false,
+                .enableOverflowClipping = true,
+            });
 
-  EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 20);
-  EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 20);
+    EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 20);
+    EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 20);
 
-  EXPECT_EQ(relativeLayoutMetrics.frame.size.width, 90);
-  EXPECT_EQ(relativeLayoutMetrics.frame.size.height, 90);
+    const auto expectedSize = overflow == yoga::Overflow::Visible ? 150 : 90;
+    EXPECT_EQ(relativeLayoutMetrics.frame.size.width, expectedSize);
+    EXPECT_EQ(relativeLayoutMetrics.frame.size.height, expectedSize);
+  }
 }
 
 /*
@@ -742,59 +754,67 @@ TEST(LayoutableShadowNodeTest, relativeLayoutMetricsOnParentWithClipping) {
 TEST(
     LayoutableShadowNodeTest,
     relativeLayoutMetricsOnTransformedParentWithClipping) {
-  auto builder = simpleComponentBuilder();
-  auto childShadowNode = std::shared_ptr<ViewShadowNode>{};
-  // clang-format off
-  auto element =
-    Element<RootShadowNode>()
-      .finalize([](RootShadowNode &shadowNode){
-        auto layoutMetrics = EmptyLayoutMetrics;
-        layoutMetrics.frame.size = {.width=900, .height=900};
-        shadowNode.setLayoutMetrics(layoutMetrics);
-      })
-      .children({
-        Element<ViewShadowNode>()
-        .props([] {
-          auto sharedProps = std::make_shared<ViewProps>();
-          sharedProps->transform = Transform::Scale(0.5, 0.5, 1);
-          return sharedProps;
-        })
-        .finalize([](ViewShadowNode &shadowNode){
+  for (const auto overflow :
+       {yoga::Overflow::Visible,
+        yoga::Overflow::Hidden,
+        yoga::Overflow::Scroll}) {
+    SCOPED_TRACE(static_cast<int>(overflow));
+    auto builder = simpleComponentBuilder();
+    auto childShadowNode = std::shared_ptr<ViewShadowNode>{};
+    // clang-format off
+    auto element =
+      Element<RootShadowNode>()
+        .finalize([](RootShadowNode &shadowNode){
           auto layoutMetrics = EmptyLayoutMetrics;
-          layoutMetrics.frame.origin = {.x=10, .y=10};
-          layoutMetrics.frame.size = {.width=100, .height=100};
+          layoutMetrics.frame.size = {.width=900, .height=900};
           shadowNode.setLayoutMetrics(layoutMetrics);
         })
         .children({
           Element<ViewShadowNode>()
-          .reference(childShadowNode)
+          .props([overflow] {
+            auto sharedProps = std::make_shared<ViewProps>();
+            sharedProps->transform = Transform::Scale(0.5, 0.5, 1);
+            sharedProps->yogaStyle.setOverflow(overflow);
+            return sharedProps;
+          })
           .finalize([](ViewShadowNode &shadowNode){
             auto layoutMetrics = EmptyLayoutMetrics;
             layoutMetrics.frame.origin = {.x=10, .y=10};
-            layoutMetrics.frame.size = {.width=150, .height=150};
+            layoutMetrics.frame.size = {.width=100, .height=100};
             shadowNode.setLayoutMetrics(layoutMetrics);
           })
-        })
-    });
-  // clang-format on
+          .children({
+            Element<ViewShadowNode>()
+            .reference(childShadowNode)
+            .finalize([](ViewShadowNode &shadowNode){
+              auto layoutMetrics = EmptyLayoutMetrics;
+              layoutMetrics.frame.origin = {.x=10, .y=10};
+              layoutMetrics.frame.size = {.width=150, .height=150};
+              shadowNode.setLayoutMetrics(layoutMetrics);
+            })
+          })
+      });
+    // clang-format on
 
-  auto parentShadowNode = builder.build(element);
+    auto parentShadowNode = builder.build(element);
 
-  auto relativeLayoutMetrics =
-      LayoutableShadowNode::computeRelativeLayoutMetrics(
-          childShadowNode->getFamily(),
-          *parentShadowNode,
-          {
-              .includeTransform = true,
-              .includeViewportOffset = false,
-              .enableOverflowClipping = true,
-          });
+    const auto relativeLayoutMetrics =
+        LayoutableShadowNode::computeRelativeLayoutMetrics(
+            childShadowNode->getFamily(),
+            *parentShadowNode,
+            {
+                .includeTransform = true,
+                .includeViewportOffset = false,
+                .enableOverflowClipping = true,
+            });
 
-  EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 40);
-  EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 40);
+    EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 40);
+    EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 40);
 
-  EXPECT_EQ(relativeLayoutMetrics.frame.size.width, 45);
-  EXPECT_EQ(relativeLayoutMetrics.frame.size.height, 45);
+    const auto expectedSize = overflow == yoga::Overflow::Visible ? 75 : 45;
+    EXPECT_EQ(relativeLayoutMetrics.frame.size.width, expectedSize);
+    EXPECT_EQ(relativeLayoutMetrics.frame.size.height, expectedSize);
+  }
 }
 
 /*

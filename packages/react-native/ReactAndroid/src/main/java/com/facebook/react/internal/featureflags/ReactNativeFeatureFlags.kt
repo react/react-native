@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6b457b1b41a17fa2065720edc82939e3>>
+ * @generated SignedSource<<0128ee1e6f9a35114e76a548f1ccc8ab>>
  */
 
 /**
@@ -119,12 +119,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = accessor.enableAccumulatedUpdatesInRawPropsAndroid()
-
-  /**
-   * When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.
-   */
-  @JvmStatic
-  public fun enableAndroidAutoOffscreenCompositingForElevation(): Boolean = accessor.enableAndroidAutoOffscreenCompositingForElevation()
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.
@@ -245,6 +239,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean = accessor.enableImmediateUpdateModeForContentOffsetChanges()
+
+  /**
+   * Apply ScrollContentView state updates synchronously on the main thread.
+   */
+  @JvmStatic
+  public fun enableImmediateUpdateModeForScrollContentView(): Boolean = accessor.enableImmediateUpdateModeForScrollContentView()
 
   /**
    * When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.
@@ -403,6 +403,18 @@ public object ReactNativeFeatureFlags {
   public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean = accessor.fixMappingOfEventPrioritiesBetweenFabricAndReact()
 
   /**
+   * Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.
+   */
+  @JvmStatic
+  public fun fixProgrammaticScrollMomentumEventsIOS(): Boolean = accessor.fixProgrammaticScrollMomentumEventsIOS()
+
+  /**
+   * Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.
+   */
+  @JvmStatic
+  public fun fixTextInlineViewLineHeight(): Boolean = accessor.fixTextInlineViewLineHeight()
+
+  /**
    * Re-measures text and re-sends padding and overflow insets to mounted views when the pixel density changes, so text and padded views do not keep sizes from the old density.
    */
   @JvmStatic
@@ -515,6 +527,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun skipActivityIdentityAssertionOnHostPause(): Boolean = accessor.skipActivityIdentityAssertionOnHostPause()
+
+  /**
+   * Skip native prop metadata generation on Android for view managers with custom delegates. Requires their components to use static view configs.
+   */
+  @JvmStatic
+  public fun skipNativePropsForViewManagerWithDelegateAndroid(): Boolean = accessor.skipNativePropsForViewManagerWithDelegateAndroid()
 
   /**
    * When a node changes, the differ leaves out its children that are unchanged in both trees instead of describing and comparing them.

@@ -64,7 +64,7 @@ const renderSectionHeader = ({section}: {section: any, ...}) => (
 );
 
 const RNTesterModuleList: React.ComponentType<any> = memo(
-  ({sections, handleModuleCardPress}: any) => {
+  ({sections, handleModuleCardPress, bottomInset = 0}: any) => {
     const filter = ({example, filterRegex, category}: any) =>
       filterRegex.test(example.module.title) &&
       (!category || example.category === category);
@@ -102,7 +102,9 @@ const RNTesterModuleList: React.ComponentType<any> = memo(
               keyboardDismissMode="on-drag"
               renderSectionHeader={renderSectionHeader}
               // eslint-disable-next-line react/no-unstable-nested-components
-              ListFooterComponent={() => <View style={{height: 80}} />}
+              ListFooterComponent={() => (
+                <View style={{height: Math.max(80, bottomInset)}} />
+              )}
             />
           )}
         />

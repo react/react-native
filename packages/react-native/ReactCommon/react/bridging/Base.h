@@ -61,13 +61,16 @@ struct bridging_wrapper<T, std::void_t<decltype(&remove_cvref_t<T>::operator())>
 template <typename T>
 using bridging_t = typename detail::bridging_wrapper<T>::type;
 
+// Returns by value even when ReturnT is a reference (e.g. `const jsi::Object &`
+// for a method parameter): the converted value is a temporary of this frame, so
+// a returned reference would dangle. The caller's temporary lives until the end
+// of its full-expression, which covers the method call.
 template <typename ReturnT, typename JSArgT>
   requires is_jsi_v<JSArgT>
 auto fromJs(jsi::Runtime &rt, JSArgT &&value, const std::shared_ptr<CallInvoker> & /*unused*/)
-    -> decltype(static_cast<ReturnT>(std::move(convert(rt, std::forward<JSArgT>(value)))))
-
+    -> remove_cvref_t<decltype(static_cast<ReturnT>(std::move(convert(rt, std::forward<JSArgT>(value)))))>
 {
-  return static_cast<ReturnT>(std::move(convert(rt, std::forward<JSArgT>(value))));
+  return static_cast<remove_cvref_t<ReturnT>>(std::move(convert(rt, std::forward<JSArgT>(value))));
 }
 
 template <typename ReturnT, typename JSArgT>

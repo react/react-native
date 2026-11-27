@@ -13,15 +13,42 @@
 import type {RNTesterModule} from '../../types/RNTesterTypes';
 
 import hotdog from '../../assets/hotdog.jpg';
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
+import {useState} from 'react';
 import {
   DynamicColorIOS,
   Image,
   Platform,
   PlatformColor,
+  Pressable,
   StyleSheet,
   View,
 } from 'react-native';
+
+function BorderColorChangeExample(): React.Node {
+  const [perSide, setPerSide] = useState(false);
+  return (
+    <Pressable
+      testID="border-color-change-button"
+      onPress={() => setPerSide(value => !value)}>
+      <RNTesterText>
+        {perSide ? 'Per-side colors' : 'One color'} (tap to change)
+      </RNTesterText>
+      <View
+        testID="border-test-color-change"
+        style={{alignSelf: 'flex-start', padding: 10}}>
+        <View
+          style={[
+            styles.box,
+            {borderWidth: 10},
+            perSide ? styles.border2 : {borderColor: 'black'},
+          ]}
+        />
+      </View>
+    </Pressable>
+  );
+}
 
 const styles = StyleSheet.create({
   box: {
@@ -123,6 +150,23 @@ const styles = StyleSheet.create({
   border8Right: {
     borderRightWidth: 5,
     borderStyle: 'dashed',
+  },
+  borderLogical: {
+    marginRight: 10,
+    borderBlockStartWidth: 10,
+    borderBlockStartColor: 'red',
+    borderBlockEndWidth: 20,
+    borderBlockEndColor: 'green',
+    borderInlineStartWidth: 30,
+    borderInlineStartColor: 'blue',
+    borderInlineEndWidth: 40,
+    borderInlineEndColor: 'yellow',
+  },
+  borderLogicalShorthands: {
+    borderBlockWidth: 10,
+    borderBlockColor: 'red',
+    borderInlineWidth: 20,
+    borderInlineColor: 'blue',
   },
   border9: {
     borderWidth: 10,
@@ -388,6 +432,22 @@ export default {
       },
     },
     {
+      title: 'Logical Borders',
+      name: 'logical-borders',
+      description: 'borderBlock* & borderInline*',
+      render: function (): React.Node {
+        return (
+          <View testID="border-test-logical-borders" style={styles.wrapper}>
+            <View style={[styles.box, styles.borderLogical]} />
+            <View
+              style={[styles.box, styles.borderLogical, {direction: 'rtl'}]}
+            />
+            <View style={[styles.box, styles.borderLogicalShorthands]} />
+          </View>
+        );
+      },
+    },
+    {
       title: 'Corner Radii',
       name: 'corner-radii',
       description: 'borderTopLeftRadius & borderBottomRightRadius',
@@ -598,6 +658,15 @@ export default {
             </View>
           </View>
         );
+      },
+    },
+    {
+      title: 'Changing to per-side colors',
+      name: 'color-change',
+      description:
+        'A border that changes from one color to per-side colors stays inside the view',
+      render: function (): React.Node {
+        return <BorderColorChangeExample />;
       },
     },
     {

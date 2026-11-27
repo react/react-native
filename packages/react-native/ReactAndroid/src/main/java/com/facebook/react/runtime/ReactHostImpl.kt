@@ -733,6 +733,8 @@ public class ReactHostImpl(
   override fun onConfigurationChanged(context: Context) {
     val currentReactContext = this.currentReactContext
     if (currentReactContext != null) {
+      // The context is published before ReactInstance initializes the display metrics.
+      DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(currentReactContext)
       val previousFontScale = PixelUtil.toPixelFromSP(1.0)
       DisplayMetricsHolder.initDisplayMetrics(currentReactContext)
       val newFontScale = PixelUtil.toPixelFromSP(1.0)

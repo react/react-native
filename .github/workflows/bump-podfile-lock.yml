@@ -5,7 +5,7 @@ on:
 
 jobs:
   bump-podfile-lock:
-    runs-on: macos-15
+    runs-on: xcode-27
     steps:
       - name: Checkout
         uses: actions/checkout@v6

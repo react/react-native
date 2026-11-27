@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @fantom_flags enableResizeObserverByDefault:true
+ * @fantom_flags enableResizeObserverByDefault:true enableFabricCommitBranching:*
  * @flow strict-local
  * @format
  */
@@ -17,10 +17,12 @@ import type ResizeObserverSizeType from '../ResizeObserverSize';
 import type {HostInstance} from 'react-native';
 
 import {createShadowNodeReferenceCountingRef} from '../../../__tests__/utilities/ShadowNodeReferenceCounter';
+// Queue-idle assertions have no public Fantom wrapper.
+import NativeFantom from '../../../testing/fantom/specs/NativeFantom';
 import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
-import {createRef} from 'react';
+import {createRef, useLayoutEffect} from 'react';
 import {View} from 'react-native';
 
 declare const ResizeObserver: Class<ResizeObserverType>;
@@ -1561,7 +1563,397 @@ describe('ResizeObserver', () => {
     });
   });
 
+  describe('native layout updates', () => {
+    it('should not enqueue a wake when a native commit has no dirty observed family', () => {
+      const nodeRef = createRef<HostInstance>();
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const callback = jest.fn();
+      Fantom.runTask(() => {
+        root.render(
+          <View style={{width: 50, height: 40}}>
+            <View style={{width: 50, height: 40}} ref={nodeRef} />
+          </View>,
+        );
+      });
+      const node = nullthrows(nodeRef.current);
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(callback);
+        observer.observe(node);
+      });
+      NativeFantom.validateEmptyMessageQueue();
+
+      Fantom.runOnUIThread(() => root.updateSurfaceConstraints(200, 160));
+      NativeFantom.validateEmptyMessageQueue();
+      expect(callback).toHaveBeenCalledTimes(1);
+      Fantom.runTask(() => {
+        const rect = node.getBoundingClientRect();
+        expect([rect.x, rect.y, rect.width, rect.height]).toEqual([
+          0, 0, 50, 40,
+        ]);
+      });
+    });
+
+    it('should not notify when only the observed target position changes', () => {
+      const nodeRef = createRef<HostInstance>();
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const callback = jest.fn();
+      Fantom.runTask(() => {
+        root.render(
+          <View
+            style={{
+              flex: 1,
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+            }}>
+            <View style={{width: 50, height: 40}} ref={nodeRef} />
+          </View>,
+        );
+      });
+      const node = nullthrows(nodeRef.current);
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(callback);
+        observer.observe(node);
+      });
+      NativeFantom.validateEmptyMessageQueue();
+      Fantom.runOnUIThread(() => root.updateSurfaceConstraints(200, 160));
+      Fantom.runWorkLoop();
+      expect(callback).toHaveBeenCalledTimes(1);
+      Fantom.runTask(() => {
+        const rect = node.getBoundingClientRect();
+        expect([rect.x, rect.y, rect.width, rect.height]).toEqual([
+          150, 120, 50, 40,
+        ]);
+      });
+    });
+
+    it('should not notify when a native padding change preserves the observed border box', () => {
+      const nodeRef = createRef<HostInstance>();
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const callback = jest.fn();
+      Fantom.runTask(() => {
+        root.render(
+          <View
+            style={{width: 100, height: 60, padding: '10%'}}
+            ref={nodeRef}
+          />,
+        );
+      });
+      const node = nullthrows(nodeRef.current);
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(callback);
+        observer.observe(node, {box: 'border-box'});
+      });
+      NativeFantom.validateEmptyMessageQueue();
+      Fantom.runOnUIThread(() => root.updateSurfaceConstraints(200, 160));
+      Fantom.runWorkLoop();
+      expect(callback).toHaveBeenCalledTimes(1);
+    });
+
+    it('should wake when a native padding change resizes the observed content box', () => {
+      const nodeRef = createRef<HostInstance>();
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const widths: Array<number> = [];
+      Fantom.runTask(() => {
+        root.render(
+          <View
+            style={{width: 100, height: 60, padding: '10%'}}
+            ref={nodeRef}
+          />,
+        );
+      });
+      const node = nullthrows(nodeRef.current);
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries =>
+          widths.push(entries[0].contentRect.width),
+        );
+        observer.observe(node);
+      });
+      expect(widths).toEqual([80]);
+      Fantom.runOnUIThread(() => root.updateSurfaceConstraints(200, 160));
+      expect(widths).toEqual([80]);
+      Fantom.runWorkLoop();
+      expect(widths).toEqual([80, 60]);
+    });
+
+    it('should deliver a native resize without onLayout or an unrelated JS task', () => {
+      const nodeRef = createRef<HostInstance>();
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const sizes: Array<[number, number]> = [];
+
+      Fantom.runTask(() => {
+        root.render(
+          <View style={{width: '100%', height: '100%'}} ref={nodeRef} />,
+        );
+      });
+      const node = nullthrows(nodeRef.current);
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries => {
+          sizes.push([
+            entries[0].contentRect.width,
+            entries[0].contentRect.height,
+          ]);
+        });
+        observer.observe(node);
+      });
+
+      Fantom.runOnUIThread(() => {
+        root.updateSurfaceConstraints(200, 160);
+      });
+      expect(sizes).toEqual([[100, 80]]);
+      Fantom.runWorkLoop();
+      expect(sizes).toEqual([
+        [100, 80],
+        [200, 160],
+      ]);
+    });
+
+    it('should dispatch ResizeObserver before onLayout for a native resize', () => {
+      const nodeRef = createRef<HostInstance>();
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const events: Array<string> = [];
+
+      Fantom.runTask(() => {
+        root.render(
+          <View
+            style={{width: '100%', height: '100%'}}
+            ref={nodeRef}
+            onLayout={event =>
+              events.push(`layout:${event.nativeEvent.layout.width}`)
+            }
+          />,
+        );
+      });
+      const node = nullthrows(nodeRef.current);
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries => {
+          events.push(`resize:${entries[0].contentRect.width}`);
+        });
+        observer.observe(node);
+      });
+      events.length = 0;
+
+      Fantom.runOnUIThread(() => {
+        root.updateSurfaceConstraints(200, 160);
+      });
+      expect(events).toEqual([]);
+      Fantom.runWorkLoop();
+      expect(events).toEqual(['resize:200', 'layout:200']);
+    });
+
+    it('should preserve an onLayout task queued before observation starts', () => {
+      const nodeRef = createRef<HostInstance>();
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const events: Array<string> = [];
+      Fantom.runTask(() => {
+        root.render(
+          <View
+            style={{width: '100%', height: '100%'}}
+            ref={nodeRef}
+            onLayout={event => {
+              events.push(`layout:${event.nativeEvent.layout.width}`);
+            }}
+          />,
+        );
+      });
+      events.length = 0;
+      const node = nullthrows(nodeRef.current);
+
+      Fantom.runOnUIThread(() => {
+        root.updateSurfaceConstraints(200, 160);
+      });
+      // Register without flushing the already queued native event task.
+      observer = new ResizeObserver(entries => {
+        events.push(`resize:${entries[0].contentRect.width}`);
+      });
+      observer.observe(node);
+      Fantom.runOnUIThread(() => {
+        root.updateSurfaceConstraints(300, 240);
+      });
+      expect(events).toEqual([]);
+      Fantom.runWorkLoop();
+      // Events queued before observe() retain their place in the task queue.
+      expect(events).toEqual(['layout:300', 'resize:300']);
+    });
+
+    it('should coalesce native resizes before dispatching onLayout', () => {
+      const nodeRef = createRef<HostInstance>();
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const events: Array<string> = [];
+
+      Fantom.runTask(() => {
+        root.render(
+          <View
+            style={{width: '100%', height: '100%'}}
+            ref={nodeRef}
+            onLayout={event =>
+              events.push(`layout:${event.nativeEvent.layout.width}`)
+            }
+          />,
+        );
+      });
+      const node = nullthrows(nodeRef.current);
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries => {
+          events.push(`resize:${entries[0].contentRect.width}`);
+        });
+        observer.observe(node);
+      });
+      events.length = 0;
+
+      Fantom.runOnUIThread(() => {
+        root.updateSurfaceConstraints(200, 160);
+        root.updateSurfaceConstraints(300, 240);
+      });
+      expect(events).toEqual([]);
+      Fantom.runWorkLoop();
+      expect(events).toEqual(['resize:300', 'layout:300']);
+    });
+
+    it('should not schedule a resize notification for an unobserved surface', () => {
+      const observedRef = createRef<HostInstance>();
+      const observedRoot = Fantom.createRoot();
+      const otherRoot = Fantom.createRoot();
+      const callback = jest.fn();
+
+      Fantom.runTask(() => {
+        observedRoot.render(<View ref={observedRef} />);
+        otherRoot.render(<View style={{width: '100%', height: '100%'}} />);
+      });
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(callback);
+        observer.observe(nullthrows(observedRef.current));
+      });
+      expect(callback).toHaveBeenCalledTimes(1);
+      NativeFantom.validateEmptyMessageQueue();
+
+      Fantom.runOnUIThread(() => {
+        otherRoot.updateSurfaceConstraints(200, 160);
+      });
+      NativeFantom.validateEmptyMessageQueue();
+      expect(callback).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle reconnecting before a disconnected wake is drained', () => {
+      const nodeRef = createRef<HostInstance>();
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const firstCallback = jest.fn();
+      const secondCallback = jest.fn();
+      Fantom.runTask(() => {
+        root.render(
+          <View style={{width: '100%', height: '100%'}} ref={nodeRef} />,
+        );
+      });
+      const node = nullthrows(nodeRef.current);
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(firstCallback);
+        observer.observe(node);
+      });
+      Fantom.runOnUIThread(() => {
+        root.updateSurfaceConstraints(200, 160);
+      });
+      observer.disconnect();
+      // Reconnect while the previous connection's wake is still queued.
+      observer = new ResizeObserver(secondCallback);
+      observer.observe(node);
+      Fantom.runOnUIThread(() => {
+        root.updateSurfaceConstraints(300, 240);
+      });
+      Fantom.runWorkLoop();
+      expect(firstCallback).toHaveBeenCalledTimes(1);
+      expect(secondCallback).toHaveBeenCalledTimes(1);
+      expect(secondCallback.mock.lastCall[0][0].contentRect.width).toBe(300);
+    });
+
+    it('should discard a queued resize after disconnect and allow reconnecting', () => {
+      const nodeRef = createRef<HostInstance>();
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const sizes: Array<number> = [];
+
+      Fantom.runTask(() => {
+        root.render(
+          <View style={{width: '100%', height: '100%'}} ref={nodeRef} />,
+        );
+      });
+      const node = nullthrows(nodeRef.current);
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries =>
+          sizes.push(entries[0].contentRect.width),
+        );
+        observer.observe(node);
+      });
+      Fantom.runOnUIThread(() => {
+        root.updateSurfaceConstraints(200, 160);
+      });
+      observer.disconnect();
+      Fantom.runWorkLoop();
+      expect(sizes).toEqual([100]);
+
+      Fantom.runTask(() => observer.observe(node));
+      expect(sizes).toEqual([100, 200]);
+      Fantom.runOnUIThread(() => {
+        root.updateSurfaceConstraints(300, 240);
+      });
+      Fantom.runWorkLoop();
+      expect(sizes).toEqual([100, 200, 300]);
+    });
+  });
+
   describe('delivery timing', () => {
+    it('should report the committed size when observing from a ref callback', () => {
+      const root = Fantom.createRoot();
+      const sizes: Array<[number, number]> = [];
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries => {
+          const entry = entries[0];
+          sizes.push([
+            entry.contentRect.width,
+            entry.target.getBoundingClientRect().width,
+          ]);
+        });
+        root.render(
+          <View
+            style={{width: 100, height: 50}}
+            ref={node => {
+              if (node != null) {
+                observer.observe(node);
+              }
+            }}
+          />,
+        );
+      });
+      expect(sizes).toEqual([[100, 100]]);
+    });
+
+    it('should report the committed size when observing from a layout effect', () => {
+      const root = Fantom.createRoot();
+      const nodeRef = createRef<HostInstance>();
+      const sizes: Array<[number, number]> = [];
+      component Box(width: number) {
+        useLayoutEffect(() => {
+          const node = nullthrows(nodeRef.current);
+          observer.observe(node);
+          return () => observer.unobserve(node);
+        }, []);
+        return <View ref={nodeRef} style={{width, height: 50}} />;
+      }
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries => {
+          const entry = entries[0];
+          sizes.push([
+            entry.contentRect.width,
+            entry.target.getBoundingClientRect().width,
+          ]);
+        });
+        root.render(<Box width={100} />);
+      });
+      expect(sizes).toEqual([[100, 100]]);
+      Fantom.runTask(() => root.render(<Box width={200} />));
+      expect(sizes).toEqual([
+        [100, 100],
+        [200, 200],
+      ]);
+    });
+
     it('should deliver observations before a task scheduled from the same tick', () => {
       const nodeRef = createRef<HostInstance>();
       const root = Fantom.createRoot();
@@ -2788,6 +3180,123 @@ describe('ResizeObserver', () => {
       expect(() => {
         observer.disconnect();
       }).not.toThrow();
+    });
+  });
+
+  describe('large observation sets', () => {
+    it('preserves target order and hidden/removal deliveries for many siblings', () => {
+      const root = Fantom.createRoot();
+      const refs = Array.from({length: 64}, () => createRef<HostInstance>());
+      const callback = jest.fn();
+      const render = (hidden: boolean) => (
+        <View style={{display: hidden ? 'none' : 'flex'}}>
+          {refs.map((ref, index) => (
+            <View key={index} ref={ref} style={{width: 100, height: 10}} />
+          ))}
+        </View>
+      );
+      Fantom.runTask(() => root.render(render(false)));
+      const targets = refs.map(ref => nullthrows(ref.current)).reverse();
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(callback);
+        for (const target of targets) {
+          observer.observe(target);
+        }
+      });
+      const expectDelivery = (width: number) => {
+        const [entries] = callback.mock.lastCall;
+        expect(entries.map(entry => entry.target)).toEqual(targets);
+        expect(
+          entries.map(entry => entry.contentBoxSize[0].inlineSize),
+        ).toEqual(targets.map(() => width));
+      };
+      expectDelivery(100);
+      Fantom.runTask(() => root.render(render(true)));
+      expectDelivery(0);
+      Fantom.runTask(() => root.render(render(false)));
+      expectDelivery(100);
+      Fantom.runTask(() => root.render(<></>));
+      expectDelivery(0);
+      expect(callback).toHaveBeenCalledTimes(4);
+      Fantom.runTask(() => {});
+      expect(callback).toHaveBeenCalledTimes(4);
+      observer.disconnect();
+      root.destroy();
+    });
+
+    it('can disconnect and re-observe many targets inside the callback', () => {
+      const root = Fantom.createRoot();
+      const refs = Array.from({length: 64}, () => createRef<HostInstance>());
+      Fantom.runTask(() => {
+        root.render(
+          <View>
+            {refs.map((ref, index) => (
+              <View key={index} ref={ref} style={{width: 100, height: 10}} />
+            ))}
+          </View>,
+        );
+      });
+      const targets = refs.map(ref => nullthrows(ref.current));
+      let deliveries = 0;
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(entries => {
+          deliveries++;
+          expect(entries.map(entry => entry.target)).toEqual(targets);
+          if (deliveries === 1) {
+            observer.disconnect();
+            for (const target of targets) {
+              observer.observe(target);
+            }
+          }
+        });
+        for (const target of targets) {
+          observer.observe(target);
+        }
+      });
+      expect(deliveries).toBe(2);
+      Fantom.runTask(() => {});
+      expect(deliveries).toBe(2);
+      observer.disconnect();
+      root.destroy();
+    });
+
+    it('disconnects all targets of the last observer and permits re-observation', () => {
+      const root = Fantom.createRoot({viewportWidth: 200});
+      const refs = Array.from({length: 64}, () => createRef<HostInstance>());
+      const callback = jest.fn();
+      Fantom.runTask(() => {
+        root.render(
+          <View>
+            {refs.map((ref, index) => (
+              <View key={index} ref={ref} style={{width: '50%', height: 10}} />
+            ))}
+          </View>,
+        );
+      });
+      const targets = refs.map(ref => nullthrows(ref.current));
+      Fantom.runTask(() => {
+        observer = new ResizeObserver(callback);
+        for (const target of targets) {
+          observer.observe(target);
+        }
+      });
+      expect(callback).toHaveBeenCalledTimes(1);
+      Fantom.runTask(() => observer.disconnect());
+      Fantom.runTask(() => root.updateSurfaceConstraints(400, 200));
+      expect(callback).toHaveBeenCalledTimes(1);
+      Fantom.runTask(() => {
+        for (const target of targets) {
+          observer.observe(target);
+        }
+      });
+      expect(callback).toHaveBeenCalledTimes(2);
+      const [entries] = callback.mock.lastCall;
+      expect(entries.map(entry => entry.target)).toEqual(targets);
+      expect(entries.map(entry => entry.contentBoxSize[0].inlineSize)).toEqual(
+        targets.map(() => 200),
+      );
+      observer.disconnect();
+      root.destroy();
     });
   });
 

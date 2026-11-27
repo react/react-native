@@ -3252,6 +3252,24 @@ declare module "@babel/types" {
   declare type BabelNodeTSBaseType = BabelNodeTSAnyKeyword | BabelNodeTSBooleanKeyword | BabelNodeTSBigIntKeyword | BabelNodeTSIntrinsicKeyword | BabelNodeTSNeverKeyword | BabelNodeTSNullKeyword | BabelNodeTSNumberKeyword | BabelNodeTSObjectKeyword | BabelNodeTSStringKeyword | BabelNodeTSSymbolKeyword | BabelNodeTSUndefinedKeyword | BabelNodeTSUnknownKeyword | BabelNodeTSVoidKeyword | BabelNodeTSThisType | BabelNodeTSTemplateLiteralType | BabelNodeTSLiteralType;
   declare type BabelNodeModuleDeclaration = BabelNodeExportAllDeclaration | BabelNodeExportDefaultDeclaration | BabelNodeExportNamedDeclaration | BabelNodeImportDeclaration;
 
+  declare type BabelNodeValidator = {
+    (node?: BabelNode, key?: string | { toString(): string }, val?: unknown): void;
+    type?: 'string' | 'number' | 'bigint' | 'boolean' | 'symbol' | 'undefined' | 'object' | 'function' | 'array' | 'null' | 'any';
+    each?: BabelNodeValidator;
+    chainOf?: ReadonlyArray<BabelNodeValidator>;
+    oneOf?: ReadonlyArray<unknown>;
+    oneOfNodeTypes?: ReadonlyArray<string>;
+    oneOfNodeOrValueTypes?: ReadonlyArray<string>;
+    shapeOf?: { [field: string]: BabelNodeFieldOptions };
+  };
+
+  declare type BabelNodeFieldOptions = {
+    default?: string | number | boolean | [] | null;
+    optional?: boolean;
+    deprecated?: boolean;
+    validate?: BabelNodeValidator;
+  };
+
   declare export function arrayExpression(elements?: Array<null | BabelNodeExpression | BabelNodeSpreadElement>): BabelNodeArrayExpression;
   declare export function assignmentExpression(operator: string, left: BabelNodeLVal | BabelNodeOptionalMemberExpression, right: BabelNodeExpression): BabelNodeAssignmentExpression;
   declare export function binaryExpression(operator: "+" | "-" | "/" | "%" | "*" | "**" | "&" | "|" | ">>" | ">>>" | "<<" | "^" | "==" | "===" | "!=" | "!==" | "in" | "instanceof" | ">" | "<" | ">=" | "<=" | "|>", left: BabelNodeExpression | BabelNodePrivateName, right: BabelNodeExpression): BabelNodeBinaryExpression;
@@ -3854,7 +3872,7 @@ declare module "@babel/types" {
     key: string,
     index?: number,
   }>;
-  declare export type TraversalHandler<T> = (BabelNode, TraversalAncestors, T) => void;
+  declare export type TraversalHandler<T> = (node: BabelNode, parent: TraversalAncestors, state: T) => void;
   declare export type TraversalHandlers<T> = {
     enter?: TraversalHandler<T>,
     exit?: TraversalHandler<T>,
@@ -3862,7 +3880,7 @@ declare module "@babel/types" {
   declare export function traverse<T>(n: BabelNode, handler: TraversalHandler<T> | TraversalHandlers<T>, state?: T): void;
   declare export function traverseFast<T>(n: Node, h: TraversalHandler<T>, state?: T): void;
   declare export function shallowEqual(actual: Object, expected: Object): boolean
-  declare export function buildMatchMemberExpression(match: string, allowPartial?: boolean): (?BabelNode) => boolean
+  declare export function buildMatchMemberExpression(match: string, allowPartial?: boolean): (member: ?BabelNode) => boolean
   declare export function is(type: string, n: BabelNode, opts: Object): boolean;
   declare export function isBinding(node: BabelNode, parent: BabelNode, grandparent?: BabelNode): boolean
   declare export function isBlockScoped(node: BabelNode): boolean
@@ -4189,4 +4207,11 @@ declare module "@babel/types" {
   declare export type TSType = BabelNodeTSType;
   declare export type TSBaseType = BabelNodeTSBaseType;
   declare export type ModuleDeclaration = BabelNodeModuleDeclaration;
+  declare export var VISITOR_KEYS: { [type: string]: Array<string> };
+  declare export var ALIAS_KEYS: { [type: BabelNode['type']]: Array<string> };
+  declare export var FLIPPED_ALIAS_KEYS: { [alias: string]: Array<BabelNode['type']> };
+  declare export var NODE_FIELDS: { [type: string]: { [field: string]: BabelNodeFieldOptions } };
+  declare export var BUILDER_KEYS: { [type: string]: Array<string> };
+  declare export var DEPRECATED_KEYS: { [type: string]: BabelNode['type'] };
+  declare export var TYPES: Array<string>;
 }

@@ -50,6 +50,71 @@ function getActualViewportDimensions(root: Root): {
 }
 
 describe('Fantom', () => {
+  describe('root.updateSurfaceConstraints', () => {
+    it('resizes the root and percentage-sized descendants without another React render', () => {
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      const nodeRef = createRef<HostInstance>();
+      Fantom.runTask(() => {
+        root.render(
+          <View ref={nodeRef} style={{width: '50%', height: '25%'}} />,
+        );
+      });
+      const node = nullthrows(nodeRef.current);
+      Fantom.runTask(() => {
+        const documentElement = nullthrows(root.document.documentElement);
+        expect(documentElement.getBoundingClientRect().width).toBe(100);
+        expect(node.getBoundingClientRect().width).toBe(50);
+      });
+
+      root.updateSurfaceConstraints(200, 160);
+      Fantom.runTask(() => {
+        const documentElement = nullthrows(root.document.documentElement);
+        expect(documentElement.getBoundingClientRect().width).toBe(200);
+        expect(documentElement.getBoundingClientRect().height).toBe(160);
+        expect(node.getBoundingClientRect().width).toBe(100);
+        expect(node.getBoundingClientRect().height).toBe(40);
+        expect(nodeRef.current).toBe(node);
+      });
+
+      root.updateSurfaceConstraints(80, 40);
+      Fantom.runTask(() => {
+        const documentElement = nullthrows(root.document.documentElement);
+        expect(documentElement.getBoundingClientRect().width).toBe(80);
+        expect(documentElement.getBoundingClientRect().height).toBe(40);
+        expect(node.getBoundingClientRect().width).toBe(40);
+        expect(node.getBoundingClientRect().height).toBe(10);
+      });
+      root.destroy();
+    });
+
+    it('does not flush pending JS work when updating native constraints', () => {
+      const root = Fantom.createRoot({viewportWidth: 100, viewportHeight: 80});
+      Fantom.runTask(() => root.render(<View style={{flex: 1}} />));
+      let didRunTask = false;
+      Fantom.scheduleTask(() => {
+        didRunTask = true;
+        expect(
+          nullthrows(root.document.documentElement).getBoundingClientRect()
+            .width,
+        ).toBe(200);
+      });
+
+      root.updateSurfaceConstraints(200, 160);
+      expect(didRunTask).toBe(false);
+      Fantom.runWorkLoop();
+      expect(didRunTask).toBe(true);
+      root.destroy();
+    });
+
+    it('rejects resizing a destroyed root', () => {
+      const root = Fantom.createRoot();
+      root.destroy();
+      expect(() => root.updateSurfaceConstraints(200, 160)).toThrow(
+        'Cannot resize a destroyed root.',
+      );
+    });
+  });
+
   describe('scheduleTask', () => {
     it('does not run task immediately', () => {
       let didRun = false;

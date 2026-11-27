@@ -27,8 +27,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {EventCallback} from '../events/EventTarget';
 
 import DOMException from '../../errors/DOMException';
@@ -41,8 +39,8 @@ import EventTarget from '../events/EventTarget';
 import {dispatchTrustedEvent} from '../events/internals/EventTargetInternals';
 import {AbortController} from './AbortController';
 
-const ABORTED_KEY: symbol = Symbol('aborted');
-const REASON_KEY: symbol = Symbol('reason');
+const ABORTED_KEY = Symbol('aborted');
+const REASON_KEY = Symbol('reason');
 
 /**
  * The signal class.
@@ -57,7 +55,7 @@ export class AbortSignal extends EventTarget {
    */
   static abort(reason: unknown): AbortSignal {
     const signal = createAbortSignal();
-    abortSignal(reason, signal);
+    abortSignal(signal, reason);
     return signal;
   }
 
@@ -131,18 +129,14 @@ export class AbortSignal extends EventTarget {
     return controller.signal;
   }
 
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [ABORTED_KEY]: boolean = false;
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [REASON_KEY]: unknown;
 
   /**
    * Returns `true` if this `AbortSignal`'s `AbortController` has signaled to abort, and `false` otherwise.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get aborted(): boolean {
-    // $FlowExpectedError[prop-missing]
     const aborted = this[ABORTED_KEY];
     if (typeof aborted !== 'boolean') {
       throw new TypeError(
@@ -155,15 +149,17 @@ export class AbortSignal extends EventTarget {
     return aborted;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get reason(): unknown {
-    // $FlowExpectedError[prop-missing]
     return this[REASON_KEY];
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get onabort(): EventCallback | null {
     return getEventHandlerAttribute(this, 'abort');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   set onabort(listener: ?EventCallback): void {
     setEventHandlerAttribute(this, 'abort', listener);
   }
@@ -186,20 +182,16 @@ export function createAbortSignal(): AbortSignal {
  * Abort a given signal.
  */
 export function abortSignal(
+  signal: AbortSignal,
   reason: unknown | void = new DOMException(
     'signal is aborted without reason',
     'AbortError',
   ),
-  signal: AbortSignal,
 ): void {
-  // $FlowExpectedError[invalid-compare]
-  // $FlowExpectedError[prop-missing]
   if (signal[ABORTED_KEY] !== false) {
     return;
   }
-  // $FlowExpectedError[prop-missing]
   signal[ABORTED_KEY] = true;
-  // $FlowExpectedError[prop-missing]
   signal[REASON_KEY] = reason;
   dispatchTrustedEvent(signal, new Event('abort'));
 }
@@ -233,8 +225,6 @@ export const AbortSignal_public: typeof AbortSignal =
   };
 
 // Copy static properties ('length', 'name', 'prototype', 'abort', 'any', 'timeout') so that callers accessing them via the public constructor (e.g. `AbortSignal.timeout(0)`) still work.
-// $FlowFixMe[unsafe-object-assign]
-// $FlowFixMe[not-an-object]
 Object.getOwnPropertyNames(AbortSignal).forEach(methodName => {
   Object.defineProperty(
     AbortSignal_public,

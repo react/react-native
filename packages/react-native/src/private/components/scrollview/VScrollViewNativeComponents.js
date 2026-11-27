@@ -21,4 +21,4 @@ export const VScrollViewNativeComponent: HostComponent<ScrollViewNativeProps> =
   ScrollViewNativeComponent;
 
 export const VScrollContentViewNativeComponent: HostComponent<ViewProps> =
-  Platform.OS === 'android' ? View : ScrollContentViewNativeComponent;
+  Platform.OS === 'ios' ? ScrollContentViewNativeComponent : View;

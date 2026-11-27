@@ -30,7 +30,6 @@ import * as RendererProxy from '../../ReactNative/RendererProxy';
 export opaque type PublicRootInstance = unknown;
 
 export function createPublicRootInstance(rootTag: RootTag): PublicRootInstance {
-  // $FlowExpectedError[incompatible-return]
   return createReactNativeDocument(rootTag);
 }
 

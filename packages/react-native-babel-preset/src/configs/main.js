@@ -258,7 +258,10 @@ const getPreset = (src, options, babel) => {
       // the flow strip types plugin must go BEFORE class properties!
       // there'll be a test case that fails if you don't.
       {
-        plugins: [require('@babel/plugin-transform-flow-strip-types')],
+        plugins: [
+          [require('babel-plugin-transform-flow-enums')],
+          [require('@babel/plugin-transform-flow-strip-types')],
+        ],
       },
       {
         plugins: [
@@ -270,7 +273,6 @@ const getPreset = (src, options, babel) => {
               ...options.hermesParserOptions,
             },
           ],
-          [require('babel-plugin-transform-flow-enums')],
           ...(preserveBlockScoping
             ? []
             : [[require('@babel/plugin-transform-block-scoping')]]),

@@ -123,11 +123,20 @@ YogaLayoutableShadowNode::YogaLayoutableShadowNode(
       &static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode)
            .yogaConfig_;
 
+  // An unowned source can be appended and laid out again after this clone is
+  // committed (React does this when it shows a hidden subtree again), so it
+  // must not keep owning the children it now shares with this clone.
+  auto& sourceYogaNode =
+      static_cast<const YogaLayoutableShadowNode&>(sourceShadowNode).yogaNode_;
+  if (YGNodeGetOwner(&sourceYogaNode) == nullptr) {
+    updateYogaChildrenOwnersIfNeeded(sourceYogaNode);
+  }
+
   YGNodeSetContext(&yogaNode_, this);
   yogaNode_.setOwner(nullptr);
   YGNodeSetConfig(
       &yogaNode_, &initializeYogaConfig(yogaConfig_, previousConfig));
-  updateYogaChildrenOwnersIfNeeded();
+  updateYogaChildrenOwnersIfNeeded(yogaNode_);
 
   // We do not need to reconfigure this subtree before the next layout pass if
   // the previous node with the same props and children has already been
@@ -274,7 +283,7 @@ void YogaLayoutableShadowNode::replaceChild(
     return;
   }
 
-  bool suggestedIndexAccurate = suggestedIndex >= 0 &&
+  bool suggestedIndexAccurate =
       suggestedIndex < yogaLayoutableChildren_.size() &&
       yogaLayoutableChildren_[suggestedIndex].get() == layoutableOldChild;
 
@@ -332,7 +341,8 @@ bool YogaLayoutableShadowNode::shouldNewRevisionDirtyMeasurement(
 //
 // No-op in the common case: right after a clone, children's owner
 // pointers still reference the source node, not us.
-void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded() {
+/*static*/ void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded(
+    yoga::Node& yogaNode) {
   // Magic constant intentionally recognisable in debuggers when the address
   // pops up. `reinterpret_cast` is not constexpr, so this is a runtime-
   // initialised function-local static.
@@ -340,11 +350,22 @@ void YogaLayoutableShadowNode::updateYogaChildrenOwnersIfNeeded() {
   static auto* const kDetachedYogaNodeOwnerSentinel =
       reinterpret_cast<yoga::Node*>(0xBADC0FFEE0DDF000ULL);
   // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
-  for (auto& childYogaNode : yogaNode_.getChildren()) {
-    if (YGNodeGetOwner(childYogaNode) == &yogaNode_) {
+  for (auto& childYogaNode : yogaNode.getChildren()) {
+    if (YGNodeGetOwner(childYogaNode) == &yogaNode) {
       childYogaNode->setOwner(kDetachedYogaNodeOwnerSentinel);
     }
   }
+}
+
+// Every clone gets its own Yoga config, and `setConfig()` re-aligns the
+// layout's `configVersion` with it, so that field says nothing about whether
+// two nodes carry the same layout. Everything else has to match.
+static bool hasSameLayoutResults(
+    const yoga::Node& yogaNode,
+    const yoga::Node& otherYogaNode) {
+  auto layout = yogaNode.getLayout();
+  layout.configVersion = otherYogaNode.getLayout().configVersion;
+  return layout == otherYogaNode.getLayout();
 }
 
 void YogaLayoutableShadowNode::updateYogaChildren() {
@@ -386,8 +407,11 @@ void YogaLayoutableShadowNode::updateYogaChildren() {
         auto& newYogaChildNode =
             yogaLayoutableChildren_.at(yogaChildIndex)->yogaNode_;
 
+        // A clean child styled the same can still carry another layout, e.g. a
+        // revision zeroed out under a `display: none` clone of this node.
         isClean = isClean && !newYogaChildNode.isDirty() &&
-            (newYogaChildNode.style() == oldYogaChildNode.style());
+            (newYogaChildNode.style() == oldYogaChildNode.style()) &&
+            hasSameLayoutResults(newYogaChildNode, oldYogaChildNode);
       }
     }
   }
@@ -411,6 +435,10 @@ void YogaLayoutableShadowNode::updateYogaProps() {
   }
 
   yogaNode_.setStyle(styleResult);
+  // A style rebuilt from the props lacks what `configureYogaTree` applies to
+  // it, such as the left and right swap in RTL, so the node needs configuring
+  // again.
+  yogaTreeHasBeenConfigured_ = false;
   if (getTraits().check(ShadowNodeTraits::ViewKind)) {
     auto& viewProps = static_cast<const ViewProps&>(*props_);
     // https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block#identifying_the_containing_block
@@ -418,6 +446,16 @@ void YogaLayoutableShadowNode::updateYogaProps() {
         viewProps.transform != Transform::Identity() ||
         !viewProps.filter.empty();
     YGNodeSetAlwaysFormsContainingBlock(&yogaNode_, alwaysFormsContainingBlock);
+  }
+
+  switch (YGNodeStyleGetOverflow(&yogaNode_)) {
+    case YGOverflowVisible:
+      ShadowNode::traits_.unset(ShadowNodeTraits::Trait::FormsContentClip);
+      break;
+    case YGOverflowHidden:
+    case YGOverflowScroll:
+      ShadowNode::traits_.set(ShadowNodeTraits::Trait::FormsContentClip);
+      break;
   }
 
   if (YGNodeStyleGetDisplay(&yogaNode_) == YGDisplayContents) {
@@ -463,6 +501,18 @@ void YogaLayoutableShadowNode::updateYogaProps() {
   if (props.paddingBlock.isDefined()) {
     result.setPadding(yoga::Edge::Vertical, props.paddingBlock);
   }
+  if (props.borderBlockWidth.isDefined()) {
+    result.setBorder(yoga::Edge::Vertical, props.borderBlockWidth);
+  }
+  if (props.borderInlineWidth.isDefined()) {
+    result.setBorder(yoga::Edge::Horizontal, props.borderInlineWidth);
+  }
+  if (props.borderInlineStartWidth.isDefined()) {
+    result.setBorder(yoga::Edge::Start, props.borderInlineStartWidth);
+  }
+  if (props.borderInlineEndWidth.isDefined()) {
+    result.setBorder(yoga::Edge::End, props.borderInlineEndWidth);
+  }
 
   // Aliases without precedence
   if (result.position(yoga::Edge::Bottom).isUndefined()) {
@@ -482,6 +532,12 @@ void YogaLayoutableShadowNode::updateYogaProps() {
   }
   if (result.padding(yoga::Edge::Bottom).isUndefined()) {
     result.setPadding(yoga::Edge::Bottom, props.paddingBlockEnd);
+  }
+  if (result.border(yoga::Edge::Top).isUndefined()) {
+    result.setBorder(yoga::Edge::Top, props.borderBlockStartWidth);
+  }
+  if (result.border(yoga::Edge::Bottom).isUndefined()) {
+    result.setBorder(yoga::Edge::Bottom, props.borderBlockEndWidth);
   }
 
   return result;
@@ -778,8 +834,9 @@ void YogaLayoutableShadowNode::layout(LayoutContext layoutContext) {
       // node exclusively ownes the child node).
       react_native_assert(YGNodeGetOwner(childYogaNode) == &yogaNode_);
 
-      // We are about to mutate layout metrics of the node.
-      childNode.ensureUnsealed();
+      // `setLayoutMetrics` below enforces the seal when the metrics change.
+      // Identical metrics on a node shared with a sealed tree are a no-op,
+      // not a mutation.
 
       auto newLayoutMetrics = layoutMetricsFromYogaNode(*childYogaNode);
       newLayoutMetrics.pointScaleFactor = layoutContext.pointScaleFactor;
@@ -892,6 +949,8 @@ YGSize YogaLayoutableShadowNode::yogaNodeMeasureCallbackConnector(
   TraceSection s("YogaLayoutableShadowNode::yogaNodeMeasureCallbackConnector");
 
   auto& shadowNode = shadowNodeFromContext(yogaNode);
+  // Measuring may write to the node, so it must not be a committed one.
+  shadowNode.ensureUnsealed();
 
   auto minimumSize = Size{.width = 0, .height = 0};
   auto maximumSize = Size{
@@ -1046,9 +1105,10 @@ void YogaLayoutableShadowNode::swapLeftAndRightInYogaStyleProps() {
 }
 
 void YogaLayoutableShadowNode::swapLeftAndRightInViewProps() {
-  if (auto viewShadowNode = dynamic_cast<ViewShadowNode*>(this)) {
+  if (getTraits().check(ShadowNodeTraits::ViewKind)) {
     // TODO: Do not mutate props directly.
-    auto& props = const_cast<ViewProps&>(viewShadowNode->getConcreteProps());
+    auto& props =
+        const_cast<ViewProps&>(static_cast<const ViewProps&>(*props_));
 
     // Swap border node values, borderRadii, borderColors and borderStyles.
     if (props.borderRadii.topLeft.has_value()) {

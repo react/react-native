@@ -47,6 +47,7 @@ import com.facebook.react.util.AndroidVersion.VERSION_CODE_VANILLA_ICE_CREAM
 import com.facebook.react.views.text.internal.span.CustomLetterSpacingSpan
 import com.facebook.react.views.text.internal.span.CustomLineHeightSpan
 import com.facebook.react.views.text.internal.span.CustomStyleSpan
+import com.facebook.react.views.text.internal.span.InlineViewHeights
 import com.facebook.react.views.text.internal.span.ReactAbsoluteSizeSpan
 import com.facebook.react.views.text.internal.span.ReactBackgroundColorSpan
 import com.facebook.react.views.text.internal.span.ReactClickableSpan
@@ -118,9 +119,9 @@ internal object TextLayoutManager {
 
   private const val TEXT_WIDTH_MODE_LONGEST_LINE = "longest-line"
 
-  // Widths arrive in pixels converted from Yoga's floating point DIPs, so a width of a whole number
-  // of pixels can arrive a fraction of a pixel short of it (e.g. 371.99997 instead of 372).
-  private const val PIXEL_WIDTH_TOLERANCE = 0.001f
+  // Sizes arrive in pixels converted from Yoga's floating point DIPs, so a whole number of pixels
+  // can arrive a fraction of a pixel short of it (e.g. 371.99997 instead of 372).
+  internal const val PIXEL_SIZE_TOLERANCE: Float = 0.001f
 
   private val tagToSpannableCache = ConcurrentHashMap<Int, Spannable>()
 
@@ -313,6 +314,17 @@ internal object TextLayoutManager {
     // single spans, avoiding duplicate draws (e.g. multiple accent marks in HighlighterTextSpan).
     var pendingEffects: List<TextAttributeProps.TextEffectEntry> = emptyList()
     var pendingEffectStart = 0
+    val inlineViews by
+        lazy(LazyThreadSafetyMode.NONE) {
+          val hasInlineViews =
+              ReactNativeFeatureFlags.fixTextInlineViewLineHeight() &&
+                  (0 until fragments.count).any { i ->
+                    val fragment = fragments.getMapBuffer(i)
+                    fragment.contains(FR_KEY_IS_ATTACHMENT) &&
+                        fragment.getBoolean(FR_KEY_IS_ATTACHMENT)
+                  }
+          if (hasInlineViews) InlineViewHeights() else null
+        }
 
     for (i in 0 until fragments.count) {
       val fragment = fragments.getMapBuffer(i)
@@ -442,7 +454,13 @@ internal object TextLayoutManager {
           )
         }
         if (!textAttributes.lineHeight.isNaN()) {
-          ops.add(SetSpanOperation(start, end, CustomLineHeightSpan(textAttributes.lineHeight)))
+          ops.add(
+              SetSpanOperation(
+                  start,
+                  end,
+                  CustomLineHeightSpan(textAttributes.lineHeight, inlineViews),
+              ),
+          )
         }
 
         if (ReactNativeFeatureFlags.enablePreparedTextLayout()) {
@@ -540,6 +558,15 @@ internal object TextLayoutManager {
     }
 
     val spannable = SpannableString(text)
+    val inlineViews =
+        if (
+            ReactNativeFeatureFlags.fixTextInlineViewLineHeight() &&
+                parsedFragments.any { it.isAttachment }
+        ) {
+          InlineViewHeights()
+        } else {
+          null
+        }
 
     // Track pending text effects to coalesce consecutive fragments with the same effects into
     // single spans, avoiding duplicate draws (e.g. multiple accent marks in HighlighterTextSpan).
@@ -679,7 +706,12 @@ internal object TextLayoutManager {
         }
 
         if (!fragment.props.lineHeight.isNaN()) {
-          spannable.setSpan(CustomLineHeightSpan(fragment.props.lineHeight), start, end, spanFlags)
+          spannable.setSpan(
+              CustomLineHeightSpan(fragment.props.lineHeight, inlineViews),
+              start,
+              end,
+              spanFlags,
+          )
         }
 
         if (ReactNativeFeatureFlags.enablePreparedTextLayout()) {
@@ -982,7 +1014,7 @@ internal object TextLayoutManager {
    * width back as its constraint once Yoga has converted it to DIPs and back, and flooring that to
    * one pixel less wraps the text.
    */
-  private fun floorPixelWidth(width: Float): Int = floor(width + PIXEL_WIDTH_TOLERANCE).toInt()
+  private fun floorPixelWidth(width: Float): Int = floor(width + PIXEL_SIZE_TOLERANCE).toInt()
 
   @VisibleForTesting
   internal fun adjustLayoutForRtlRightOverhang(
@@ -1231,7 +1263,8 @@ internal object TextLayoutManager {
         .layout
   }
 
-  private fun createLayout(
+  @VisibleForTesting
+  internal fun createLayout(
       text: Spannable,
       paint: TextPaint,
       attributedString: MapBuffer,
@@ -1241,7 +1274,7 @@ internal object TextLayoutManager {
       height: Float,
       heightYogaMeasureMode: YogaMeasureMode,
   ): CreateLayoutResult {
-    val boring = isBoring(text, paint)
+    var boring = isBoring(text, paint)
 
     val textBreakStrategy =
         TextAttributeProps.getTextBreakStrategy(
@@ -1315,6 +1348,11 @@ internal object TextLayoutManager {
           justificationMode,
           paint,
       )
+      // The spans and paint now hold the fitted font size. Re-measure so the final layout does not
+      // keep the line metrics of the original, larger font.
+      if (boring != null) {
+        boring = isBoring(text, paint)
+      }
     }
 
     var layout =
@@ -1465,6 +1503,27 @@ internal object TextLayoutManager {
     )
   }
 
+  /**
+   * How much taller rounding line heights up to whole pixels made a layout than the line heights
+   * its text asks for. StaticLayout applies every line height span in a paragraph to each of its
+   * lines, and the last one sets the line's height.
+   */
+  private fun lineHeightRounding(layout: Layout): Float {
+    val text = layout.text as? Spanned ?: return 0f
+    var rounding = 0f
+    for (line in 0 until layout.lineCount) {
+      val lineStart = layout.getLineStart(line)
+      val paragraphStart = TextUtils.lastIndexOf(text, '\n', lineStart - 1) + 1
+      val paragraphEnd =
+          TextUtils.indexOf(text, '\n', lineStart).let { if (it < 0) text.length else it }
+      val span =
+          text.getSpans(paragraphStart, paragraphEnd, CustomLineHeightSpan::class.java).lastOrNull()
+              ?: continue
+      rounding += span.lineHeight - span.height
+    }
+    return rounding
+  }
+
   @JvmStatic
   fun adjustSpannableFontToFit(
       text: Spannable,
@@ -1560,7 +1619,9 @@ internal object TextLayoutManager {
 
       val singleLineTextExceedsWidth = text.length == 1 && layout.getLineWidth(0) > width
       val exceedsHeight =
-          heightYogaMeasureMode != YogaMeasureMode.UNDEFINED && layout.height > height
+          heightYogaMeasureMode != YogaMeasureMode.UNDEFINED &&
+              layout.height > height + PIXEL_SIZE_TOLERANCE &&
+              layout.height - lineHeightRounding(layout) > height + PIXEL_SIZE_TOLERANCE
       val exceedsMaximumNumberOfLines =
           maximumNumberOfLines != ReactConstants.UNSET &&
               maximumNumberOfLines != 0 &&
@@ -1971,7 +2032,7 @@ internal object TextLayoutManager {
     return metrics
   }
 
-  private class CreateLayoutResult(
+  internal class CreateLayoutResult(
       val layout: Layout,
       val textBreakStrategy: Int,
       val justificationMode: Int,

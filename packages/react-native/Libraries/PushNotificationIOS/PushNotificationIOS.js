@@ -28,7 +28,6 @@ type PresentLocalNotificationDetails = {
   alertTitle?: string,
   soundName?: string,
   category?: string,
-  // $FlowFixMe[unclear-type]
   userInfo?: Object,
   applicationIconBadgeNumber?: number,
   fireDate?: number,
@@ -175,9 +174,7 @@ export interface PushNotification {
  * @deprecated Use [@react-native-community/push-notification-ios](https://www.npmjs.com/package/@react-native-community/push-notification-ios) instead
  */
 class PushNotificationIOS {
-  // $FlowFixMe[unclear-type]
   _data: Object;
-  // $FlowFixMe[unclear-type]
   _alert: string | Object;
   _sound: string;
   _category: string;
@@ -333,7 +330,6 @@ class PushNotificationIOS {
    *
    * See https://reactnative.dev/docs/pushnotificationios#cancellocalnotification
    */
-  // $FlowFixMe[unclear-type]
   static cancelLocalNotifications(userInfo: Object): void {
     invariant(
       NativePushNotificationManagerIOS,

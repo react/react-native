@@ -95,7 +95,7 @@ describe('#verifyPublishedTemplate', () => {
       '@react-native-community/template',
       version,
       null,
-      18,
+      90,
     );
   });
 
@@ -109,7 +109,7 @@ describe('#verifyPublishedTemplate', () => {
       '@react-native-community/template',
       version,
       'latest',
-      18,
+      90,
     );
   });
 

@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type ReadOnlyElement from './ReadOnlyElement';
 
 import {getNativeTextReference} from './internals/NodeInternals';
@@ -18,14 +16,17 @@ import ReadOnlyNode from './ReadOnlyNode';
 import NativeDOM from './specs/NativeDOM';
 
 export default class ReadOnlyCharacterData extends ReadOnlyNode {
+  // $FlowFixMe[unsafe-getters-setters]
   get nextElementSibling(): ReadOnlyElement | null {
     return getElementSibling(this, 'next');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get previousElementSibling(): ReadOnlyElement | null {
     return getElementSibling(this, 'previous');
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get data(): string {
     const node = getNativeTextReference(this);
 
@@ -36,6 +37,7 @@ export default class ReadOnlyCharacterData extends ReadOnlyNode {
     return '';
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get length(): number {
     return this.data.length;
   }
@@ -43,6 +45,7 @@ export default class ReadOnlyCharacterData extends ReadOnlyNode {
   /**
    * @override
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get textContent(): string {
     return this.data;
   }
@@ -50,6 +53,7 @@ export default class ReadOnlyCharacterData extends ReadOnlyNode {
   /**
    * @override
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get nodeValue(): string {
     return this.data;
   }
@@ -79,5 +83,4 @@ export const ReadOnlyCharacterData_public: typeof ReadOnlyCharacterData =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ReadOnlyCharacterData_public.prototype = ReadOnlyCharacterData.prototype;

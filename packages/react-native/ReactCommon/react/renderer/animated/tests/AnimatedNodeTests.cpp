@@ -413,6 +413,58 @@ TEST_F(AnimatedNodeTests, ObjectAnimatedNode) {
   EXPECT_EQ(collectedProps["test"][2]["scale3d"], 4);
 }
 
+TEST_F(AnimatedNodeTests, TransformNodeSkipsStaticEntryWithoutNumericValue) {
+  initNodesManager();
+
+  auto rootTag = getNextRootViewTag();
+  auto valueTag = ++rootTag;
+  nodesManager_->createAnimatedNode(
+      valueTag,
+      folly::dynamic::object("type", "value")("value", 10)("offset", 0));
+
+  // A static transform whose JS value was `undefined` arrives with no "value"
+  // key, and a `null` value arrives as null.
+  auto transformTag = ++rootTag;
+  nodesManager_->createAnimatedNode(
+      transformTag,
+      folly::dynamic::object("type", "transform")(
+          "transforms",
+          folly::dynamic::array(
+              folly::dynamic::object("type", "animated")(
+                  "property", "translateX")("nodeTag", valueTag),
+              folly::dynamic::object("type", "static")("property", "scale"),
+              folly::dynamic::object("type", "static")("property", "rotate")(
+                  "value", nullptr),
+              folly::dynamic::object("type", "static")(
+                  "property", "translateY")("value", 5))));
+  nodesManager_->connectAnimatedNodes(valueTag, transformTag);
+
+  auto styleTag = ++rootTag;
+  nodesManager_->createAnimatedNode(
+      styleTag,
+      folly::dynamic::object("type", "style")(
+          "style", folly::dynamic::object("transform", transformTag)));
+  nodesManager_->connectAnimatedNodes(transformTag, styleTag);
+
+  auto propsTag = ++rootTag;
+  nodesManager_->createAnimatedNode(
+      propsTag,
+      folly::dynamic::object("type", "props")(
+          "props", folly::dynamic::object("style", styleTag)));
+  nodesManager_->connectAnimatedNodes(styleTag, propsTag);
+
+  auto viewTag = ++rootTag;
+  nodesManager_->connectAnimatedNodeToView(propsTag, viewTag);
+
+  nodesManager_->setAnimatedNodeValue(valueTag, 20);
+  runAnimationFrame(0);
+
+  const auto& transforms = lastCommittedProps["transform"];
+  ASSERT_EQ(transforms.size(), 2u);
+  EXPECT_EQ(transforms[0]["translateX"].asDouble(), 20);
+  EXPECT_EQ(transforms[1]["translateY"].asDouble(), 5);
+}
+
 // Styles that Animated supports and that do not participate in layout must be
 // direct-manipulation eligible; anything absent from this set is treated as a
 // layout update by StyleAnimatedNode and forced through a Fabric commit.

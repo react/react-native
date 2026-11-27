@@ -13,9 +13,9 @@
  * See https://dom.spec.whatwg.org/#interface-eventtarget.
  */
 
+import type {AbortSignal as InternalAbortSignal} from '../abort-api/AbortSignal';
 import type {EventPhase} from './Event';
 
-import * as ReactNativeFeatureFlags from '../../../featureflags/ReactNativeFeatureFlags';
 import {setPlatformObject} from '../../webidl/PlatformObjects';
 import Event from './Event';
 import {
@@ -51,7 +51,7 @@ export type AddEventListenerOptions = Readonly<{
   ...EventListenerOptions,
   passive?: boolean,
   once?: boolean,
-  signal?: AbortSignal,
+  signal?: InternalAbortSignal,
 }>;
 
 type EventListenerRegistration = {
@@ -64,6 +64,9 @@ type EventListenerRegistration = {
 type ListenersMap = Map<string, Map<EventListener, EventListenerRegistration>>;
 
 export default class EventTarget {
+  [CAPTURING_LISTENERS_KEY]: ?ListenersMap;
+  [BUBBLING_LISTENERS_KEY]: ?ListenersMap;
+
   addEventListener(
     type: string,
     callback: EventListener | null,
@@ -223,7 +226,6 @@ export default class EventTarget {
    * from the bubble pass — it cannot be derived from `event.eventPhase`,
    * which is `AT_TARGET` during both passes through the target node.
    */
-  // $FlowExpectedError[unsupported-syntax]
   // $FlowFixMe[illegal-key]
   [EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY](
     event: Event,
@@ -239,8 +241,6 @@ export default class EventTarget {
    * Should implement the "get the parent" algorithm
    * (see https://dom.spec.whatwg.org/#get-the-parent).
    */
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [EVENT_TARGET_GET_THE_PARENT_KEY](): EventTarget | null {
     return null;
   }
@@ -250,8 +250,6 @@ export default class EventTarget {
    * `dispatchEvent` return contract: returns `false` if the event was
    * canceled (i.e. `event.defaultPrevented`), otherwise `true`.
    */
-  // $FlowExpectedError[unsupported-syntax]
-  // $FlowFixMe[illegal-key]
   [INTERNAL_DISPATCH_METHOD_KEY](
     event: Event,
     rethrowListenerErrors?: boolean,
@@ -403,66 +401,49 @@ function invoke(
 
   setCurrentTarget(event, eventTarget);
 
-  if (ReactNativeFeatureFlags.enableNativeEventTargetEventDispatching()) {
-    // Resolve the prop-based listener. Pass the event so subclasses can read
-    // its `type` and any pre-resolved internal slots; pass `isCapture`
-    // separately because it can't be derived from `event.eventPhase` (which
-    // is `AT_TARGET` during both passes through the target node).
-    // $FlowExpectedError[prop-missing]
-    const propListener: EventCallback | null = eventTarget[
-      EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY
-    ](event, isCapture);
+  // Resolve the prop-based listener. Pass the event so subclasses can read
+  // its `type` and any pre-resolved internal slots; pass `isCapture`
+  // separately because it can't be derived from `event.eventPhase` (which
+  // is `AT_TARGET` during both passes through the target node).
+  // $FlowExpectedError[prop-missing]
+  const propListener: EventCallback | null = eventTarget[
+    EVENT_TARGET_GET_DECLARATIVE_LISTENER_KEY
+  ](event, isCapture);
 
-    const listenersByType = getListenersForPhase(eventTarget, isCapture);
-    const maybeListeners = listenersByType?.get(event.type);
-
-    // Fast path: only a prop listener (no `addEventListener` listeners).
-    // This is the overwhelmingly common case for React-driven dispatch.
-    if (maybeListeners == null) {
-      if (propListener == null) {
-        return;
-      }
-      const currentEvent = global.event;
-      global.event = event;
-      try {
-        propListener.call(eventTarget, event);
-      } catch (error) {
-        handleListenerError(error, errorState);
-      }
-      global.event = currentEvent;
-      return;
-    }
-
-    // Slow path: combine prop listener + addEventListener listeners.
-    const listeners: Array<EventListenerRegistration> = [];
-    if (propListener != null) {
-      listeners.push({
-        callback: propListener,
-        passive: false,
-        once: false,
-        removed: false,
-      });
-    }
-    for (const registration of maybeListeners.values()) {
-      listeners.push(registration);
-    }
-    invokeListeners(eventTarget, event, listeners, isCapture, errorState);
-    return;
-  }
-
-  // Legacy path (flag OFF): only `addEventListener` listeners.
   const listenersByType = getListenersForPhase(eventTarget, isCapture);
   const maybeListeners = listenersByType?.get(event.type);
+
+  // Fast path: only a prop listener (no `addEventListener` listeners).
+  // This is the overwhelmingly common case for React-driven dispatch.
   if (maybeListeners == null) {
+    if (propListener == null) {
+      return;
+    }
+    const currentEvent = global.event;
+    global.event = event;
+    try {
+      propListener.call(eventTarget, event);
+    } catch (error) {
+      handleListenerError(error, errorState);
+    }
+    global.event = currentEvent;
     return;
   }
-  invokeListeners(
-    eventTarget,
-    event,
-    Array.from(maybeListeners.values()),
-    isCapture,
-    errorState,
-  );
+
+  // Slow path: combine prop listener + addEventListener listeners.
+  const listeners: Array<EventListenerRegistration> = [];
+  if (propListener != null) {
+    listeners.push({
+      callback: propListener,
+      passive: false,
+      once: false,
+      removed: false,
+    });
+  }
+  for (const registration of maybeListeners.values()) {
+    listeners.push(registration);
+  }
+  invokeListeners(eventTarget, event, listeners, isCapture, errorState);
 }
 
 function invokeListeners(
@@ -493,7 +474,6 @@ function invokeListeners(
     try {
       if (typeof callback === 'function') {
         callback.call(eventTarget, event);
-        // $FlowExpectedError[method-unbinding]
       } else if (typeof callback.handleEvent === 'function') {
         callback.handleEvent(event);
       }
@@ -521,10 +501,8 @@ function getListenersForPhase(
   isCapture: boolean,
 ): ?ListenersMap {
   return isCapture
-    ? // $FlowExpectedError[prop-missing]
-      eventTarget[CAPTURING_LISTENERS_KEY]
-    : // $FlowExpectedError[prop-missing]
-      eventTarget[BUBBLING_LISTENERS_KEY];
+    ? eventTarget[CAPTURING_LISTENERS_KEY]
+    : eventTarget[BUBBLING_LISTENERS_KEY];
 }
 
 function setListenersMap(
@@ -533,17 +511,15 @@ function setListenersMap(
   listenersMap: ListenersMap,
 ): void {
   if (isCapture) {
-    // $FlowExpectedError[prop-missing]
     eventTarget[CAPTURING_LISTENERS_KEY] = listenersMap;
   } else {
-    // $FlowExpectedError[prop-missing]
     eventTarget[BUBBLING_LISTENERS_KEY] = listenersMap;
   }
 }
 
 const EVENT_DISPATCH_FLAG = Symbol('Event.dispatch');
 
-function getEventDispatchFlag(event: Event): boolean {
+function getEventDispatchFlag(event: Event): boolean | void {
   // $FlowExpectedError[prop-missing]
   return event[EVENT_DISPATCH_FLAG];
 }

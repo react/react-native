@@ -12,7 +12,7 @@ import type {Int32} from '../../Types/CodegenTypes';
 
 import * as React from 'react';
 
-export interface TextInputNativeCommands<T> {
+export interface TextInputNativeCommands<T extends React.ElementType> {
   readonly focus: (viewRef: React.ElementRef<T>) => void;
   readonly blur: (viewRef: React.ElementRef<T>) => void;
   readonly setTextAndSelection: (

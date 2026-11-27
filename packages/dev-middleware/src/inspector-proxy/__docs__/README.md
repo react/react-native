@@ -110,11 +110,11 @@ interface Message {
 
 #### Device → Proxy Messages
 
-| Event          | Payload                                                        | Description                                           |
-| -------------- | -------------------------------------------------------------- | ----------------------------------------------------- |
-| `getPages`     | `Page[]`                                                       | Current list of inspectable pages.                    |
-| `disconnect`   | `{ pageId: string, sessionId?: string }`                       | Notify that page disconnected or rejected connection. |
-| `wrappedEvent` | `{ pageId: string, sessionId?: string, wrappedEvent: string }` | Forward CDP message (JSON string) from page.          |
+| Event          | Payload                                                       | Description                                           |
+| -------------- | ------------------------------------------------------------- | ----------------------------------------------------- |
+| `getPages`     | `Page[]`                                                      | Current list of inspectable pages.                    |
+| `disconnect`   | `{ pageId: string, sessionId: string }`                       | Notify that page disconnected or rejected connection. |
+| `wrappedEvent` | `{ pageId: string, sessionId: string, wrappedEvent: string }` | Forward CDP message (JSON string) from page.          |
 
 #### Page Object
 
@@ -127,13 +127,9 @@ interface Page {
   capabilities?: {
     nativePageReloads?: boolean; // Target keeps the socket open across reloads
     nativeSourceCodeFetching?: boolean; // Target supports Network.loadNetworkResource
-    supportsMultipleDebuggers?: boolean; // Supports concurrent debugger sessions
   };
 }
 ```
-
-**Note**: The value of `supportsMultipleDebuggers` SHOULD be consistent across
-all pages for a given device.
 
 ### Connection Lifecycle
 
@@ -179,36 +175,23 @@ a `disconnect` back to the proxy for that `pageId`. Devices also send a
 `disconnect` for each session when a page is removed.
 
 For targets with `nativePageReloads`, the proxy closes the debugger connection
-with `[PAGE_REMOVED]` when it receives a `disconnect` for its session (or for
-its page, if `sessionId` is omitted).
+with `[PAGE_REMOVED]` when it receives a `disconnect` for its session.
 
 ### Connection Semantics
 
 #### Multi-Debugger Support
 
-Multiple debuggers can connect simultaneously to the same page when **both** the
-proxy and device support session multiplexing:
-
-1. **Session IDs**: The proxy assigns a unique, non-empty `sessionId` to each
-   debugger connection. All messages include this `sessionId` for routing. This
-   SHOULD be a UUID or other suitably unique and ephemeral identifier.
-
-2. **Capability Detection**: Devices report `supportsMultipleDebuggers: true` in
-   their page capabilities to indicate session support.
-
-3. **Backwards Compatibility**: Legacy devices ignore `sessionId` fields in
-   incoming messages and don't include them in responses.
+Multiple debuggers can connect simultaneously to the same page. The proxy
+assigns a unique, non-empty `sessionId` to each debugger connection. All
+messages include this `sessionId` for routing. This SHOULD be a UUID or other
+suitably unique and ephemeral identifier.
 
 #### Connection Rules
 
-1. **Session-Capable Device**: Multiple debuggers can connect to the same page
+1. **Concurrent Sessions**: Multiple debuggers can connect to the same page
    simultaneously. Each connection has an independent session.
 
-2. **Legacy Device (no `supportsMultipleDebuggers`)**: New debugger connections
-   to an already-connected page disconnect the existing debugger. The proxy MUST
-   NOT allow multiple debuggers to connect to the same page.
-
-3. **Device Reconnection**: If a device reconnects with the same `device` ID
+2. **Device Reconnection**: If a device reconnects with the same `device` ID
    while debugger connections to the same logical device are open in the proxy,
    the proxy may attempt to preserve active debugger sessions by forwarding them
    to the new device.

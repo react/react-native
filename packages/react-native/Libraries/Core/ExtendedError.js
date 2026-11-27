@@ -12,7 +12,7 @@ export type ExtendedError = Error &
   interface {
     jsEngine?: string,
     preventSymbolication?: boolean,
-    componentStack?: string,
+    componentStack?: ?string,
     isComponentError?: boolean,
     type?: string,
     // Note: A field keyed by the Symbol ExceptionsManager.decoratedExtraDataKey is also read from ExtendedErrors.
@@ -23,11 +23,8 @@ export type ExtendedError = Error &
     cause?: {
       name: string,
       message: string,
-      // $FlowFixMe[unclear-type]
       stackElements?: ReadonlyArray<Object>,
-      // $FlowFixMe[unclear-type]
       stackSymbols?: ReadonlyArray<Object>,
-      // $FlowFixMe[unclear-type]
       stackReturnAddresses?: ReadonlyArray<Object>,
     },
   };

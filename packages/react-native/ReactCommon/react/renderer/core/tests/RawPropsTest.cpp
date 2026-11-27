@@ -350,7 +350,6 @@ TEST(RawPropsTest, handleRawPropsPrimitiveTypesIncomplete) {
   EXPECT_EQ((int)*raw.at("intValue"), 42);
 }
 
-#ifdef REACT_NATIVE_DEBUG
 TEST(RawPropsTest, handleRawPropsPrimitiveTypesIncorrectLookup) {
   ContextContainer contextContainer{};
   PropsParserContext parserContext{-1, contextContainer};
@@ -361,13 +360,9 @@ TEST(RawPropsTest, handleRawPropsPrimitiveTypesIncorrectLookup) {
   parser.prepare<PropsPrimitiveTypes>();
   raw.parse(parser);
 
-  // Before D18662135, looking up an invalid key would trigger
-  // an infinite loop. This is out of contract, so we should only
-  // test this in debug.
   EXPECT_EQ(raw.at("flurb"), nullptr);
   EXPECT_EQ((int)*raw.at("intValue"), 42);
 }
-#endif
 
 TEST(RawPropsTest, handlePropsMultiLookup) {
   ContextContainer contextContainer{};

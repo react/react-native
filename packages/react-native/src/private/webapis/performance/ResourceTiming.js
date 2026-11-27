@@ -8,8 +8,6 @@
  * @flow strict
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {
   DOMHighResTimeStamp,
   PerformanceEntryJSON,
@@ -75,42 +73,52 @@ export class PerformanceResourceTiming extends PerformanceEntry {
     this.#decodedBodySize = init.decodedBodySize;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get fetchStart(): DOMHighResTimeStamp {
     return this.#fetchStart;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get requestStart(): DOMHighResTimeStamp {
     return this.#requestStart;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get connectStart(): DOMHighResTimeStamp {
     return this.#connectStart;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get connectEnd(): DOMHighResTimeStamp {
     return this.#connectEnd;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get responseStart(): DOMHighResTimeStamp {
     return this.#responseStart;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get responseEnd(): DOMHighResTimeStamp {
     return this.#responseEnd;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get responseStatus(): number {
     return this.#responseStatus;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get contentType(): string {
     return this.#contentType;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get encodedBodySize(): number {
     return this.#encodedBodySize;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get decodedBodySize(): number {
     return this.#decodedBodySize;
   }
@@ -141,6 +149,5 @@ export const PerformanceResourceTiming_public: typeof PerformanceResourceTiming 
     );
   };
 
-// $FlowExpectedError[prop-missing]
 PerformanceResourceTiming_public.prototype =
   PerformanceResourceTiming.prototype;

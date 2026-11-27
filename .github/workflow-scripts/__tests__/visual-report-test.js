@@ -20,9 +20,12 @@ const {
 } = require('../visual/report');
 const {
   approvalKey,
+  baselineImageKey,
   baselinePrefix,
+  blobKey,
   publicUrl,
   reportPrefix,
+  storageLocation,
 } = require('../visual/storage');
 const {SHA_A, SHA_B} = require('./__fixtures__/visual');
 
@@ -49,7 +52,20 @@ describe('visual reports and approval', () => {
     });
 
     test.each([
+      ['blobs', `blobs/${'a'.repeat(64)}.png`],
+      [null, `baselines/ios-x-0123abcd/${SHA_A}/text/basic/default.png`],
+    ])('finds a baseline image with imageStore %p', (imageStore, key) => {
+      expect(
+        baselineImageKey(
+          {environmentKey: 'ios-x-0123abcd', sha: SHA_A, imageStore},
+          {id: 'text/basic/default', sha256: 'a'.repeat(64)},
+        ),
+      ).toBe(key);
+    });
+
+    test.each([
       [() => baselinePrefix('k', 'main')],
+      [() => blobKey('../x')],
       [
         () =>
           reportPrefix({prNumber: -1, headSha: SHA_A, runId: 1, runAttempt: 1}),
@@ -64,8 +80,22 @@ describe('visual reports and approval', () => {
           }),
       ],
       [() => approvalKey(1, '../x')],
+      [() => storageLocation({})],
+      [() => storageLocation({bucket: 'gs://rn-visual'})],
     ])('rejects invalid input', build => {
       expect(build).toThrow('Invalid');
+    });
+
+    test('reads the bucket and its public URL from the visual config', () => {
+      expect(storageLocation({bucket: 'rn-visual'})).toEqual({
+        bucket: 'rn-visual',
+        publicBaseUrl: 'https://storage.googleapis.com/rn-visual',
+      });
+      expect(() =>
+        storageLocation(
+          require('../../../packages/rn-tester/visual-tests/config.json'),
+        ),
+      ).not.toThrow();
     });
 
     test('encodes each path segment of public URLs', () => {

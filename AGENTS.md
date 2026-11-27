@@ -30,8 +30,8 @@ Architecture notes live in `__docs__` directories beside the code they describe,
 
 | Command | Purpose |
 | --- | --- |
-| `yarn test <path>` | Jest unit tests, found in `__tests__` directories |
-| `yarn fantom <path>` | [Fantom](private/react-native-fantom/__docs__/README.md) integration tests, named `*-itest.js` — builds a native tester on first run, and runs as `Platform.OS === 'android'`, so an iOS-only branch needs Jest |
+| `yarn test <path>` | Jest tests, found in `__tests__` directories and named `*-test.js` |
+| `yarn fantom <path>` | [Fantom](private/react-native-fantom/__docs__/README.md) integration tests, named `*-itest.js` — builds a native tester on first run |
 | `yarn lint` | ESLint (`--max-warnings 0`) |
 | `yarn flow-check` | Flow |
 | `yarn format` | Format JavaScript/TypeScript, C/C++/Objective-C/protobuf, Kotlin, Java, Python, and Swift sources |
@@ -41,12 +41,20 @@ Architecture notes live in `__docs__` directories beside the code they describe,
 
 JavaScript CI is the `lint`, `test_js`, and `build_js_types` jobs in [`.github/workflows/test-all.yml`](.github/workflows/test-all.yml); Fantom and the native platforms have their own jobs.
 
+Before adding or extending a JavaScript test, read [Fantom or Jest?](private/react-native-fantom/__docs__/README.md#fantom-or-jest) to choose the test runner.
+
 The formatting command uses pinned npm packages for Kotlin and Java and installs pinned Ruff through Python. To format every language, install a JDK with Java 17 or newer, Python 3 with pip, and a Swift 6.3 or newer toolchain in addition to Node and Yarn. Each language wrapper checks its own requirements and prints installation guidance when something is missing; `yarn format` then skips that language and continues formatting the others. Swift formatting accepts either `swift-format` or `swift format` from the installed toolchain.
 
 ## Gotchas
 
 - `yarn install` dirties the working tree: a `preinstall` hook (`scripts/try-set-hermes-compiler-prebuilt.js`) resolves the `hermes-compiler` placeholder in `packages/react-native/package.json` (`0.0.0` → a real version) and touches `yarn.lock`. Expected — do not commit it.
 - Metro cannot bundle until codegen is built once — `yarn --cwd packages/react-native-codegen build`. Without it, bundling fails with `Cannot find module '@react-native/codegen/lib/parsers/flow/parser'`. Every other package runs from source — `yarn build` is not needed for development (see [`scripts/build/README.md`](scripts/build/README.md)).
+
+## Android networking compatibility
+
+- Keep shared Android Java and Kotlin sources, including devsupport code, source-compatible with OkHttp 3.14.9. Downstream consumers build React Native from source with OkHttp 3 even when the OSS build and tests select a newer version.
+- Use APIs available in both OkHttp 3 and the version configured in this repository. Avoid APIs and Kotlin extensions introduced in newer major versions, such as `okhttp3.HttpUrl.Companion.toHttpUrlOrNull`; use compatible APIs such as `Request.Builder().url(...)` for URL validation. The `okhttp3` package name is also used by newer major versions and does not establish compatibility.
+- When introducing or changing OkHttp usage, compile the affected sources against OkHttp 3.14.9 and run the relevant tests with the repository's configured version. Passing tests with a newer OkHttp version does not verify OkHttp 3 source compatibility. Report the selected versions, exact commands and results in the PR test plan, and state any compatibility check you could not run.
 
 ## Verification: Running RNTester
 

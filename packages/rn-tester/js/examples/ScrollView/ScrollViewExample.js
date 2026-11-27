@@ -16,6 +16,7 @@ import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {useCallback, useRef, useState} from 'react';
 import {
+  Modal,
   Platform,
   RefreshControl,
   ScrollView,
@@ -357,6 +358,15 @@ const examples: Array<RNTesterModuleExample> = [
     },
   },
   {
+    title: '<ScrollView> Content Inset Adjustment Behavior\n',
+    description:
+      'How the safe area modifies the content area of a full screen ScrollView: scrollableAxes uses UIKit .scrollableAxes for along-axis insets, automatic and always also pad across the axis, and point-valued container padding counts toward active inset edges.',
+    platform: 'ios',
+    render(): React.Node {
+      return <ContentInsetAdjustmentBehaviorExample />;
+    },
+  },
+  {
     title: '<ScrollView> Deceleration Rate\n',
     description:
       'Determines how quickly the scroll view decelerates after the user lifts their finger.',
@@ -421,6 +431,7 @@ const examples: Array<RNTesterModuleExample> = [
     },
   },
   {
+    name: 'onMomentumScroll',
     title: '<ScrollView> OnMomentumScroll\n',
     description:
       'An alert will be called when the momentum scroll starts or ends.',
@@ -822,7 +833,6 @@ const HorizontalScrollView = (props: {
   return (
     <View style={{direction}}>
       <RNTesterText style={styles.text}>{title}</RNTesterText>
-      {/* $FlowFixMe[incompatible-use] */}
       <ScrollView
         ref={scrollRef}
         automaticallyAdjustContentInsets={false}
@@ -1118,17 +1128,81 @@ const OnScrollOptions = () => {
 };
 
 const OnMomentumScroll = () => {
-  const [scroll, setScroll] = useState('none');
+  const ref = useRef<?React.ElementRef<typeof ScrollView>>(null);
+  const [beginCount, setBeginCount] = useState(0);
+  const [endCount, setEndCount] = useState(0);
+  const [lastEvent, setLastEvent] = useState('none');
+  // Counts a begin while momentum is already active, or an end without a
+  // matching begin.
+  const [errorCount, setErrorCount] = useState(0);
+  const isMomentumActiveRef = useRef(false);
+
+  const handleMomentumScrollBegin = useCallback(() => {
+    if (isMomentumActiveRef.current) {
+      setErrorCount(count => count + 1);
+    }
+    isMomentumActiveRef.current = true;
+    setBeginCount(count => count + 1);
+    setLastEvent('onMomentumScrollBegin');
+  }, []);
+
+  const handleMomentumScrollEnd = useCallback(() => {
+    if (!isMomentumActiveRef.current) {
+      setErrorCount(count => count + 1);
+    }
+    isMomentumActiveRef.current = false;
+    setEndCount(count => count + 1);
+    setLastEvent('onMomentumScrollEnd');
+  }, []);
+
+  // Leaves isMomentumActiveRef alone: it mirrors the native momentum state, so an
+  // end event still pending after a reset pairs with its begin.
+  const resetCounts = useCallback(() => {
+    setBeginCount(0);
+    setEndCount(0);
+    setErrorCount(0);
+    setLastEvent('none');
+  }, []);
+
   return (
     <View>
-      <RNTesterText>Scroll State: {scroll}</RNTesterText>
+      <RNTesterText testID="momentum_last_event">
+        Last event: {lastEvent}
+      </RNTesterText>
+      <RNTesterText testID="momentum_begin_count">
+        begin:{beginCount}
+      </RNTesterText>
+      <RNTesterText testID="momentum_end_count">end:{endCount}</RNTesterText>
+      <RNTesterText testID="momentum_errors">errors:{errorCount}</RNTesterText>
       <ScrollView
+        ref={ref}
         style={[styles.scrollView, {height: 200}]}
-        onMomentumScrollBegin={() => setScroll('onMomentumScrollBegin')}
-        onMomentumScrollEnd={() => setScroll('onMomentumScrollEnd')}
+        testID="momentum_scroll_view"
+        onMomentumScrollBegin={handleMomentumScrollBegin}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
         nestedScrollEnabled>
         {ITEMS.map(createItemRow)}
       </ScrollView>
+      <Button
+        label="scrollTo bottom (animated)"
+        testID="momentum_scroll_to_bottom_animated"
+        onPress={() => ref.current?.scrollToEnd({animated: true})}
+      />
+      <Button
+        label="scrollTo top (animated)"
+        testID="momentum_scroll_to_top_animated"
+        onPress={() => ref.current?.scrollTo({x: 0, y: 0, animated: true})}
+      />
+      <Button
+        label="scrollTo top (not animated)"
+        testID="momentum_scroll_to_top_not_animated"
+        onPress={() => ref.current?.scrollTo({x: 0, y: 0, animated: false})}
+      />
+      <Button
+        label="Reset counts"
+        testID="momentum_reset"
+        onPress={resetCounts}
+      />
     </View>
   );
 };
@@ -1271,7 +1345,6 @@ const InvertStickyHeaders = () => {
   const _scrollView = useRef<?React.ElementRef<typeof ScrollView>>(null);
   return (
     <View>
-      {/* $FlowFixMe[incompatible-use] */}
       <ScrollView
         ref={_scrollView}
         style={[styles.scrollView, {height: 200}]}
@@ -1313,7 +1386,6 @@ const MultipleStickyHeaders = () => {
   const stickyHeaderStyle = {backgroundColor: 'yellow'};
   return (
     <View>
-      {/* $FlowFixMe[incompatible-use] */}
       <ScrollView
         ref={_scrollView}
         style={[styles.scrollView, {height: 200}]}
@@ -1522,6 +1594,79 @@ const ContentExample = () => {
           }
         />
       </View>
+    </View>
+  );
+};
+
+const CONTENT_INSET_ADJUSTMENT_BEHAVIORS = [
+  'never',
+  'automatic',
+  'scrollableAxes',
+  'always',
+] as const;
+
+const FULL_SCREEN_ITEMS = [...Array(40)].map((_, i) => `Item ${i}`);
+
+const ContentInsetAdjustmentBehaviorExample = () => {
+  const [visible, setVisible] = useState(false);
+  const [horizontal, setHorizontal] = useState(false);
+  const [underHeader, setUnderHeader] = useState(false);
+  const [behavior, setBehavior] =
+    useState<(typeof CONTENT_INSET_ADJUSTMENT_BEHAVIORS)[number]>('automatic');
+  return (
+    <View>
+      <RNTesterText>
+        Opens a full screen ScrollView that extends under the system UI,
+        including the rail on iPhone Duo and the notch in landscape. "under
+        header" places a custom header above it, so it starts clear of the
+        status bar.
+      </RNTesterText>
+      <Button onPress={() => setVisible(true)} label="Open full screen" />
+      <Modal
+        animationType="slide"
+        presentationStyle="fullScreen"
+        supportedOrientations={['portrait', 'landscape']}
+        visible={visible}
+        onRequestClose={() => setVisible(false)}>
+        {underHeader && (
+          <View style={styles.fullScreenHeader}>
+            <Text style={styles.fullScreenHeaderTitle}>Under header</Text>
+          </View>
+        )}
+        <ScrollView
+          horizontal={horizontal}
+          style={styles.fullScreenScrollView}
+          contentContainerStyle={styles.fullScreenContentContainer}
+          contentInsetAdjustmentBehavior={behavior}>
+          <View style={styles.fullScreenControls}>
+            <View style={styles.row}>
+              {CONTENT_INSET_ADJUSTMENT_BEHAVIORS.map(value => (
+                <Button
+                  key={value}
+                  active={value === behavior}
+                  onPress={() => setBehavior(value)}
+                  label={value}
+                />
+              ))}
+            </View>
+            <View style={styles.row}>
+              <Button
+                onPress={() => setHorizontal(!horizontal)}
+                label={horizontal ? 'horizontal' : 'vertical'}
+              />
+              <Button
+                active={underHeader}
+                onPress={() => setUnderHeader(!underHeader)}
+                label="under header"
+              />
+              <Button onPress={() => setVisible(false)} label="Close" />
+            </View>
+          </View>
+          {FULL_SCREEN_ITEMS.map((msg, index) => (
+            <Item key={index} msg={msg} style={styles.fullScreenItem} />
+          ))}
+        </ScrollView>
+      </Modal>
     </View>
   );
 };
@@ -1758,6 +1903,41 @@ const styles = StyleSheet.create({
   },
   containerStyle: {
     backgroundColor: '#aae3b6',
+  },
+  fullScreenScrollView: {
+    backgroundColor: '#eeeeee',
+  },
+  // A stand-in for a navigation bar: tall enough to clear the status bar on
+  // every iPhone, with the title along its bottom edge.
+  fullScreenHeader: {
+    height: 104,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 10,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#cccccc',
+  },
+  fullScreenHeaderTitle: {
+    fontSize: 19,
+    fontWeight: '600',
+  },
+  fullScreenContentContainer: {
+    backgroundColor: '#aae3b6',
+    padding: 20,
+    gap: 12,
+  },
+  fullScreenControls: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 8,
+  },
+  fullScreenItem: {
+    margin: 0,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
   },
   rowTitle: {
     flex: 1,

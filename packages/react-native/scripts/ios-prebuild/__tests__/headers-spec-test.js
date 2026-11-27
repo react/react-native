@@ -370,8 +370,8 @@ describe('R11 redirect shims for dual-identity headers', () => {
   });
 });
 
-describe('R12 namespace module umbrellas stay in ReactNativeHeaders', () => {
-  test('a module-nested React/ umbrella is not hoisted into the framework', () => {
+describe('R12 namespace module umbrellas are excluded from the React module', () => {
+  test('a module-nested React/ umbrella ships in the framework as `exclude header`', () => {
     const m = validManifest();
     m.headers.push(
       entry(
@@ -381,17 +381,17 @@ describe('R12 namespace module umbrellas stay in ReactNativeHeaders', () => {
       ),
     );
     const plan = planFromInventoryForTest(m);
-    // Lower layer: including it from a react/-namespace header cannot create a
-    // React module edge (React -> ReactNativeHeaders_react -> React).
     expect(
-      plan.reactNativeHeaders.find(e => e.naturalPath === 'React/Debug.h')
-        ?.relPath,
-    ).toBe('React/Debug.h');
+      plan.react.find(e => e.naturalPath === 'React/Debug.h')?.relPath,
+    ).toBe('Debug.h');
     expect(
-      plan.react.find(e => e.naturalPath === 'React/Debug.h'),
-    ).toBeUndefined();
+      plan.reactNativeHeaders.some(e => e.relPath.startsWith('React/')),
+    ).toBe(false);
     expect(plan.umbrella).not.toContain('React/Debug.h');
-    expect(Object.keys(plan.namespaceModules)).not.toContain('React');
+    expect(plan.excludedReactHeaders).toEqual(['Debug.h']);
+    expect(
+      renderReactModuleMap(plan.privateReactHeaders, plan.excludedReactHeaders),
+    ).toContain('  exclude header "Debug.h"');
   });
 
   test('genuine React.framework headers are still hoisted (R1)', () => {

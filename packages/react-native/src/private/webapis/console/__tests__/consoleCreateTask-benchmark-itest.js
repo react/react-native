@@ -26,7 +26,6 @@ Fantom.unstable_benchmark
     disableOptimizedBuildCheck: true,
   })
   .test('JavaScript shim', () => {
-    // $FlowFixMe[incompatible-type]
     const task: ConsoleTask = {run: cb => cb()};
     task.run(fn);
   })

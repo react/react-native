@@ -1,5 +1,71 @@
 # Changelog
 
+## v0.89.0-rc.3
+
+### Fixed
+
+- **Gradients**: Resolve radial gradient length color stops against the horizontal radius ([90494820cf](https://github.com/react/react-native/commit/90494820cf65667eb8e10cd8eec2845e75d1efb1) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+- **Yoga**: Fix quadratic layout time in wrapping flex containers with many lines ([ef013914ea](https://github.com/react/react-native/commit/ef013914eaadaf3bce57221547678a19a67356ac) by [@cipolleschi](https://github.com/cipolleschi))
+
+#### Android specific
+
+- **Text**: Draw text decorations after a text update that did not change the view's frame ([7b6e7909b1](https://github.com/react/react-native/commit/7b6e7909b1c40d101f919105d50df6b22134edfa) by [@tshmieldev](https://github.com/tshmieldev))
+- **Text**: Fix `Text` wrapping onto a second line when it is laid out at its own measured width ([225e8aae6a](https://github.com/react/react-native/commit/225e8aae6a36d9394c07c8f3278fd049d4de8e50) by [@Abbondanzo](https://github.com/Abbondanzo))
+- **ViewManagers**: Do not key `WeakHashMap` by `Integer` as preparation for JEP-401 ([375d0a97cd](https://github.com/react/react-native/commit/375d0a97cd16fdb74bfd173cb4991e11ac0b690b) by [@Yqwed](https://github.com/Yqwed))
+
+#### iOS specific
+
+- **Codegen**: Fix `ImageRequestParams.h` not found in codegen with static frameworks ([a83804d29d](https://github.com/react/react-native/commit/a83804d29d6390266a893afd355f7883a5a54638) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+- **Prebuild**: Fix case-colliding `React/` and `react/` folders in the prebuilt iOS headers ([2774d34dc2](https://github.com/react/react-native/commit/2774d34dc2092d191d2bba20466f62f7fe674b90) by [@j-piasecki](https://github.com/j-piasecki))
+- **ScrollView**: With `contentInsetAdjustmentBehavior`, `contentContainerStyle` padding adds to an inset that includes a navigation bar, tab bar or toolbar, instead of being absorbed by it ([c652e84272](https://github.com/react/react-native/commit/c652e84272c9bce8072f5f347f5024e8b296b4ef) by [@huntie](https://github.com/huntie))
+
+## v0.89.0-rc.2
+
+### Added
+- **Text**: Shared animation backend can update the text of `Text` nodes through `AnimatedProps::text` ([70008bf90c](https://github.com/react/react-native/commit/70008bf90c845c0dae2390b86c3e5b82f634ce16) by [@bartlomiejbloniarz](https://github.com/bartlomiejbloniarz))
+
+#### iOS specific
+- **StatusBar**: `StatusBar.getVerticalBarEdgeIOS()` and `useVerticalBarEdgeIOS()` (vertical bar on iPhone Duo) ([5f9a64b3dd](https://github.com/react/react-native/commit/5f9a64b3dd9da37a90a1e83de7abc3ccc56b61b7) by [@huntie](https://github.com/huntie))
+
+### Changed
+- **Animated**: Promote C++ Native Animated to stable (`cxxNativeAnimatedEnabled`) ([a81429b9c2](https://github.com/react/react-native/commit/a81429b9c2148f029ed9059f5c2aa7009a996ea1) by [@zeyap](https://github.com/zeyap))
+- **Animated**: Enable the shared animation backend (`useSharedAnimatedBackend`, `optimizedAnimatedPropUpdates`) in canary and nightly builds. Both flags remain off by default in stable releases. ([a3d675034b](https://github.com/react/react-native/commit/a3d675034b4ff9583fb46b9e8f94f35e2a669070) by [@bartlomiejbloniarz](https://github.com/bartlomiejbloniarz))
+- **React Native DevTools**: Add the React DevTools Suspense panel, update React DevTools to 8.0.0, and enable timeline frames by default ([d9e48d8d50](https://github.com/react/react-native/commit/d9e48d8d506780361a0df0b59b34ccbeed0b8855) by [@huntie](https://github.com/huntie))
+- **React Native DevTools**: Frame timings and screenshots in the Performance panel are enabled by default ([dac56f15c7](https://github.com/react/react-native/commit/dac56f15c75b2fef189109a3f6f721cea09f45db) by [@huntie](https://github.com/huntie))
+
+#### Android specific
+- **Networking**: `fetch` responses are no longer Base64-encoded for DevTools when no debugger is attached ([f40b7acd9a](https://github.com/react/react-native/commit/f40b7acd9a3b8d96f1d6b753be450d39240f3921) by [@hryhoriiK97](https://github.com/hryhoriiK97))
+
+#### iOS specific
+- **CocoaPods**: `react-native spm add --deintegrate` keeps the Podfile, and `pod install` stops with an error on an app that uses SwiftPM. `react-native spm deinit` and then `pod install` take an app back to CocoaPods. ([b255245daa](https://github.com/react/react-native/commit/b255245daaa0674e2587b75ce997268127dec6ea) by [@chrfalch](https://github.com/chrfalch))
+
+### Fixed
+- **StyleSheet**: Interpolate gradient color stops outside the 0–100% range instead of clamping them ([7caaa57d39](https://github.com/react/react-native/commit/7caaa57d39594c3858410005473af592ae2ef14c) by [@intergalacticspacehighway](https://github.com/intergalacticspacehighway))
+- **LogBox**: Keep the inspector's message, code frames and stacks clear of horizontal safe area insets ([b09d297df9](https://github.com/react/react-native/commit/b09d297df9c7a49eeb268543ca8e66c1087a8c0f) by [@huntie](https://github.com/huntie))
+
+#### iOS specific
+- **Animated**: Native-driven `Animated.event` mappings receive events delivered through `RCTEventDispatcher` observers when C++ Native Animated is enabled ([3aed1720fd](https://github.com/react/react-native/commit/3aed1720fdc95d904edd3c88f5025f405a2439f7) by [@zeyap](https://github.com/zeyap))
+- **ScrollView**: `contentInsetAdjustmentBehavior` keeps content clear of the safe area across the scrollable axis, such as the rail on iPhone Duo and the notch in landscape ([abaeb07a4b](https://github.com/react/react-native/commit/abaeb07a4b10d14656a1fd5888be2c3b8dcbad80) by [@huntie](https://github.com/huntie))
+- **ScrollView**: `contentInsetAdjustmentBehavior` now pads content by the larger of the safe area or `contentContainerStyle` padding. Previously, it added the two. ([0ca7b7bba3](https://github.com/react/react-native/commit/0ca7b7bba36bc285d904c11b54df01db4e60ee2e) by [@huntie](https://github.com/huntie))
+- **ScrollView**: Native refresh-control and keyboard insets are preserved during safe-area updates ([cd4276270a](https://github.com/react/react-native/commit/cd4276270a73fb8f85c8226fb771163f87bb1091) by [@javache](https://github.com/javache))
+- **SwiftPM**: Scaffolded library packages define `RCT_NEW_ARCH_ENABLED=1`, as CocoaPods does ([57b6fa1509](https://github.com/react/react-native/commit/57b6fa1509954248e2589061d3b52257092954ef) by [@chrfalch](https://github.com/chrfalch))
+- **SwiftPM**: SwiftPM autolinking no longer reports a library as mixed Swift/Objective-C because of Swift files its podspec does not compile ([30501c4ee4](https://github.com/react/react-native/commit/30501c4ee498d8e38c1dff7b4848fb2c2b3c92b9) by [@chrfalch](https://github.com/chrfalch))
+
+## v0.89.0-rc.1
+
+### Added
+
+- **React Native DevTools**: Add support for inspecting WebSocket events in the Network panel ([3d8a7a0296](https://github.com/react/react-native/commit/3d8a7a0296e8ee9ae9db4ec23456dd6f26ab43bb) by [@huntie](https://github.com/huntie))
+
+### Fixed
+
+- **Metro**: Make Metro's transform cache shareable across checkouts by pointing `asyncRequireModulePath` at `metro:runtime/modules/asyncRequire` instead of an absolute path ([2f9082fe08](https://github.com/react/react-native/commit/2f9082fe080b1828e5277adc35d66fd3d978be3c) by [@janicduplessis](https://github.com/janicduplessis))
+- **React Native DevTools**: Fix the initiator of WebSocket connections opened from framework code, such as Metro's Fast Refresh socket, in the Network panel ([d66f5230fd](https://github.com/react/react-native/commit/d66f5230fd6889af7bc51034f4a6c55da5cf4e05) by [@huntie](https://github.com/huntie))
+
+#### Android specific
+
+- **Renderer**: Fix `addViewAt` crash when a view that a parent still holds with `startViewTransition` is inserted into another parent ([45152f1f85](https://github.com/react/react-native/commit/45152f1f853541d8db3a24f34ff439ebf9b388b6) by [@pawicao](https://github.com/pawicao))
+
 ## v0.89.0-rc.0
 
 ### Breaking

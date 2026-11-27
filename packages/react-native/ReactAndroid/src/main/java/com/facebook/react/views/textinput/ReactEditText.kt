@@ -25,6 +25,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.text.Spannable
+import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
@@ -59,7 +60,6 @@ import com.facebook.react.common.assets.ReactFontManager
 import com.facebook.react.common.build.ReactBuildConfig
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.internal.featureflags.ReactNativeNewArchitectureFeatureFlags
-import com.facebook.react.uimanager.BackgroundStyleApplicator.clipToPaddingBox
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getBackgroundColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.getBorderColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBackgroundColor
@@ -67,6 +67,7 @@ import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderColor
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderRadius
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderStyle
 import com.facebook.react.uimanager.BackgroundStyleApplicator.setBorderWidth
+import com.facebook.react.uimanager.BackgroundStyleApplicator.updatePaddingBoxClip
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.LengthPercentageType
 import com.facebook.react.uimanager.PixelUtil.toDIPFromPixel
@@ -360,7 +361,14 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
             }
           }
     }
-    return super.onTouchEvent(ev)
+    return try {
+      super.onTouchEvent(ev)
+    } catch (e: IndexOutOfBoundsException) {
+      // AOSP Editor can query a stale Layout line when the text shrinks during a cursor or
+      // selection handle drag (e.g. Editor.performCursorDrag -> DynamicLayout.getLineStart).
+      logSoftException(TAG, e)
+      true
+    }
   }
 
   private fun canScrollInGestureDirection(deltaX: Float, deltaY: Float): Boolean {
@@ -392,6 +400,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   override fun setLineHeight(lineHeight: Int) {
     textAttributes.lineHeight = lineHeight.toFloat()
     // We don't call super.setLineHeight() because LineHeight is fully managed by ReactNative
+    updateHint()
   }
 
   override fun onScrollChanged(horiz: Int, vert: Int, oldHoriz: Int, oldVert: Int) {
@@ -669,9 +678,30 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   public fun setPlaceholder(placeholder: String?) {
     if (placeholder != this.placeholder) {
       this.placeholder = placeholder
-      hint = placeholder
+      updateHint()
     }
     updatePlaceholderEllipsize()
+  }
+
+  // The text takes its line height from a span (see addSpansFromStyleAttributes); the hint needs
+  // the same span, or it is drawn with the font's own line height, off the text's baseline.
+  private fun updateHint() {
+    val placeholder = placeholder
+    val lineHeight = textAttributes.lineHeight
+    hint =
+        // A removed lineHeight prop comes back as 0, and a 0-high span would hide the hint.
+        if (placeholder.isNullOrEmpty() || lineHeight.isNaN() || lineHeight <= 0f) {
+          placeholder
+        } else {
+          SpannableString(placeholder).apply {
+            setSpan(
+                CustomLineHeightSpan(textAttributes.effectiveLineHeight),
+                0,
+                length,
+                Spanned.SPAN_INCLUSIVE_INCLUSIVE,
+            )
+          }
+        }
   }
 
   private fun updatePlaceholderEllipsize() {
@@ -1176,6 +1206,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     if (!effectiveLetterSpacing.isNaN()) {
       letterSpacing = effectiveLetterSpacing
     }
+    updateHint()
   }
 
   /**
@@ -1270,9 +1301,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   }
 
   public override fun onDraw(canvas: Canvas) {
-    if (overflow != Overflow.VISIBLE) {
-      clipToPaddingBox(this, canvas)
-    }
+    updatePaddingBoxClip(this, canvas, overflow != Overflow.VISIBLE)
 
     val spanned = text as? Spanned
     if (spanned != null) {

@@ -110,7 +110,11 @@ class YogaLayoutableShadowNode : public LayoutableShadowNode {
   mutable yoga::Node yogaNode_;
 
  private:
-  void updateYogaChildrenOwnersIfNeeded();
+  /*
+   * Points the owner of every child that `yogaNode` owns at a sentinel, so
+   * that whichever node lays the child out next clones it first.
+   */
+  static void updateYogaChildrenOwnersIfNeeded(yoga::Node &yogaNode);
 
   /*
    * Return true if child's yogaNode's owner is this->yogaNode_. Otherwise

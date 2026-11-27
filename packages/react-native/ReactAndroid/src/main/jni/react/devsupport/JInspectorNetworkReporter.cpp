@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <string>
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
+#include <mutex>
 #include <unordered_map>
 #endif
 
@@ -49,12 +50,27 @@ std::string limitRequestBodySize(std::string requestBody) {
   return requestBody;
 }
 
+RequestInfo convertToRequestInfo(
+    jni::alias_ref<jstring> requestUrl,
+    jni::alias_ref<jstring> requestMethod,
+    jni::alias_ref<jni::JMap<jstring, jstring>> requestHeaders,
+    jni::alias_ref<jstring> requestBody) {
+  RequestInfo requestInfo;
+  requestInfo.url = requestUrl->toStdString();
+  requestInfo.httpMethod = requestMethod->toStdString();
+  requestInfo.headers = convertJavaMapToHeaders(requestHeaders);
+  requestInfo.httpBody = limitRequestBodySize(requestBody->toStdString());
+  return requestInfo;
+}
+
 } // namespace
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
 
 // Dictionary to buffer incremental response bodies (CDP debugging active only)
 static std::unordered_map<std::string, std::string> responseBuffers;
+// Requests report from different threads, so every access holds this
+static std::mutex responseBuffersMutex;
 
 #endif
 
@@ -72,14 +88,36 @@ static std::unordered_map<std::string, std::string> responseBuffers;
     jni::alias_ref<jni::JMap<jstring, jstring>> requestHeaders,
     jni::alias_ref<jstring> requestBody,
     jlong encodedDataLength) {
-  RequestInfo requestInfo;
-  requestInfo.url = requestUrl->toStdString();
-  requestInfo.httpMethod = requestMethod->toStdString();
-  requestInfo.headers = convertJavaMapToHeaders(requestHeaders);
-  requestInfo.httpBody = limitRequestBodySize(requestBody->toStdString());
+  NetworkReporter::getInstance().reportRequestStart(
+      requestId->toStdString(),
+      convertToRequestInfo(
+          requestUrl, requestMethod, requestHeaders, requestBody),
+      encodedDataLength,
+      std::nullopt);
+}
+
+/* static */ void JInspectorNetworkReporter::reportRequestStartWithRedirect(
+    jni::alias_ref<jclass> /*unused*/,
+    jni::alias_ref<jstring> requestId,
+    jni::alias_ref<jstring> requestUrl,
+    jni::alias_ref<jstring> requestMethod,
+    jni::alias_ref<jni::JMap<jstring, jstring>> requestHeaders,
+    jni::alias_ref<jstring> requestBody,
+    jlong encodedDataLength,
+    jni::alias_ref<jstring> redirectResponseUrl,
+    jint redirectResponseStatus,
+    jni::alias_ref<jni::JMap<jstring, jstring>> redirectResponseHeaders) {
+  ResponseInfo redirectResponse;
+  redirectResponse.url = redirectResponseUrl->toStdString();
+  redirectResponse.statusCode = redirectResponseStatus;
+  redirectResponse.headers = convertJavaMapToHeaders(redirectResponseHeaders);
 
   NetworkReporter::getInstance().reportRequestStart(
-      requestId->toStdString(), requestInfo, encodedDataLength, std::nullopt);
+      requestId->toStdString(),
+      convertToRequestInfo(
+          requestUrl, requestMethod, requestHeaders, requestBody),
+      encodedDataLength,
+      redirectResponse);
 }
 
 /* static */ void JInspectorNetworkReporter::reportConnectionTiming(
@@ -126,11 +164,17 @@ static std::unordered_map<std::string, std::string> responseBuffers;
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED
   // Debug build: Check for buffered response body and flush to NetworkReporter
-  auto it = responseBuffers.find(requestIdStr);
-  if (it != responseBuffers.end() && !it->second.empty()) {
-    NetworkReporter::getInstance().storeResponseBody(
-        requestIdStr, it->second, false);
-    responseBuffers.erase(it);
+  std::string body;
+  {
+    std::lock_guard<std::mutex> lock(responseBuffersMutex);
+    auto it = responseBuffers.find(requestIdStr);
+    if (it != responseBuffers.end()) {
+      body = std::move(it->second);
+      responseBuffers.erase(it);
+    }
+  }
+  if (!body.empty()) {
+    NetworkReporter::getInstance().storeResponseBody(requestIdStr, body, false);
   }
 #endif
 }
@@ -139,8 +183,14 @@ static std::unordered_map<std::string, std::string> responseBuffers;
     jni::alias_ref<jclass> /*unused*/,
     jni::alias_ref<jstring> requestId,
     jboolean cancelled) {
+  auto requestIdStr = requestId->toStdString();
   NetworkReporter::getInstance().reportRequestFailed(
-      requestId->toStdString(), cancelled != 0u);
+      requestIdStr, cancelled != 0u);
+
+#ifdef REACT_NATIVE_DEBUGGER_ENABLED
+  std::lock_guard<std::mutex> lock(responseBuffersMutex);
+  responseBuffers.erase(requestIdStr);
+#endif
 }
 
 /* static */ void JInspectorNetworkReporter::maybeStoreResponseBodyImpl(
@@ -173,8 +223,9 @@ JInspectorNetworkReporter::maybeStoreResponseBodyIncrementalImpl(
   }
 
   auto requestIdStr = requestId->toStdString();
-  auto& buffer = responseBuffers[requestIdStr];
-  buffer += data->toStdString();
+  auto dataStr = data->toStdString();
+  std::lock_guard<std::mutex> lock(responseBuffersMutex);
+  responseBuffers[requestIdStr] += dataStr;
 #endif
 }
 
@@ -238,6 +289,9 @@ JInspectorNetworkReporter::reportWebSocketHandshakeResponseReceived(
           "isDebuggingEnabled", JInspectorNetworkReporter::isDebuggingEnabled),
       makeNativeMethod(
           "reportRequestStart", JInspectorNetworkReporter::reportRequestStart),
+      makeNativeMethod(
+          "reportRequestStart",
+          JInspectorNetworkReporter::reportRequestStartWithRedirect),
       makeNativeMethod(
           "reportResponseStart",
           JInspectorNetworkReporter::reportResponseStart),

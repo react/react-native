@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {ResizeObserverId} from './internals/ResizeObserverManager';
 import type ResizeObserverEntry from './ResizeObserverEntry';
 
@@ -159,6 +157,16 @@ export default class ResizeObserver {
    * Unobserves all observed `ReactNativeElement` targets.
    */
   disconnect(): void {
+    const resizeObserverId = this._resizeObserverId;
+    if (
+      resizeObserverId != null &&
+      ResizeObserverManager.disconnectIfLastObserver(resizeObserverId)
+    ) {
+      this._observationTargets.clear();
+      this._resizeObserverId = null;
+      return;
+    }
+
     for (const target of this._observationTargets.keys()) {
       this.unobserve(target);
     }

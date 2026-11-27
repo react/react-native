@@ -8,6 +8,7 @@
 #include "MutationObserver.h"
 #include <react/renderer/core/ShadowNodeTraits.h>
 #include <react/renderer/uimanager/primitives.h>
+#include <unordered_map>
 
 namespace facebook::react {
 
@@ -143,15 +144,45 @@ void MutationObserver::recordMutationsInSubtrees(
 
   processedNodes.insert(oldNode.get());
 
-  auto oldChildren = oldNode->getChildren();
-  auto newChildren = newNode->getChildren();
+  const auto& oldChildren = oldNode->getChildren();
+  const auto& newChildren = newNode->getChildren();
+
+  if (&oldChildren == &newChildren) {
+    return;
+  }
+
+  struct ChildMatch {
+    size_t index;
+    bool seenInOld{false};
+  };
+  const bool useIndex = oldChildren.size() >= 16 && newChildren.size() >= 16;
+  std::unordered_map<const ShadowNodeFamily*, ChildMatch> newChildMatches;
+  if (useIndex) {
+    newChildMatches.reserve(newChildren.size());
+    for (size_t i = 0; i < newChildren.size(); ++i) {
+      newChildMatches.try_emplace(
+          &newChildren[i]->getFamily(), ChildMatch{.index = i});
+    }
+  }
+
+  const auto findNewChild = [&](const ShadowNode& oldChild) {
+    if (!useIndex) {
+      return findNodeOfSameFamily(newChildren, oldChild);
+    }
+    const auto it = newChildMatches.find(&oldChild.getFamily());
+    if (it == newChildMatches.end()) {
+      return std::shared_ptr<const ShadowNode>{};
+    }
+    it->second.seenInOld = true;
+    return newChildren[it->second.index];
+  };
 
   std::vector<std::shared_ptr<const ShadowNode>> addedNodes;
   std::vector<std::shared_ptr<const ShadowNode>> removedNodes;
 
   // Check for removed nodes (and equal nodes for further inspection)
-  for (auto& oldChild : oldChildren) {
-    auto newChild = findNodeOfSameFamily(newChildren, *oldChild);
+  for (const auto& oldChild : oldChildren) {
+    const auto newChild = findNewChild(*oldChild);
     if (!newChild) {
       removedNodes.push_back(oldChild);
     } else if (observeSubtree) {
@@ -167,9 +198,11 @@ void MutationObserver::recordMutationsInSubtrees(
   }
 
   // Check for added nodes
-  for (auto& newChild : newChildren) {
-    auto oldChild = findNodeOfSameFamily(oldChildren, *newChild);
-    if (!oldChild) {
+  for (const auto& newChild : newChildren) {
+    const bool isAdded = useIndex
+        ? !newChildMatches.at(&newChild->getFamily()).seenInOld
+        : !findNodeOfSameFamily(oldChildren, *newChild);
+    if (isAdded) {
       addedNodes.push_back(newChild);
     }
   }

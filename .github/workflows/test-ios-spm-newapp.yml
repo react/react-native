@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-15-large
+    runs-on: xcode-27
     strategy:
       fail-fast: false
       matrix:

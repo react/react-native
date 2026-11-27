@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {ArrayLike} from '../../utils/ArrayLikeUtils';
 
 import {
@@ -27,7 +25,6 @@ const REUSABLE_PROPERTY_DESCRIPTOR: {...PropertyDescriptor, ...} = {
   writable: false,
 };
 
-// $FlowFixMe[incompatible-type] Flow doesn't understand [Symbol.iterator]() {} and thinks this class doesn't implement the Iterable<T> interface.
 export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
   _length: number;
 
@@ -45,6 +42,7 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
     this._length = elements.length;
   }
 
+  // $FlowFixMe[unsafe-getters-setters]
   get length(): number {
     return this._length;
   }
@@ -61,7 +59,7 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
     return arrayLike[index];
   }
 
-  entries(): Iterator<[number, T]> {
+  entries(): IteratorObject<[number, T]> {
     return createEntriesIterator(this);
   }
 
@@ -83,16 +81,15 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
     }
   }
 
-  keys(): Iterator<number> {
+  keys(): IteratorObject<number> {
     return createKeyIterator(this);
   }
 
-  values(): Iterator<T> {
+  values(): IteratorObject<T> {
     return createValueIterator(this);
   }
 
-  // $FlowFixMe[unsupported-syntax] Flow does not support computed properties in classes.
-  [Symbol.iterator](): Iterator<T> {
+  [Symbol.iterator](): IteratorObject<T> {
     return createValueIterator(this);
   }
 }
@@ -116,5 +113,4 @@ export const NodeList_public: typeof NodeList =
     throw new TypeError("Failed to construct 'NodeList': Illegal constructor");
   };
 
-// $FlowExpectedError[prop-missing]
 NodeList_public.prototype = NodeList.prototype;

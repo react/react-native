@@ -12,6 +12,8 @@
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
+import RNTesterText from '../../components/RNTesterText';
+import ConicGradientCornerCases from './ConicGradientCornerCases';
 import {StyleSheet, Text, View} from 'react-native';
 
 type ViewStyleProp = NonNullable<React.PropOf<View, 'style'>>;
@@ -61,6 +63,13 @@ exports.category = 'UI';
 exports.description = 'Examples of background gradients applied to views.';
 exports.examples = [
   {
+    title: 'Conic Gradient Corner Cases',
+    name: 'conic-corner-cases',
+    description:
+      'Compare geometry, positions, stops, tiling, and updates in string and object syntax.',
+    render: () => <ConicGradientCornerCases />,
+  },
+  {
     title: 'Basic Linear Gradient',
     description: 'A simple linear gradient from top to bottom.',
     name: 'basic',
@@ -83,7 +92,7 @@ exports.examples = [
       return (
         <View style={styles.row}>
           <View style={styles.col}>
-            <Text>45deg</Text>
+            <RNTesterText>45deg</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
@@ -92,7 +101,7 @@ exports.examples = [
             />
           </View>
           <View style={styles.col}>
-            <Text>90deg</Text>
+            <RNTesterText>90deg</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'linear-gradient(90deg, #a8edea, #fed6e3)',
@@ -101,7 +110,7 @@ exports.examples = [
             />
           </View>
           <View style={styles.col}>
-            <Text>180deg</Text>
+            <RNTesterText>180deg</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'linear-gradient(180deg, #ffecd2, #fcb69f)',
@@ -120,7 +129,7 @@ exports.examples = [
       return (
         <View style={styles.row}>
           <View style={styles.col}>
-            <Text>3 colors</Text>
+            <RNTesterText>3 colors</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage:
@@ -130,7 +139,7 @@ exports.examples = [
             />
           </View>
           <View style={styles.col}>
-            <Text>4 colors</Text>
+            <RNTesterText>4 colors</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage:
@@ -140,7 +149,7 @@ exports.examples = [
             />
           </View>
           <View style={styles.col}>
-            <Text>Rainbow</Text>
+            <RNTesterText>Rainbow</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage:
@@ -160,7 +169,7 @@ exports.examples = [
       return (
         <View style={styles.row}>
           <View style={styles.col}>
-            <Text>Circle</Text>
+            <RNTesterText>Circle</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(circle, #ff6b6b, #4ecdc4)',
@@ -169,13 +178,47 @@ exports.examples = [
             />
           </View>
           <View style={styles.col}>
-            <Text>Ellipse</Text>
+            <RNTesterText>Ellipse</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(ellipse, #a8edea, #fed6e3)',
               }}
               testID="background-image-radial-2"
             />
+          </View>
+        </View>
+      );
+    },
+  },
+  {
+    title: 'Conic Gradient',
+    description:
+      'Conic gradients rotate color stops clockwise around a configurable center.',
+    name: 'conic',
+    render(): React.Node {
+      return (
+        <View>
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text>Quadrants</Text>
+              <BackgroundImageBox
+                style={{
+                  backgroundImage:
+                    'conic-gradient(from 0deg, #ff6b6b 0deg 90deg, #4ecdc4 90deg 180deg, #45b7d1 180deg 270deg, #f9ca24 270deg 360deg)',
+                }}
+                testID="background-image-conic-quadrants"
+              />
+            </View>
+            <View style={styles.col}>
+              <Text>Rotated and off-center</Text>
+              <BackgroundImageBox
+                style={{
+                  backgroundImage:
+                    'conic-gradient(from 45deg at 30% 70%, #ff6b6b, #4ecdc4, #ff6b6b)',
+                }}
+                testID="background-image-conic-position"
+              />
+            </View>
           </View>
         </View>
       );
@@ -189,7 +232,7 @@ exports.examples = [
         <View>
           <View style={styles.row}>
             <View style={styles.col}>
-              <Text>repeat</Text>
+              <RNTesterText>repeat</RNTesterText>
               <BackgroundImageBox
                 style={{
                   width: 200,
@@ -203,7 +246,7 @@ exports.examples = [
               />
             </View>
             <View style={styles.col}>
-              <Text>space</Text>
+              <RNTesterText>space</RNTesterText>
               <BackgroundImageBox
                 style={{
                   width: 200,
@@ -218,7 +261,7 @@ exports.examples = [
           </View>
           <View style={styles.row}>
             <View style={styles.col}>
-              <Text>round</Text>
+              <RNTesterText>round</RNTesterText>
               <BackgroundImageBox
                 style={{
                   width: 200,
@@ -231,7 +274,7 @@ exports.examples = [
               />
             </View>
             <View style={styles.col}>
-              <Text>no-repeat</Text>
+              <RNTesterText>no-repeat</RNTesterText>
               <BackgroundImageBox
                 style={{
                   width: 200,
@@ -256,7 +299,7 @@ exports.examples = [
       return (
         <View style={styles.row}>
           <View style={styles.col}>
-            <Text>center</Text>
+            <RNTesterText>center</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(circle, #ff6b6b, #4ecdc4)',
@@ -269,7 +312,7 @@ exports.examples = [
             />
           </View>
           <View style={styles.col}>
-            <Text>25% 75%</Text>
+            <RNTesterText>25% 75%</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(circle, #a8edea, #fed6e3)',
@@ -282,7 +325,7 @@ exports.examples = [
             />
           </View>
           <View style={styles.col}>
-            <Text>right bottom</Text>
+            <RNTesterText>right bottom</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(circle, #ffecd2, #fcb69f)',
@@ -346,7 +389,7 @@ exports.examples = [
       return (
         <View style={styles.row}>
           <View style={styles.col}>
-            <Text>borderRadius</Text>
+            <RNTesterText>borderRadius</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'linear-gradient(45deg, #667eea, #764ba2)',
@@ -356,7 +399,7 @@ exports.examples = [
             />
           </View>
           <View style={styles.col}>
-            <Text>borderWidth + borderColor</Text>
+            <RNTesterText>borderWidth + borderColor</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(circle, #f093fb, #f5576c)',
@@ -367,7 +410,7 @@ exports.examples = [
             />
           </View>
           <View style={styles.col}>
-            <Text>non uniform borderRadius</Text>
+            <RNTesterText>non uniform borderRadius</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(circle, #f093fb, #f5576c)',
@@ -380,7 +423,7 @@ exports.examples = [
             />
           </View>
           <View style={styles.col}>
-            <Text>non uniform borderWidth</Text>
+            <RNTesterText>non uniform borderWidth</RNTesterText>
             <BackgroundImageBox
               style={{
                 backgroundImage: 'radial-gradient(circle, #f093fb, #f5576c)',

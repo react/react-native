@@ -51,7 +51,7 @@
     "react-test-renderer": "19.3.0"
   },
   "peerDependencies": {
-    "@types/react": "^19.2.0",
+    "@types/react": "^19.3.0",
     "react": "*",
     "react-native": "1000.0.0"
   },

@@ -181,11 +181,25 @@ LayoutMetrics LayoutableShadowNode::computeRelativeLayoutMetrics(
       resultFrame.origin += currentShadowNode->getContentOriginOffset(true);
     }
 
+    // Only nodes with a content clip clip their content. Clipping
+    // `overflow: visible` nodes to their content bounds would cut off content
+    // that a dilated (clipMargin) scroll container below them has revealed.
     if (policy.enableOverflowClipping &&
-        (i != size - 1 || policy.clipSpecifiedAncestor)) {
-      auto overflowInset = currentShadowNode->getLayoutMetrics().overflowInset;
-      auto overflowRect = insetBy(
-          currentFrame * currentShadowNode->getTransform(), overflowInset);
+        (i != size - 1 || policy.clipSpecifiedAncestor) &&
+        currentShadowNode->getTraits().check(
+            ShadowNodeTraits::Trait::FormsContentClip)) {
+      auto overflowRect = currentFrame;
+      // Only scroll containers are dilated, and the measured node is not its
+      // own container, so its clip is never dilated.
+      if (policy.clipMargin.has_value() && i != 0 &&
+          currentShadowNode->getTraits().check(
+              ShadowNodeTraits::Trait::FormsScrollContainer)) {
+        overflowRect = outsetBy(
+            overflowRect,
+            resolveEdgeMargins(*policy.clipMargin, currentFrame.size));
+      }
+      overflowRect = currentShadowNode->getTransform().applyWithCenter(
+          overflowRect, currentFrame.getCenter());
       resultFrame = Rect::intersect(resultFrame, overflowRect);
       if (resultFrame.size.width == 0 && resultFrame.size.height == 0) {
         return EmptyLayoutMetrics;
@@ -203,11 +217,14 @@ LayoutMetrics LayoutableShadowNode::getLayoutMetrics() const {
 }
 
 void LayoutableShadowNode::setLayoutMetrics(LayoutMetrics layoutMetrics) {
-  ensureUnsealed();
-
   if (layoutMetrics_ == layoutMetrics) {
     return;
   }
+
+  // Sealed nodes are immutable, but writing back identical metrics changes
+  // nothing: check first so that propagating an unchanged layout to a node
+  // shared with a sealed tree does not trip the seal.
+  ensureUnsealed();
 
   layoutMetrics_ = layoutMetrics;
 }

@@ -82,6 +82,40 @@ inline Rect outsetBy(const Rect &rect, const EdgeInsets &outsets) noexcept
           .height = rect.size.height + outsets.top + outsets.bottom}};
 }
 
+/*
+ * A margin value that is either an absolute length in points or a percentage
+ * of the size it is resolved against.
+ */
+struct MarginValue {
+  Float value{};
+  bool isPercentage{false};
+
+  bool operator==(const MarginValue &rhs) const noexcept = default;
+};
+
+/*
+ * EdgeMargins
+ */
+using EdgeMargins = RectangleEdges<MarginValue>;
+
+/*
+ * Resolves margins into absolute insets against the given size.
+ * Percentages on the vertical edges resolve against the height, and those on
+ * the horizontal edges resolve against the width.
+ */
+inline EdgeInsets resolveEdgeMargins(const EdgeMargins &margins, const Size &size) noexcept
+{
+  const auto resolve = [](const MarginValue &margin, Float basis) {
+    return margin.isPercentage ? margin.value / 100.0f * basis : margin.value;
+  };
+
+  return EdgeInsets{
+      resolve(margins.left, size.width),
+      resolve(margins.top, size.height),
+      resolve(margins.right, size.width),
+      resolve(margins.bottom, size.height)};
+}
+
 } // namespace facebook::react
 
 namespace std {

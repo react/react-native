@@ -459,6 +459,67 @@ describe('FlowParser', () => {
       expect(parser.getLiteralValue(option)).toEqual(undefined);
     });
   });
+
+  describe('parseEnumMembersType', () => {
+    const parseEnumBody = (code: string) =>
+      parser.getAst(code).body[0].declaration.body;
+
+    it.each([
+      ['export enum E {A, B}', 'StringTypeAnnotation'],
+      [`export enum E {A = 'a'}`, 'StringTypeAnnotation'],
+      ['export enum E of string {A}', 'StringTypeAnnotation'],
+      ['export enum E {}', 'StringTypeAnnotation'],
+      ['export enum E {A = 1}', 'NumberTypeAnnotation'],
+      ['export enum E of number {A = 1}', 'NumberTypeAnnotation'],
+      ['export enum E of number {}', 'NumberTypeAnnotation'],
+    ])('returns the member type of a parsed `%s`', (code, expected) => {
+      expect(parser.parseEnumMembersType(parseEnumBody(code))).toBe(expected);
+    });
+
+    it.each([
+      'export enum E {A = true}',
+      'export enum E of boolean {A = true}',
+      'export enum E of symbol {A}',
+    ])('throws for a parsed `%s`', code => {
+      expect(() => parser.parseEnumMembersType(parseEnumBody(code))).toThrow(
+        'Unknown enum type annotation type.',
+      );
+    });
+
+    it('supports the body node types of older parser versions', () => {
+      expect(parser.parseEnumMembersType({type: 'EnumStringBody'})).toBe(
+        'StringTypeAnnotation',
+      );
+      expect(parser.parseEnumMembersType({type: 'EnumNumberBody'})).toBe(
+        'NumberTypeAnnotation',
+      );
+      expect(() =>
+        parser.parseEnumMembersType({type: 'EnumBooleanBody'}),
+      ).toThrow('Unknown enum type annotation type.');
+    });
+
+    it('rejects a parsed boolean enum in a module spec', () => {
+      expect(() =>
+        parser.parseString(
+          `
+          import type {TurboModule} from 'RCTExport';
+          import * as TurboModuleRegistry from 'TurboModuleRegistry';
+
+          export enum SomeEnum {
+            A = true,
+          }
+
+          export interface Spec extends TurboModule {
+            +getEnum: (a: SomeEnum) => string;
+          }
+
+          export default TurboModuleRegistry.get<Spec>('NativeSampleTurboModule');
+          `,
+          'path/NativeSampleTurboModule.js',
+        ),
+      ).toThrow(/Flow type annotation 'Enum\w*Body' is unsupported/);
+    });
+  });
 });
 
 describe('TypeScriptParser', () => {

@@ -259,11 +259,8 @@ describe('Interpolation', () => {
       outputRange: ['rgba(0, 100, 200, 0)', 'rgba(50, 150, 250, 0.4)'],
     });
 
-    // $FlowFixMe[incompatible-call]
     expect(interpolation(0)).toBe('rgba(0, 100, 200, 0)');
-    // $FlowFixMe[incompatible-call]
     expect(interpolation(0.5)).toBe('rgba(25, 125, 225, 0.2)');
-    // $FlowFixMe[incompatible-call]
     expect(interpolation(1)).toBe('rgba(50, 150, 250, 0.4)');
   });
 
@@ -447,7 +444,6 @@ describe('Interpolation', () => {
       const config = new AnimatedInterpolation(
         // $FlowFixMe[incompatible-type]
         {},
-        // $FlowFixMe[incompatible-call]
         {inputRange: [0, 1], outputRange},
       ).__getNativeConfig();
       expect(config.outputRange).toEqual(expected);

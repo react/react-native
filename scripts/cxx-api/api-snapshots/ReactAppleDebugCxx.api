@@ -190,6 +190,18 @@ category RCTCxxConvert(NativeWebSocketModule_SpecConnectOptions) {
   public virtual static RCTManagedPointer* JS_NativeWebSocketModule_SpecConnectOptions:(id json);
 }
 
+category RCTDevBanner(Subclassing) {
+  public virtual BOOL dimsBackground();
+  public virtual CGFloat minimumHeight();
+  public virtual NSAttributedString* attributedTextForMessage:textColor:(NSString* message, UIColor* textColor);
+  public virtual NSDirectionalEdgeInsets labelInsets();
+  public virtual NSUInteger stackLevel();
+  public virtual UIWindowLevel windowLevel();
+  public virtual _Nullable NSString* accessibilityLabelForMessage:(NSString* message);
+  public virtual _Nullable UIView* makeLeadingAccessoryView();
+  public virtual void didTapCapsule();
+}
+
 category RCTScrollViewComponentView(ScrollableProtocol) {
 }
 
@@ -650,6 +662,7 @@ interface RCTBridge : public NSObject <RCTInvalidating> {
   public virtual id moduleForClass:(Class moduleClass);
   public virtual id moduleForName:(NSString* moduleName);
   public virtual id moduleForName:lazilyLoadIfNecessary:(NSString* moduleName, BOOL lazilyLoad);
+  public virtual void enqueueJSCall:method:args:completion:(NSString* module, NSString* method, NSArray* args, dispatch_block_t completion);
   public virtual void onFastRefresh();
   public virtual void registerSegmentWithId:path:(NSUInteger segmentId, NSString* path);
   public virtual void setRCTTurboModuleRegistry:(id<RCTTurboModuleRegistry> turboModuleRegistry);
@@ -792,6 +805,10 @@ interface RCTComposedViewRegistry : public NSMutableDictionary {
   public virtual instancetype initWithUIManager:andRegistry:(RCTUIManager* uiManager, NSDictionary<NSNumber*, UIView*>* registry);
 }
 
+interface RCTConicGradient : public NSObject {
+  public virtual static CALayer* gradientLayerWithSize:gradient:(CGSize size, const facebook::react::ConicGradient& gradient);
+}
+
 interface RCTConvert : public NSObject {
   public typedef BOOL css_backface_visibility_t;
   public typedef NSArray CGColorArray;
@@ -896,6 +913,14 @@ interface RCTDecayAnimation : public NSObject <RCTAnimationDriver> {
 }
 
 interface RCTDefaultReactNativeFactoryDelegate : public UIResponder <RCTReactNativeFactoryDelegate> {
+}
+
+interface RCTDevBanner : public NSObject {
+  public @property (assign, readonly) BOOL visible;
+  public virtual void dismissImmediately();
+  public virtual void hide();
+  public virtual void showMessage:color:backgroundColor:dismissButton:(NSString* message, UIColor* color, UIColor* backgroundColor, BOOL dismissButton);
+  public virtual void updateMessage:(NSString* message);
 }
 
 interface RCTDevLoadingView : public NSObject <RCTDevLoadingViewProtocol, RCTBridgeModule> {
@@ -1167,12 +1192,14 @@ interface RCTInspectorNetworkHelper : public NSObject {
 }
 
 interface RCTInspectorNetworkReporter : public NSObject {
+  public virtual static void maybeStoreResponseBody:body:(NSString* requestId, NSString* body);
   public virtual static void maybeStoreResponseBody:data:base64Encoded:(NSString* requestId, NSData* data, bool base64Encoded);
   public virtual static void maybeStoreResponseBodyIncremental:data:(NSString* requestId, NSString* data);
   public virtual static void reportConnectionTiming:request:(NSString* requestId, NSURLRequest* request);
   public virtual static void reportDataReceived:data:(NSString* requestId, NSData* data);
   public virtual static void reportRequestFailed:cancelled:(NSString* requestId, BOOL cancelled);
   public virtual static void reportRequestStart:request:encodedDataLength:(NSString* requestId, NSURLRequest* request, int encodedDataLength);
+  public virtual static void reportRequestStart:request:encodedDataLength:redirectResponse:(NSString* requestId, NSURLRequest* request, int encodedDataLength, NSHTTPURLResponse* redirectResponse);
   public virtual static void reportResponseEnd:encodedDataLength:(NSString* requestId, int encodedDataLength);
   public virtual static void reportResponseStart:response:statusCode:headers:(NSString* requestId, NSURLResponse* response, int statusCode, NSDictionary<NSString*, NSString*>* headers);
 }
@@ -1593,7 +1620,14 @@ interface RCTScheduler : public NSObject {
   public virtual void removeEventListener:(const std::shared_ptr<facebook::react::EventListener>& listener);
   public virtual void reportMount:(facebook::react::SurfaceId surfaceId);
   public virtual void setupAnimationDriver:(const facebook::react::SurfaceHandler& surfaceHandler);
+  public virtual void stopObservingLayoutAnimations();
   public virtual void unregisterSurface:(const facebook::react::SurfaceHandler& surfaceHandler);
+}
+
+interface RCTScrollContentViewComponentView : public RCTViewComponentView {
+  public @property (assign, readonly) UIEdgeInsets contentInsetAdjustment;
+  public @property (assign, readonly) UIEdgeInsets safeAreaPadding;
+  public virtual void setSafeAreaPadding:contentInsetAdjustment:(UIEdgeInsets safeAreaPadding, UIEdgeInsets contentInsetAdjustment);
 }
 
 interface RCTScrollEvent : public NSObject <RCTEvent> {
@@ -2391,6 +2425,7 @@ protocol NativeSourceCodeSpec : public NSObjectRCTBridgeModule, public RCTTurboM
 }
 
 protocol NativeStatusBarManagerIOSSpec : public NSObjectRCTBridgeModule, public RCTTurboModule {
+  public virtual NSString* _Nullable getVerticalBarEdge();
   public virtual facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> constantsToExport();
   public virtual facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants> getConstants();
   public virtual void addListener:(NSString* eventType);
@@ -3098,7 +3133,7 @@ using facebook::react::ModuleConstants = _RCTTypedModuleConstants<void(^)(typena
 using facebook::react::ActivityIndicatorViewComponentDescriptor = facebook::react::ConcreteComponentDescriptor<facebook::react::ActivityIndicatorViewShadowNode>;
 using facebook::react::ActivityIndicatorViewShadowNode = facebook::react::ConcreteViewShadowNode<facebook::react::ActivityIndicatorViewComponentName, facebook::react::ActivityIndicatorViewProps, facebook::react::ActivityIndicatorViewEventEmitter, facebook::react::ActivityIndicatorViewState>;
 using facebook::react::ActivityIndicatorViewState = facebook::react::StateData;
-using facebook::react::BackgroundImage = std::variant<facebook::react::LinearGradient, facebook::react::RadialGradient>;
+using facebook::react::BackgroundImage = std::variant<facebook::react::ConicGradient, facebook::react::LinearGradient, facebook::react::RadialGradient>;
 using facebook::react::BackgroundSize = std::variant<facebook::react::BackgroundSizeKeyword, facebook::react::BackgroundSizeLengthPercentage>;
 using facebook::react::BorderColors = facebook::react::RectangleEdges<facebook::react::SharedColor>;
 using facebook::react::BorderCurves = facebook::react::RectangleCorners<facebook::react::BorderCurve>;
@@ -3120,6 +3155,7 @@ using facebook::react::DebuggingOverlayComponentDescriptor = facebook::react::Co
 using facebook::react::DebuggingOverlayShadowNode = facebook::react::ConcreteViewShadowNode<facebook::react::DebuggingOverlayComponentName, facebook::react::DebuggingOverlayProps, facebook::react::DebuggingOverlayEventEmitter, facebook::react::DebuggingOverlayState>;
 using facebook::react::DebuggingOverlayState = facebook::react::StateData;
 using facebook::react::EdgeInsets = facebook::react::RectangleEdges<facebook::react::Float>;
+using facebook::react::EdgeMargins = facebook::react::RectangleEdges<facebook::react::MarginValue>;
 using facebook::react::EventEmitterCallback = std::function<void(const std::string&, id)>;
 using facebook::react::EventListener = std::function<bool(const facebook::react::RawEvent& event)>;
 using facebook::react::EventPipe = std::function<void(facebook::jsi::Runtime& runtime, facebook::react::EventTarget* eventTarget, const std::string& type, facebook::react::ReactEventPriority priority, const facebook::react::EventPayload& payload, facebook::react::HighResTimeStamp eventTimestamp)>;
@@ -3200,6 +3236,7 @@ facebook::react::ColorComponents facebook::react::colorComponentsFromColor(faceb
 facebook::react::ColorComponents facebook::react::colorComponentsFromHostPlatformColor(facebook::react::Color color);
 facebook::react::ColorSpace facebook::react::getDefaultColorSpace();
 facebook::react::DisplayType facebook::react::displayTypeFromYGDisplay(YGDisplay display);
+facebook::react::EdgeInsets facebook::react::resolveEdgeMargins(const facebook::react::EdgeMargins& margins, const facebook::react::Size& size) noexcept;
 facebook::react::Float facebook::react::floatFromYogaFloat(float value);
 facebook::react::Float facebook::react::floatFromYogaOptionalFloat(facebook::yoga::FloatOptional value);
 facebook::react::LayoutMetrics facebook::react::layoutMetricsFromYogaNode(facebook::yoga::Node& yogaNode);
@@ -3962,6 +3999,7 @@ struct facebook::react::LayoutableShadowNode::LayoutInspectingPolicy {
   public bool enableOverflowClipping;
   public bool includeTransform;
   public bool includeViewportOffset;
+  public std::optional<facebook::react::EdgeMargins> clipMargin;
 }
 
 class facebook::react::LongLivedObject {
@@ -3978,6 +4016,7 @@ class facebook::react::LongLivedObjectCollection {
   public static facebook::react::LongLivedObjectCollection& get(facebook::jsi::Runtime& runtime);
   public void add(std::shared_ptr<facebook::react::LongLivedObject> o);
   public void clear();
+  public void clear(facebook::jsi::Runtime& runtime);
   public void operator=(const facebook::react::LongLivedObjectCollection&) = delete;
   public void remove(const facebook::react::LongLivedObject* o);
 }
@@ -4403,6 +4442,7 @@ class facebook::react::SafeAreaViewEventEmitter : public facebook::react::BaseVi
 class facebook::react::SafeAreaViewProps : public facebook::react::HostPlatformViewProps {
   public SafeAreaViewProps() = default;
   public SafeAreaViewProps(const facebook::react::PropsParserContext& context, const facebook::react::SafeAreaViewProps& sourceProps, const facebook::react::RawProps& rawProps);
+  public facebook::react::SafeAreaViewPointerEvents pointerEvents;
 }
 
 class facebook::react::Sealable {
@@ -4506,6 +4546,8 @@ enum facebook::react::ShadowNodeTraits::Trait : int32_t {
   ChildrenFormStackingContext,
   DirtyYogaNode,
   ForceFlattenView,
+  FormsContentClip,
+  FormsScrollContainer,
   FormsStackingContext,
   FormsView,
   Hidden,
@@ -4702,6 +4744,12 @@ class facebook::react::YogaStylableProps : public facebook::react::Props {
   public YogaStylableProps() = default;
   public YogaStylableProps(const facebook::react::PropsParserContext& context, const facebook::react::YogaStylableProps& sourceProps, const facebook::react::RawProps& rawProps, const std::function<bool(const std::string&)>& filterObjectKeys = nullptr);
   public facebook::yoga::Style yogaStyle;
+  public facebook::yoga::Style::Length borderBlockEndWidth;
+  public facebook::yoga::Style::Length borderBlockStartWidth;
+  public facebook::yoga::Style::Length borderBlockWidth;
+  public facebook::yoga::Style::Length borderInlineEndWidth;
+  public facebook::yoga::Style::Length borderInlineStartWidth;
+  public facebook::yoga::Style::Length borderInlineWidth;
   public facebook::yoga::Style::Length insetBlockEnd;
   public facebook::yoga::Style::Length insetBlockStart;
   public facebook::yoga::Style::Length insetInlineEnd;
@@ -5086,6 +5134,13 @@ enum facebook::react::Role : uint8_t {
   Treeitem,
 }
 
+enum facebook::react::SafeAreaViewPointerEvents {
+  Auto,
+  BoxNone,
+  BoxOnly,
+  None,
+}
+
 enum facebook::react::SchedulerPriority : int {
   IdlePriority,
   ImmediatePriority,
@@ -5282,6 +5337,13 @@ struct facebook::react::ColorStop {
   public facebook::react::ValueUnit position;
 }
 
+struct facebook::react::ConicGradient {
+  public bool operator==(const facebook::react::ConicGradient& other) const = default;
+  public facebook::react::Float from;
+  public facebook::react::RadialGradientPosition position;
+  public std::vector<facebook::react::ColorStop> colorStops;
+}
+
 struct facebook::react::CornerRadii {
   public bool operator==(const facebook::react::CornerRadii& other) const = default;
   public float horizontal;
@@ -5368,6 +5430,12 @@ struct facebook::react::LinearGradient {
   public bool operator==(const facebook::react::LinearGradient& other) const = default;
   public facebook::react::GradientDirection direction;
   public std::vector<facebook::react::ColorStop> colorStops;
+}
+
+struct facebook::react::MarginValue {
+  public bool isPercentage;
+  public bool operator==(const facebook::react::MarginValue& rhs) const noexcept = default;
+  public facebook::react::Float value;
 }
 
 struct facebook::react::ModalHostViewSupportedOrientationsMaskWrapped {
@@ -5674,7 +5742,6 @@ class facebook::react::ConcreteShadowNode : public BaseShadowNodeT {
   public const facebook::react::ConcreteShadowNode::ConcreteEventEmitter& getConcreteEventEmitter() const;
   public const facebook::react::ConcreteShadowNode::ConcreteProps& getConcreteProps() const;
   public const facebook::react::ConcreteShadowNode::ConcreteStateData& getStateData() const;
-  public const std::shared_ptr<const facebook::react::ConcreteShadowNode::ConcreteProps>& getConcreteSharedProps() const;
   public static const facebook::react::ConcreteShadowNode::SharedConcreteProps& defaultSharedProps();
   public static constexpr facebook::react::ShadowNodeTraits BaseTraits();
   public static facebook::react::ComponentHandle Handle();
@@ -5682,6 +5749,7 @@ class facebook::react::ConcreteShadowNode : public BaseShadowNodeT {
   public static facebook::react::ConcreteShadowNode::ConcreteStateData initialStateData(const facebook::react::Props::Shared&, const facebook::react::ShadowNodeFamily::Shared&, const facebook::react::ComponentDescriptor&);
   public static facebook::react::ConcreteShadowNode::UnsharedConcreteProps Props(const facebook::react::Props::Shared& baseProps);
   public static facebook::react::ConcreteShadowNode::UnsharedConcreteProps Props(const facebook::react::PropsParserContext& context, const facebook::react::RawProps& rawProps, const facebook::react::Props::Shared& baseProps = nullptr);
+  public std::shared_ptr<const facebook::react::ConcreteShadowNode::ConcreteProps> getConcreteSharedProps() const;
   public using ConcreteEventEmitter = EventEmitterT;
   public using ConcreteProps = PropsT;
   public using ConcreteState = facebook::react::ConcreteState<StateDataT>;
@@ -5810,7 +5878,7 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverEntr
   public bool operator==(const facebook::react::NativeIntersectionObserverNativeIntersectionObserverEntry& other) const;
 }
 
-template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5>
+template <typename P0, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
 struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObserveOptions {
   public P0 intersectionObserverId;
   public P1 rootShadowNode;
@@ -5818,6 +5886,7 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObse
   public P3 thresholds;
   public P4 rootThresholds;
   public P5 rootMargin;
+  public P6 scrollMargin;
   public bool operator==(const facebook::react::NativeIntersectionObserverNativeIntersectionObserverObserveOptions& other) const;
 }
 
@@ -6016,10 +6085,11 @@ class facebook::react::SyncCallback<R(Args...)> {
   public R operator()(Args... args) const;
   public SyncCallback(const facebook::react::SyncCallback&) = delete;
   public SyncCallback(facebook::jsi::Runtime& rt, facebook::jsi::Function function, std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
-  public SyncCallback(facebook::react::SyncCallback&& other) noexcept;
+  public SyncCallback(facebook::react::SyncCallback&&) noexcept = default;
   public facebook::react::SyncCallback& operator=(const facebook::react::SyncCallback&) = delete;
-  public facebook::react::SyncCallback& operator=(facebook::react::SyncCallback&& other) noexcept;
-  public ~SyncCallback();
+  public facebook::react::SyncCallback& operator=(facebook::react::SyncCallback&&) noexcept = default;
+  public void reset(facebook::jsi::Runtime& runtime) noexcept;
+  public ~SyncCallback() = default;
 }
 
 template <typename R, typename... Args>
@@ -6055,6 +6125,27 @@ class facebook::react::ConcreteComponentDescriptor : public facebook::react::Com
 
 template <typename T, typename = void>
 struct facebook::react::Bridging {
+}
+
+template <typename T>
+class facebook::react::LongLivedObjectHandle {
+  public LongLivedObjectHandle() = default;
+  public LongLivedObjectHandle(const facebook::react::LongLivedObjectHandle&) = delete;
+  public LongLivedObjectHandle(facebook::jsi::Runtime& runtime, T value, std::shared_ptr<facebook::react::CallInvoker> jsInvoker);
+  public LongLivedObjectHandle(facebook::react::LongLivedObjectHandle&&) noexcept = default;
+  public bool expired() const noexcept;
+  public facebook::react::LongLivedObjectHandle& operator=(const facebook::react::LongLivedObjectHandle&) = delete;
+  public facebook::react::LongLivedObjectHandle& operator=(facebook::react::LongLivedObjectHandle&& other) noexcept;
+  public std::shared_ptr<facebook::react::CallInvoker> lockInvoker() const noexcept;
+  public std::shared_ptr<facebook::react::LongLivedObjectHandle::Holder> lockJSValue(facebook::jsi::Runtime&) const noexcept;
+  public void reset() noexcept;
+  public void reset(facebook::jsi::Runtime& runtime) noexcept;
+  public ~LongLivedObjectHandle();
+}
+
+struct facebook::react::LongLivedObjectHandle::Holder : public facebook::react::LongLivedObject {
+  public Holder(facebook::jsi::Runtime& runtime, T value);
+  public T value;
 }
 
 template <typename T>
@@ -6395,6 +6486,9 @@ struct facebook::react::CascadedRectangleEdges {
   public facebook::react::CascadedRectangleEdges::OptionalT bottom;
   public facebook::react::CascadedRectangleEdges::OptionalT end;
   public facebook::react::CascadedRectangleEdges::OptionalT horizontal;
+  public facebook::react::CascadedRectangleEdges::OptionalT inlineEnd;
+  public facebook::react::CascadedRectangleEdges::OptionalT inlineStart;
+  public facebook::react::CascadedRectangleEdges::OptionalT inline_;
   public facebook::react::CascadedRectangleEdges::OptionalT left;
   public facebook::react::CascadedRectangleEdges::OptionalT right;
   public facebook::react::CascadedRectangleEdges::OptionalT start;
@@ -6606,6 +6700,7 @@ struct facebook::react::NativeIntersectionObserverNativeIntersectionObserverObse
   public static facebook::jsi::Value targetShadowNodeToJs(facebook::jsi::Runtime& rt, decltype(types.targetShadowNode) value);
   public static std::optional<facebook::jsi::Array> rootThresholdsToJs(facebook::jsi::Runtime& rt, decltype(types.rootThresholds) value);
   public static std::optional<facebook::jsi::String> rootMarginToJs(facebook::jsi::Runtime& rt, decltype(types.rootMargin) value);
+  public static std::optional<facebook::jsi::String> scrollMarginToJs(facebook::jsi::Runtime& rt, decltype(types.scrollMargin) value);
   public static std::optional<facebook::jsi::Value> rootShadowNodeToJs(facebook::jsi::Runtime& rt, decltype(types.rootShadowNode) value);
 }
 
@@ -7029,7 +7124,7 @@ decltype(facebook::react::Bridging<facebook::react::bridging::remove_cvref_t<Ret
 template <typename ReturnT, typename JSArgT>
 decltype(facebook::react::Bridging<facebook::react::bridging::remove_cvref_t<ReturnT>>::fromJs(rt, facebook::react::bridging::convert(rt, std::forward<JSArgT>(value)), jsInvoker)) facebook::react::bridging::fromJs(facebook::jsi::Runtime& rt, JSArgT&& value, const std::shared_ptr<facebook::react::CallInvoker>& jsInvoker);
 template <typename ReturnT, typename JSArgT>
-decltype(static_cast<ReturnT>(std::move(facebook::react::bridging::convert(rt, std::forward<JSArgT>(value))))) facebook::react::bridging::fromJs(facebook::jsi::Runtime& rt, JSArgT&& value, const std::shared_ptr<facebook::react::CallInvoker>&);
+facebook::react::bridging::remove_cvref_t<decltype(static_cast<ReturnT>(std::move(facebook::react::bridging::convert(rt, std::forward<JSArgT>(value)))))> facebook::react::bridging::fromJs(facebook::jsi::Runtime& rt, JSArgT&& value, const std::shared_ptr<facebook::react::CallInvoker>&);
 template <typename ReturnT, typename... ArgsT>
 constexpr size_t facebook::react::bridging::getParameterCount(ReturnT(*)(ArgsT...));
 template <typename T, std::enable_if_t<is_jsi_v<T>, int> = 0>
@@ -7131,6 +7226,9 @@ struct facebook::react::array_detail::BridgingDynamic {
 
 template <typename T, typename C>
 C facebook::react::detail::memberFunctionClass(T C::*);
+template <typename T>
+void facebook::react::detail::releaseLongLivedObjectOnJS(std::weak_ptr<T>, std::weak_ptr<facebook::react::CallInvoker>) = delete;
+void facebook::react::detail::releaseLongLivedObjectOnJS(std::weak_ptr<facebook::react::LongLivedObject> object, std::weak_ptr<facebook::react::CallInvoker> jsInvoker) noexcept;
 
 class facebook::react::detail::OwnedBytesBuffer : public facebook::jsi::MutableBuffer {
   public OwnedBytesBuffer(std::vector<uint8_t> bytes) noexcept;
@@ -8334,7 +8432,7 @@ class facebook::yoga::Node : public YGNode {
   public const facebook::yoga::LayoutResults& getLayout() const;
   public const facebook::yoga::Style& style() const;
   public const std::vector<facebook::yoga::Node*>& getChildren() const;
-  public facebook::yoga::Direction resolveDirection(facebook::yoga::Direction ownerDirection);
+  public facebook::yoga::Direction resolveDirection(facebook::yoga::Direction ownerDirection) const;
   public facebook::yoga::FloatOptional getMinContentHeight() const noexcept;
   public facebook::yoga::FloatOptional getMinContentWidth() const noexcept;
   public facebook::yoga::FloatOptional getResolvedDimension(facebook::yoga::Direction direction, facebook::yoga::Dimension dimension, float referenceLength, float ownerWidth) const;
@@ -8358,6 +8456,7 @@ class facebook::yoga::Node : public YGNode {
   public size_t getLineIndex() const;
   public using LayoutableChildren = facebook::yoga::LayoutableChildren<facebook::yoga::Node>;
   public void clearChildren();
+  public void cloneChildIfNeeded(size_t index);
   public void cloneChildrenIfNeeded();
   public void cloneContentsChildrenIfNeeded();
   public void insertChild(facebook::yoga::Node* child, size_t index);
@@ -8403,6 +8502,8 @@ class facebook::yoga::Node : public YGNode {
 class facebook::yoga::Style {
   public bool flexEndMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
   public bool flexStartMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
+  public bool hasPercentMargin() const;
+  public bool hasPercentPadding() const;
   public bool horizontalInsetsDefined() const;
   public bool inlineEndMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
   public bool inlineStartMarginIsAuto(facebook::yoga::FlexDirection axis, facebook::yoga::Direction direction) const;
@@ -8914,8 +9015,10 @@ struct facebook::yoga::LayoutData {
 }
 
 struct facebook::yoga::LayoutResults {
+  public YG_EXPORT bool operator==(facebook::yoga::LayoutResults layout) const;
+  public bool computedAutoMinMainSizeResolved() const;
   public bool hadOverflow() const;
-  public bool operator==(facebook::yoga::LayoutResults layout) const;
+  public bool minContentResolvesAgainstOwnerWidth(facebook::yoga::Dimension axis) const;
   public facebook::yoga::CachedMeasurement cachedLayout;
   public facebook::yoga::Direction direction() const;
   public facebook::yoga::Direction lastOwnerDirection;
@@ -8938,11 +9041,13 @@ struct facebook::yoga::LayoutResults {
   public uint32_t generationCount;
   public uint32_t nextCachedMeasurementsIndex;
   public void setBorder(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
+  public void setComputedAutoMinMainSizeResolved(bool resolved);
   public void setDimension(facebook::yoga::Dimension axis, float dimension);
   public void setDirection(facebook::yoga::Direction direction);
   public void setHadOverflow(bool hadOverflow);
   public void setMargin(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setMeasuredDimension(facebook::yoga::Dimension axis, float dimension);
+  public void setMinContentResolvesAgainstOwnerWidth(facebook::yoga::Dimension axis, bool resolves);
   public void setPadding(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setPosition(facebook::yoga::PhysicalEdge physicalEdge, float dimension);
   public void setRawDimension(facebook::yoga::Dimension axis, float dimension);

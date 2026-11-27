@@ -188,6 +188,7 @@ const AppContainer = ({
           externalInspection.externalInspectingEnabled) && (
           <InspectorDeferred
             inspectedViewRef={innerViewRef}
+            // $FlowFixMe[incompatible-type] `void` is not `undefined` under experimental.ts_void
             reactDevToolsAgent={reactDevToolsAgent}
             devMenuInspectorOpen={shouldRenderInspector}
             externalInspection={externalInspection}

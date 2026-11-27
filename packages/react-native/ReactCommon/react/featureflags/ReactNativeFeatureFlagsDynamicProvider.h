@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8c22809fda00ab42d807816b7606e291>>
+ * @generated SignedSource<<f06aa9c4b4027083a00720ea796a5d43>>
  */
 
 /**
@@ -180,15 +180,6 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableAccumulatedUpdatesInRawPropsAndroid();
-  }
-
-  bool enableAndroidAutoOffscreenCompositingForElevation() override {
-    auto value = values_["enableAndroidAutoOffscreenCompositingForElevation"];
-    if (!value.isNull()) {
-      return value.getBool();
-    }
-
-    return ReactNativeFeatureFlagsDefaults::enableAndroidAutoOffscreenCompositingForElevation();
   }
 
   bool enableAndroidTextMeasurementOptimizations() override {
@@ -369,6 +360,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableImmediateUpdateModeForContentOffsetChanges();
+  }
+
+  bool enableImmediateUpdateModeForScrollContentView() override {
+    auto value = values_["enableImmediateUpdateModeForScrollContentView"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableImmediateUpdateModeForScrollContentView();
   }
 
   bool enableImperativeEvents() override {
@@ -605,6 +605,24 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     return ReactNativeFeatureFlagsDefaults::fixMappingOfEventPrioritiesBetweenFabricAndReact();
   }
 
+  bool fixProgrammaticScrollMomentumEventsIOS() override {
+    auto value = values_["fixProgrammaticScrollMomentumEventsIOS"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::fixProgrammaticScrollMomentumEventsIOS();
+  }
+
+  bool fixTextInlineViewLineHeight() override {
+    auto value = values_["fixTextInlineViewLineHeight"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::fixTextInlineViewLineHeight();
+  }
+
   bool fixTextLayoutOnPixelDensityChange() override {
     auto value = values_["fixTextLayoutOnPixelDensityChange"];
     if (!value.isNull()) {
@@ -774,6 +792,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::skipActivityIdentityAssertionOnHostPause();
+  }
+
+  bool skipNativePropsForViewManagerWithDelegateAndroid() override {
+    auto value = values_["skipNativePropsForViewManagerWithDelegateAndroid"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::skipNativePropsForViewManagerWithDelegateAndroid();
   }
 
   bool skipUnchangedChildrenInDifferentiator() override {

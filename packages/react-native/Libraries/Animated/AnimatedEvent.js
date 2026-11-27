@@ -180,12 +180,10 @@ export class AnimatedEvent {
     this.__platformConfig = resolvedConfig.platformConfig;
   }
 
-  // $FlowFixMe[unclear-type]
   __addListener(callback: Function): void {
     this._listeners.push(callback);
   }
 
-  // $FlowFixMe[unclear-type]
   __removeListener(callback: Function): void {
     this._listeners = this._listeners.filter(listener => listener !== callback);
   }
@@ -257,9 +255,6 @@ export class AnimatedEvent {
           }
         } else if (typeof recMapping === 'object') {
           for (const mappingKey in recMapping) {
-            /* $FlowFixMe[prop-missing] (>=0.120.0) This comment suppresses an
-             * error found when Flow v0.120 was deployed. To see the error,
-             * delete this comment and run Flow. */
             traverse(recMapping[mappingKey], recEvt[mappingKey]);
           }
         }

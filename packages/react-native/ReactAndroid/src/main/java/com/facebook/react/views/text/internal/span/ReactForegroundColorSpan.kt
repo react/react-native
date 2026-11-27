@@ -7,7 +7,13 @@
 
 package com.facebook.react.views.text.internal.span
 
-import android.text.style.ForegroundColorSpan
+import android.text.TextPaint
+import android.text.style.CharacterStyle
+import android.text.style.UpdateAppearance
 
-/** Wraps [ForegroundColorSpan] as a [ReactSpan]. */
-internal class ReactForegroundColorSpan(color: Int) : ForegroundColorSpan(color), ReactSpan
+internal class ReactForegroundColorSpan(val foregroundColor: Int) :
+    CharacterStyle(), UpdateAppearance, ReactSpan {
+  override fun updateDrawState(textPaint: TextPaint) {
+    textPaint.color = foregroundColor
+  }
+}

@@ -15,7 +15,9 @@ import android.graphics.Path
 import android.os.Build
 import android.text.Layout
 import android.text.Spanned
+import android.text.style.CharacterStyle
 import android.text.style.ForegroundColorSpan
+import com.facebook.react.views.text.internal.span.ReactForegroundColorSpan
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -159,13 +161,15 @@ internal fun drawSpannedDecoration(
       if (color != Color.TRANSPARENT) {
         color
       } else {
-        // Look up the actual foreground color at the span position. layout.paint
-        // is the base paint whose color may differ from per-span foreground colors
-        // applied via ForegroundColorSpan (e.g., link text, colored text).
-        val spanned = layout.text as? Spanned
-        val fgSpans = spanned?.getSpans(start, start + 1, ForegroundColorSpan::class.java)
-        if (fgSpans != null && fgSpans.isNotEmpty()) fgSpans.last().foregroundColor
-        else textPaint.color
+        val fgSpan =
+            (layout.text as? Spanned)
+                ?.getSpans(start, start + 1, CharacterStyle::class.java)
+                ?.lastOrNull { it is ReactForegroundColorSpan || it is ForegroundColorSpan }
+        when (fgSpan) {
+          is ReactForegroundColorSpan -> fgSpan.foregroundColor
+          is ForegroundColorSpan -> fgSpan.foregroundColor
+          else -> textPaint.color
+        }
       }
   val thickness =
       if (style == TextDecorationStyle.SOLID || style == TextDecorationStyle.DOUBLE) {

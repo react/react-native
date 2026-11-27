@@ -287,9 +287,6 @@ const Button: component(
       disabled={disabled}
       onPress={onPress}
       touchSoundDisabled={touchSoundDisabled}
-      // $FlowFixMe[incompatible-exact]
-      // $FlowFixMe[prop-missing]
-      // $FlowFixMe[incompatible-type]
       ref={ref}>
       <View style={buttonStyles}>
         <Text style={textStyles} disabled={disabled}>

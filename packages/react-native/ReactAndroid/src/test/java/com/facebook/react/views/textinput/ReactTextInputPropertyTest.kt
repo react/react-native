@@ -36,6 +36,7 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.style.BorderRadiusProp
 import com.facebook.react.views.text.DefaultStyleValuesUtil.getDefaultTextColorHint
 import com.facebook.react.views.text.ReactTextUpdate
+import com.facebook.react.views.text.internal.span.CustomLineHeightSpan
 import com.facebook.react.views.text.internal.span.CustomStyleSpan
 import com.facebook.testutils.shadows.ShadowSoLoader
 import org.assertj.core.api.Assertions.assertThat
@@ -207,6 +208,33 @@ class ReactTextInputPropertyTest {
   }
 
   @Test
+  fun testPlaceholderTakesTheLineHeight() {
+    manager.updateProperties(view, buildStyles("lineHeight", 30.0))
+    manager.updateProperties(view, buildStyles("placeholder", "sometext"))
+
+    val hint = view.hint as Spanned
+    assertThat(hint.toString()).isEqualTo("sometext")
+    assertThat(hint.getSpans(0, hint.length, CustomLineHeightSpan::class.java)).hasSize(1)
+  }
+
+  @Test
+  fun testPlaceholderTakesALineHeightSetAfterIt() {
+    manager.updateProperties(view, buildStyles("placeholder", "sometext"))
+    manager.updateProperties(view, buildStyles("lineHeight", 30.0))
+
+    val hint = view.hint as Spanned
+    assertThat(hint.getSpans(0, hint.length, CustomLineHeightSpan::class.java)).hasSize(1)
+  }
+
+  @Test
+  fun testPlaceholderDropsARemovedLineHeight() {
+    manager.updateProperties(view, buildStyles("placeholder", "sometext", "lineHeight", 30.0))
+    manager.updateProperties(view, buildStyles("lineHeight", null))
+
+    assertThat(view.hint).isEqualTo("sometext")
+  }
+
+  @Test
   fun testPlaceholderEllipsizeRespectsMultiline() {
     manager.updateProperties(view, buildStyles("placeholder", "a very long placeholder string"))
     assertThat(view.ellipsize).isEqualTo(TextUtils.TruncateAt.END)
@@ -236,6 +264,20 @@ class ReactTextInputPropertyTest {
 
     manager.updateProperties(view, buildStyles("editable", true))
     assertThat(view.isEnabled).isTrue
+  }
+
+  @Test
+  fun testClearingAccessibilityDisabledPreservesNonEditableInput() {
+    for (state in listOf(JavaOnlyMap(), JavaOnlyMap.of("disabled", null), null)) {
+      manager.updateProperties(
+          view,
+          buildStyles("editable", false, "accessibilityState", JavaOnlyMap.of("disabled", true)),
+      )
+
+      manager.updateProperties(view, buildStyles("accessibilityState", state))
+
+      assertThat(view.isEnabled).isFalse()
+    }
   }
 
   @Test
@@ -530,6 +572,19 @@ class ReactTextInputPropertyTest {
 
     manager.updateProperties(view, buildStyles("fontVariationSettings", null))
     assertThat(view.parsedFontVariationSettings).isNull()
+  }
+
+  @Test
+  fun testFontWeightAcceptsANumber() {
+    manager.updateProperties(view, buildStyles())
+    val defaultTypeface = view.typeface
+    manager.updateProperties(view, buildStyles("fontWeight", "700"))
+    val boldTypeface = view.typeface
+    assertThat(boldTypeface).isNotEqualTo(defaultTypeface)
+
+    manager.updateProperties(view, buildStyles("fontWeight", null))
+    manager.updateProperties(view, buildStyles("fontWeight", 700.0))
+    assertThat(view.typeface).isEqualTo(boldTypeface)
   }
 
   @Test

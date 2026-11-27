@@ -14,6 +14,7 @@ import type {
   PressableStateCallbackType,
 } from 'react-native';
 
+import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {
@@ -196,7 +197,7 @@ function ScaleZeroHitTestExample(): React.Node {
         </View>
       </View>
       <View style={styles.scaleZeroInputRow}>
-        <Text>Scale for second row:</Text>
+        <RNTesterText>Scale for second row:</RNTesterText>
         <TextInput
           testID="scale-zero-input"
           value={text}
@@ -211,7 +212,9 @@ function ScaleZeroHitTestExample(): React.Node {
           }}
         />
       </View>
-      <Text testID="scale-zero-last-tapped">Last tapped: {lastTapped}</Text>
+      <RNTesterText testID="scale-zero-last-tapped">
+        Last tapped: {lastTapped}
+      </RNTesterText>
     </View>
   );
 }
@@ -259,7 +262,9 @@ function SkewExample(): React.Node {
 
   return (
     <View testID="transform-skew-27649" style={styles.skewContainer}>
-      <Text style={styles.skewLabel}>Last tapped: {tapped}</Text>
+      <RNTesterText style={styles.skewLabel}>
+        Last tapped: {tapped}
+      </RNTesterText>
       <Text style={styles.skewNote}>
         Tap any box to confirm hit testing follows the rendered parallelogram on
         both platforms.
@@ -310,7 +315,9 @@ function SkewExample(): React.Node {
           <Text style={styles.skewBoxText}>+translate</Text>
         </Pressable>
       </View>
-      <Text style={styles.skewLabel}>Animated (useNativeDriver: true)</Text>
+      <RNTesterText style={styles.skewLabel}>
+        Animated (useNativeDriver: true)
+      </RNTesterText>
       <Animated.View
         testID="skew-27649-animated"
         style={[styles.skewBox, {transform: [{skewX: animatedSkewX}]}]}>
@@ -529,7 +536,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 12,
     marginBottom: 4,
-    color: 'black',
   },
   skewNote: {fontSize: 11, color: 'gray', marginTop: 6},
   skewBox: {

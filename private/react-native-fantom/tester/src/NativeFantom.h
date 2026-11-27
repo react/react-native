@@ -15,6 +15,7 @@
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/graphics/Point.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace facebook::react {
@@ -88,6 +89,13 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
 
   void stopSurface(jsi::Runtime &runtime, SurfaceId surfaceId);
 
+  void updateSurfaceConstraints(
+      jsi::Runtime &runtime,
+      SurfaceId surfaceId,
+      double viewportWidth,
+      double viewportHeight,
+      double devicePixelRatio);
+
   void produceFramesForDuration(jsi::Runtime &runtime, double milliseconds);
 
   void flushMessageQueue(jsi::Runtime &runtime);
@@ -100,6 +108,10 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
       jsi::Runtime &runtime,
       SurfaceId surfaceId,
       NativeFantomGetRenderedOutputRenderFormatOptions options);
+
+  jsi::Object takeScreenshot(jsi::Runtime &runtime, SurfaceId surfaceId);
+  void registerAsset(jsi::Runtime &runtime, const std::string &uri, const std::string &filePath);
+  void registerFont(jsi::Runtime &runtime, const std::string &filePath);
 
   void reportTestSuiteResultsJSON(jsi::Runtime &runtime, const std::string &testSuiteResultsJSON);
 
@@ -149,6 +161,7 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
 
  private:
   TesterAppDelegate &appDelegate_;
+  std::unordered_map<std::string, std::string> assetPaths_;
   SurfaceId nextSurfaceId_ = 1;
 };
 

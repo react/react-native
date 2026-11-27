@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import {setPlatformObject} from '../webidl/PlatformObjects';
 
 /**
@@ -36,6 +34,7 @@ export default class ResizeObserverSize {
    *
    * React Native assumes a horizontal writing-mode, so this is the width.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get inlineSize(): number {
     return this._inlineSize;
   }
@@ -47,6 +46,7 @@ export default class ResizeObserverSize {
    *
    * React Native assumes a horizontal writing-mode, so this is the height.
    */
+  // $FlowFixMe[unsafe-getters-setters]
   get blockSize(): number {
     return this._blockSize;
   }
@@ -66,5 +66,4 @@ export const ResizeObserverSize_public: typeof ResizeObserverSize =
     );
   };
 
-// $FlowExpectedError[prop-missing]
 ResizeObserverSize_public.prototype = ResizeObserverSize.prototype;

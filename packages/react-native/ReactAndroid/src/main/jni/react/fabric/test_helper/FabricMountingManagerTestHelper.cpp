@@ -10,6 +10,7 @@
 #include <react/fabric/FabricUIManagerBinding.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
+#include <react/jni/WritableNativeMap.h>
 #include <react/renderer/animationbackend/AnimatedProps.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/root/RootShadowNode.h>
@@ -61,6 +62,17 @@ class FabricMountingManagerTestHelper::DeleteRecorder
 };
 
 namespace {
+
+jni::local_ref<WritableNativeMap::jhybridobject> createWritableNativeMapFromCxx(
+    jni::alias_ref<jclass> /*unused*/,
+    jboolean withContents) {
+  if (withContents == JNI_FALSE) {
+    return WritableNativeMap::newObjectCxxArgs();
+  }
+  folly::dynamic payload = folly::dynamic::object("value", 42)(
+      "nested", folly::dynamic::object("enabled", true));
+  return WritableNativeMap::newObjectCxxArgs(std::move(payload));
+}
 
 ShadowView makeShadowView(jint surfaceId, jint tag) {
   ShadowView sv{};
@@ -210,9 +222,9 @@ void FabricMountingManagerTestHelper::drainPreallocationQueue() {
   mountingManager_->drainPreallocateViewsQueue();
 }
 
-void FabricMountingManagerTestHelper::executeCreateMutation(
+void FabricMountingManagerTestHelper::executeMutation(
     jint surfaceId,
-    jint tag) {
+    ShadowViewMutation mutation) {
   auto telemetry = TransactionTelemetry{};
   telemetry.willCommit();
   telemetry.willDiff();
@@ -221,11 +233,27 @@ void FabricMountingManagerTestHelper::executeCreateMutation(
   telemetry.didLayout();
   telemetry.didCommit();
   mountingManager_->executeMount(
-      MountingTransaction{
-          surfaceId,
-          0,
-          {ShadowViewMutation::CreateMutation(makeShadowView(surfaceId, tag))},
-          telemetry});
+      MountingTransaction{surfaceId, 0, {std::move(mutation)}, telemetry});
+}
+
+void FabricMountingManagerTestHelper::executeCreateMutation(
+    jint surfaceId,
+    jint tag) {
+  executeMutation(
+      surfaceId,
+      ShadowViewMutation::CreateMutation(makeShadowView(surfaceId, tag)));
+}
+
+void FabricMountingManagerTestHelper::executeDeleteMutation(
+    jint surfaceId,
+    jint tag) {
+  executeMutation(
+      surfaceId,
+      ShadowViewMutation::DeleteMutation(makeShadowView(surfaceId, tag)));
+}
+
+void FabricMountingManagerTestHelper::commitQueuedView(jint tag) {
+  queuedShadowNodes_.at(tag)->setMounted(true);
 }
 
 void FabricMountingManagerTestHelper::dropFamily(jint tag) {
@@ -465,6 +493,8 @@ void FabricMountingManagerTestHelper::registerNatives() {
       makeNativeMethod(
           "readFabricUIManagerFromContext", readFabricUIManagerFromContext),
       makeNativeMethod(
+          "createWritableNativeMapFromCxx", createWritableNativeMapFromCxx),
+      makeNativeMethod(
           "initHybrid", FabricMountingManagerTestHelper::initHybrid),
       makeNativeMethod(
           "startSurface", FabricMountingManagerTestHelper::startSurface),
@@ -481,6 +511,12 @@ void FabricMountingManagerTestHelper::registerNatives() {
       makeNativeMethod(
           "executeCreateMutation",
           FabricMountingManagerTestHelper::executeCreateMutation),
+      makeNativeMethod(
+          "executeDeleteMutation",
+          FabricMountingManagerTestHelper::executeDeleteMutation),
+      makeNativeMethod(
+          "commitQueuedView",
+          FabricMountingManagerTestHelper::commitQueuedView),
       makeNativeMethod(
           "dropFamily", FabricMountingManagerTestHelper::dropFamily),
       makeNativeMethod(

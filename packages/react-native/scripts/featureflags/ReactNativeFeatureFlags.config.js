@@ -72,7 +72,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     cxxNativeAnimatedEnabled: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2025-03-14',
         description:
@@ -80,7 +80,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'stable',
     },
     defaultTextToOverflowHidden: {
       defaultValue: true,
@@ -209,17 +209,6 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2024-12-10',
         description:
           'When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    enableAndroidAutoOffscreenCompositingForElevation: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-08-31',
-        description:
-          'When enabled, a View with reduced opacity that contains an elevated descendant is composited offscreen so the elevation shadow fades uniformly instead of rendering as banded per-primitive alpha.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -434,6 +423,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2025-07-15',
         description:
           'Dispatches state updates for content offset changes synchronously on the main thread.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableImmediateUpdateModeForScrollContentView: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-17',
+        description:
+          'Apply ScrollContentView state updates synchronously on the main thread.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -718,6 +718,28 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    fixProgrammaticScrollMomentumEventsIOS: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-11',
+        description:
+          'Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'canary',
+    },
+    fixTextInlineViewLineHeight: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-20',
+        description:
+          'Grows lines of text with `lineHeight` to fit taller inline views instead of letting them overflow, keeps lines after an inline view at `lineHeight` on Android, and aligns inline views with the text baseline on iOS.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'canary',
+    },
     fixTextLayoutOnPixelDensityChange: {
       defaultValue: false,
       metadata: {
@@ -761,7 +783,7 @@ const definitions: FeatureFlagDefinitions = {
       ossReleaseStage: 'none',
     },
     fuseboxFrameRecordingEnabled: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-03-05',
         description:
@@ -769,7 +791,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'stable',
     },
     fuseboxScreenshotCaptureEnabled: {
       defaultValue: true,
@@ -813,7 +835,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'none',
+      ossReleaseStage: 'canary',
     },
     overrideBySynchronousMountPropsAtMountingAndroid: {
       defaultValue: true,
@@ -917,6 +939,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2025-07-15',
         description:
           'Skip activity identity assertion in ReactHostImpl::onHostPause()',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    skipNativePropsForViewManagerWithDelegateAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-21',
+        description:
+          'Skip native prop metadata generation on Android for view managers with custom delegates. Requires their components to use static view configs.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -1026,7 +1059,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'experimental',
+      ossReleaseStage: 'canary',
     },
     useTraitHiddenOnAndroid: {
       defaultValue: false,
@@ -1155,17 +1188,6 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2025-07-02',
         description:
           'Use the deferred cell render update mechanism for focus change in FlatList.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    enableNativeEventTargetEventDispatching: {
-      defaultValue: true,
-      metadata: {
-        dateAdded: '2026-04-13',
-        description:
-          'When enabled, the React Native renderer dispatches events through the W3C EventTarget API (addEventListener/dispatchEvent) instead of the legacy plugin-based system.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },

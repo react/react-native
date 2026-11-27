@@ -30,16 +30,6 @@ export type TargetCapabilityFlags = Readonly<{
    * In the proxy, this disables source fetching emulation and host rewrites.
    */
   nativeSourceCodeFetching?: boolean,
-
-  /**
-   * The target supports multiple concurrent debugger connections.
-   *
-   * When true, the proxy allows multiple debuggers to connect to the same
-   * page simultaneously, each identified by a unique session ID.
-   * When false (default/legacy), connecting a new debugger disconnects
-   * any existing debugger connection to that page.
-   */
-  supportsMultipleDebuggers?: boolean,
 }>;
 
 // Page information received from the device. New page is created for
@@ -68,7 +58,7 @@ export type WrappedEventFromDevice = Readonly<{
   payload: Readonly<{
     pageId: string,
     wrappedEvent: string,
-    sessionId?: string,
+    sessionId: string,
   }>,
 }>;
 
@@ -97,10 +87,10 @@ export type DisconnectRequest = Readonly<{
 }>;
 
 // Event sent from Device to Inspector Proxy when a debugger session ends or is
-// rejected. Legacy devices omit the sessionId.
+// rejected.
 export type DisconnectEventFromDevice = Readonly<{
   event: 'disconnect',
-  payload: Readonly<{pageId: string, sessionId?: string}>,
+  payload: Readonly<{pageId: string, sessionId: string}>,
 }>;
 
 // Request sent from Inspector Proxy to Device to get a list of pages.

@@ -12,6 +12,7 @@
 #include <react/renderer/uimanager/PointerEventsProcessor.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
 #include <react/renderer/uimanager/consistency/ShadowTreeRevisionProvider.h>
+#include <react/utils/OnScopeExit.h>
 
 #ifdef RN_DISABLE_OSS_PLUGIN_HEADER
 #include "Plugins.h"
@@ -413,7 +414,8 @@ jsi::Value NativeDOM::linkRootNode(
 void NativeDOM::measure(
     jsi::Runtime& rt,
     std::shared_ptr<const ShadowNode> shadowNode,
-    const MeasureOnSuccessCallback& callback) {
+    MeasureOnSuccessCallback callback) {
+  OnScopeExit releaseCallback([&] { callback.reset(rt); });
   auto currentRevision =
       getCurrentShadowTreeRevision(rt, shadowNode->getSurfaceId());
   if (currentRevision == nullptr) {
@@ -435,7 +437,8 @@ void NativeDOM::measure(
 void NativeDOM::measureInWindow(
     jsi::Runtime& rt,
     std::shared_ptr<const ShadowNode> shadowNode,
-    const MeasureInWindowOnSuccessCallback& callback) {
+    MeasureInWindowOnSuccessCallback callback) {
+  OnScopeExit releaseCallback([&] { callback.reset(rt); });
   auto currentRevision =
       getCurrentShadowTreeRevision(rt, shadowNode->getSurfaceId());
   if (currentRevision == nullptr) {
@@ -452,7 +455,8 @@ void NativeDOM::measureLayout(
     std::shared_ptr<const ShadowNode> shadowNode,
     std::shared_ptr<const ShadowNode> relativeToShadowNode,
     jsi::Function onFail,
-    const MeasureLayoutOnSuccessCallback& onSuccess) {
+    MeasureLayoutOnSuccessCallback onSuccess) {
+  OnScopeExit releaseCallback([&] { onSuccess.reset(rt); });
   auto currentRevision =
       getCurrentShadowTreeRevision(rt, shadowNode->getSurfaceId());
   if (currentRevision == nullptr) {

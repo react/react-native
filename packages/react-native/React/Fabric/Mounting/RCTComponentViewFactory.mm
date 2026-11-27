@@ -131,14 +131,18 @@ static Class<RCTComponentViewProtocol> RCTComponentViewClassWithName(const char 
 
 - (BOOL)_wasComponentRegistered:(const std::string &)name
 {
+  std::shared_lock lock(_mutex);
   auto registrationResult = _registrationStatusMap.find(name);
   return registrationResult != _registrationStatusMap.end() && (registrationResult->second);
 }
 
 - (void)_registerComponentIfPossible:(const std::string &)name
 {
-  if (_registrationStatusMap.find(name) != _registrationStatusMap.end()) {
-    return;
+  {
+    std::shared_lock lock(_mutex);
+    if (_registrationStatusMap.find(name) != _registrationStatusMap.end()) {
+      return;
+    }
   }
 
   // Fallback 1: Call provider function for component view class.
@@ -177,10 +181,17 @@ static Class<RCTComponentViewProtocol> RCTComponentViewClassWithName(const char 
     auto provider = ComponentDescriptorProvider{
         .handle = componentHandle, .name = componentName, .flavor = flavor, .constructor = constructor};
 
+    // Only the map writes take the lock: building a legacy interop descriptor can wait on the
+    // main queue (a view manager that requires main queue setup), which may itself be waiting
+    // for this lock in -createComponentViewWithComponentHandle:.
     _providerRegistry.add(provider);
-    _componentViewClasses[componentHandle] =
+    auto classDescriptor =
         [self _componentViewClassDescriptorFromClass:[RCTLegacyViewManagerInteropComponentView class]];
-    _registrationStatusMap.insert({provider.name, true});
+    {
+      std::unique_lock lock(_mutex);
+      _componentViewClasses[componentHandle] = classDescriptor;
+      _registrationStatusMap.insert({provider.name, true});
+    }
     return;
   }
 #endif // RCT_REMOVE_LEGACY_COMPONENT_INTEROP
@@ -194,9 +205,12 @@ static Class<RCTComponentViewProtocol> RCTComponentViewClassWithName(const char 
       .handle = componentHandle, .name = componentName, .flavor = flavor, .constructor = constructor};
 
   _providerRegistry.add(provider);
-  _componentViewClasses[componentHandle] =
-      [self _componentViewClassDescriptorFromClass:[RCTUnimplementedViewComponentView class]];
-  _registrationStatusMap.insert({provider.name, false});
+  auto classDescriptor = [self _componentViewClassDescriptorFromClass:[RCTUnimplementedViewComponentView class]];
+  {
+    std::unique_lock lock(_mutex);
+    _componentViewClasses[componentHandle] = classDescriptor;
+    _registrationStatusMap.insert({provider.name, false});
+  }
 }
 
 - (void)registerComponentViewClass:(Class<RCTComponentViewProtocol>)componentViewClass

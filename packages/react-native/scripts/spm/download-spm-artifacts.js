@@ -243,7 +243,7 @@ async function resolveSnapshotUrl(
     `${version}-SNAPSHOT/maven-metadata.xml`;
 
   log(`  Fetching snapshot metadata: ${metadataUrl}`);
-  const res = await fetch(metadataUrl);
+  const res = await fetchWithRetry(metadataUrl);
   if (!res.ok) {
     throw new Error(
       `Failed to fetch snapshot metadata (${res.status}): ${metadataUrl}`,
@@ -305,7 +305,9 @@ async function resolveNightlyVersion(
 ) /*: Promise<string> */ {
   log(`  Resolving nightly version from npm: ${npmPackage}`);
 
-  const res = await fetch(`https://registry.npmjs.org/${npmPackage}/nightly`);
+  const res = await fetchWithRetry(
+    `https://registry.npmjs.org/${npmPackage}/nightly`,
+  );
   if (!res.ok) {
     throw new Error(`npm lookup failed for ${npmPackage}: ${res.status}`);
   }
@@ -358,8 +360,7 @@ async function resolveCacheSlotVersion(
 
 async function resolveLatestV1Version() /*: Promise<string> */ {
   log('  Resolving latest-v1 Hermes from npm...');
-  // $FlowFixMe[incompatible-call] global fetch not in Flow stubs
-  const res = await fetch(
+  const res = await fetchWithRetry(
     'https://registry.npmjs.org/hermes-compiler/latest-v1',
   );
   if (!res.ok) {
@@ -377,7 +378,6 @@ async function exists(url /*: string */) /*: Promise<boolean> */ {
   }
 
   try {
-    // $FlowFixMe[incompatible-call] global fetch not in Flow stubs
     const res = await fetch(url, {method: 'HEAD'});
     return res.status === 200;
   } catch {
@@ -490,7 +490,6 @@ function resolveLocalHermesCompilerVersion(
     const pkgPath = require.resolve('hermes-compiler/package.json', {
       paths: [rnRoot],
     });
-    // $FlowFixMe[incompatible-type] JSON.parse returns any
     const pkg /*: {version: string} */ = JSON.parse(
       fs.readFileSync(pkgPath, 'utf8'),
     );
@@ -651,7 +650,10 @@ function isRetryableDownloadError(error /*: Error */) /*: boolean */ {
   if (httpStatus == null) {
     return true;
   }
-  const status = Number(httpStatus);
+  return isRetryableHttpStatus(Number(httpStatus));
+}
+
+function isRetryableHttpStatus(status /*: number */) /*: boolean */ {
   return status === 408 || status === 429 || status >= 500;
 }
 
@@ -662,7 +664,6 @@ async function downloadOnce(
 ) /*: Promise<void> */ {
   const tmpPath = destPath + '.download';
   try {
-    // $FlowFixMe[incompatible-call] global fetch not in Flow stubs
     const res = await fetch(url);
     if (!res.ok) {
       throw new Error(`HTTP ${res.status} ${res.statusText}: ${url}`);
@@ -724,7 +725,6 @@ async function downloadOnce(
     if (res.body) {
       // fetch() returns a Web ReadableStream, not a Node.js Readable.
       // Convert it so we can pipe to a file stream and track progress.
-      // $FlowFixMe[prop-missing] stream.Readable.fromWeb not in Flow stubs
       const nodeReadable = stream.Readable.fromWeb(res.body);
 
       await new Promise((resolve, reject) => {
@@ -817,6 +817,28 @@ async function download(
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
   }
+}
+
+async function fetchWithRetry(url /*: string */) /*: Promise<Response> */ {
+  for (let attempt = 1; attempt < DOWNLOAD_MAX_ATTEMPTS; attempt++) {
+    let reason;
+    try {
+      const res = await fetch(url);
+      if (!isRetryableHttpStatus(res.status)) {
+        return res;
+      }
+      reason = `HTTP ${res.status}`;
+    } catch (error) {
+      reason = error.message;
+    }
+    const delayMs = DOWNLOAD_RETRY_BASE_DELAY_MS * attempt;
+    warn(
+      `  Request failed (${reason}); retrying in ${delayMs}ms ` +
+        `(attempt ${attempt + 1}/${DOWNLOAD_MAX_ATTEMPTS})`,
+    );
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+  }
+  return fetch(url);
 }
 
 /**
@@ -1230,7 +1252,6 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
   let rawVersion = args.version;
   let rnVersion = args.version;
   if (rnVersion == null) {
-    // $FlowFixMe[incompatible-type] JSON.parse returns any
     const rnPkg /*: {version: string} */ = JSON.parse(
       fs.readFileSync(path.join(rnRoot, 'package.json'), 'utf8'),
     );

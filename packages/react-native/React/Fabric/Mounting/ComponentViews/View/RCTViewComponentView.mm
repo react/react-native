@@ -20,6 +20,7 @@
 #import <React/RCTBackgroundImageUtils.h>
 #import <React/RCTBorderDrawing.h>
 #import <React/RCTBoxShadow.h>
+#import <React/RCTConicGradient.h>
 #import <React/RCTConversions.h>
 #import <React/RCTLinearGradient.h>
 #import <React/RCTLocalizedString.h>
@@ -574,11 +575,16 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
     } else if (
         newViewProps.accessibilityValue.now.has_value() && newViewProps.accessibilityValue.min.has_value() &&
         newViewProps.accessibilityValue.max.has_value()) {
-      CGFloat val = (CGFloat)(newViewProps.accessibilityValue.now.value()) /
-          (newViewProps.accessibilityValue.max.value() - newViewProps.accessibilityValue.min.value());
-      self.accessibilityElement.accessibilityValue =
-          [NSNumberFormatter localizedStringFromNumber:@(val) numberStyle:NSNumberFormatterPercentStyle];
-      ;
+      CGFloat min = newViewProps.accessibilityValue.min.value();
+      CGFloat max = newViewProps.accessibilityValue.max.value();
+      CGFloat now = newViewProps.accessibilityValue.now.value();
+      if (min < max && min <= now && now <= max) {
+        self.accessibilityElement.accessibilityValue =
+            [NSNumberFormatter localizedStringFromNumber:@((now - min) / (max - min))
+                                             numberStyle:NSNumberFormatterPercentStyle];
+      } else {
+        self.accessibilityElement.accessibilityValue = nil;
+      }
     } else {
       self.accessibilityElement.accessibilityValue = nil;
     }
@@ -1427,9 +1433,12 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
                                                                           backgroundSize:backgroundSize
                                                                         backgroundRepeat:backgroundRepeat];
 
-      CALayer *gradientLayer;
+      CALayer *gradientLayer = nil;
 
-      if (std::holds_alternative<LinearGradient>(backgroundImage)) {
+      if (std::holds_alternative<ConicGradient>(backgroundImage)) {
+        const auto &conicGradient = std::get<ConicGradient>(backgroundImage);
+        gradientLayer = [RCTConicGradient gradientLayerWithSize:backgroundImageSize gradient:conicGradient];
+      } else if (std::holds_alternative<LinearGradient>(backgroundImage)) {
         const auto &linearGradient = std::get<LinearGradient>(backgroundImage);
         gradientLayer = [RCTLinearGradient gradientLayerWithSize:backgroundImageSize gradient:linearGradient];
       } else if (std::holds_alternative<RadialGradient>(backgroundImage)) {

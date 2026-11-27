@@ -13,24 +13,20 @@
 #include <react/renderer/core/ShadowNodeFamily.h>
 #include <react/renderer/graphics/Float.h>
 #include <react/renderer/graphics/Rect.h>
+#include <react/renderer/graphics/RectangleEdges.h>
 #include <memory>
+#include <optional>
 #include "IntersectionObserverState.h"
 
 namespace facebook::react {
 
 using IntersectionObserverObserverId = int32_t;
 
-// Structure to hold a margin value that can be either pixels or percentage
-struct MarginValue {
-  Float value;
-  bool isPercentage;
-};
-
-// Parse a normalized rootMargin string that's always in the format:
-// "top right bottom left" where each value is either "Npx" or "N%"
+// Parse a normalized margin string that's always in the format:
+// "top right bottom left" where each value is either "Npx" or "N%".
 // The string is already validated and normalized by JS.
-// Returns a vector of 4 MarginValue structures (top, right, bottom, left).
-std::vector<MarginValue> parseNormalizedRootMargin(const std::string &marginStr);
+// Returns std::nullopt if the margin is a no-op or cannot be parsed.
+std::optional<EdgeMargins> parseNormalizedMargin(const std::string &marginStr);
 
 struct IntersectionObserverEntry {
   IntersectionObserverObserverId intersectionObserverId;
@@ -55,7 +51,8 @@ class IntersectionObserver {
       ShadowNodeFamily::Shared targetShadowNodeFamily,
       std::vector<Float> thresholds,
       std::optional<std::vector<Float>> rootThresholds,
-      std::vector<MarginValue> rootMargins);
+      std::optional<EdgeMargins> rootMargins,
+      std::optional<EdgeMargins> scrollMargins);
 
   // Partially equivalent to
   // https://w3c.github.io/IntersectionObserver/#update-intersection-observations-algo
@@ -100,8 +97,11 @@ class IntersectionObserver {
   ShadowNodeFamily::Shared targetShadowNodeFamily_;
   std::vector<Float> thresholds_;
   std::optional<std::vector<Float>> rootThresholds_;
-  // Parsed and expanded rootMargin values (top, right, bottom, left)
-  std::vector<MarginValue> rootMargins_;
+  // Parsed rootMargin, dilating the root intersection rectangle
+  std::optional<EdgeMargins> rootMargins_;
+  // Parsed scrollMargin, dilating the clip rect of every scrollport between
+  // the root and the target
+  std::optional<EdgeMargins> scrollMargins_;
   mutable IntersectionObserverState state_ = IntersectionObserverState::Initial();
 };
 

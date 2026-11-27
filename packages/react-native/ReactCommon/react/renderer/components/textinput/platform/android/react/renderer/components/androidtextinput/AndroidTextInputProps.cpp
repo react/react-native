@@ -33,6 +33,22 @@ hasValue(const RawProps& rawProps, bool defaultValue, const char* name) {
   return false;
 }
 
+// JS allows a numeric `fontWeight`, for example 700. This field is a string.
+static std::string fontWeightToString(double fontWeight) {
+  return std::to_string(static_cast<int>(fontWeight));
+}
+
+static std::string convertFontWeight(
+    const PropsParserContext& context,
+    const RawProps& rawProps,
+    const std::string& sourceValue) {
+  const auto* rawValue = rawProps.at("fontWeight");
+  if (rawValue != nullptr && rawValue->hasType<double>()) {
+    return fontWeightToString((double)*rawValue);
+  }
+  return convertRawProp(context, rawProps, "fontWeight", sourceValue, {});
+}
+
 AndroidTextInputProps::AndroidTextInputProps(
     const PropsParserContext &context,
     const AndroidTextInputProps &sourceProps,
@@ -149,7 +165,7 @@ AndroidTextInputProps::AndroidTextInputProps(
           "includeFontPadding",
           sourceProps.includeFontPadding,
           {false})),
-      fontWeight(convertRawProp(context, rawProps, "fontWeight", sourceProps.fontWeight, {})),
+      fontWeight(convertFontWeight(context, rawProps, sourceProps.fontWeight)),
       fontFamily(convertRawProp(context, rawProps, "fontFamily", sourceProps.fontFamily, {})),
       // See AndroidTextInputComponentDescriptor for usage
       // TODO T63008435: can these, and this feature, be removed entirely?
@@ -225,11 +241,18 @@ void AndroidTextInputProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(fontSize);
     RAW_SET_PROP_SWITCH_CASE_BASIC(textAlign);
     RAW_SET_PROP_SWITCH_CASE_BASIC(includeFontPadding);
-    RAW_SET_PROP_SWITCH_CASE_BASIC(fontWeight);
     RAW_SET_PROP_SWITCH_CASE_BASIC(fontFamily);
 
     case CONSTEXPR_RAW_PROPS_KEY_HASH("value"): {
       fromRawValue(context, value, this->value, {});
+      return;
+    }
+    case CONSTEXPR_RAW_PROPS_KEY_HASH("fontWeight"): {
+      if (value.hasType<double>()) {
+        fontWeight = fontWeightToString((double)value);
+      } else {
+        fromRawValue(context, value, fontWeight, defaults.fontWeight);
+      }
       return;
     }
 

@@ -2,12 +2,15 @@ appId: ${APP_ID} # iOS: com.meta.RNTester.localDevelopment | Android: com.facebo
 ---
 - launchApp
 - stopApp
-- openLink: rntester://example/FlatListExample/onViewableItemsChanged-horizontal-noWaitForInteraction
-- runFlow: ./helpers/confirm-open-link.yml
-- extendedWaitUntil:
-    visible:
-      id: 'flat-list-viewability-horizontal-no-wait'
-    timeout: 120000
+- retry:
+    maxRetries: 2
+    commands:
+      - openLink: rntester://example/FlatListExample/onViewableItemsChanged-horizontal-noWaitForInteraction
+      - runFlow: ./helpers/confirm-open-link.yml
+      - extendedWaitUntil:
+          visible:
+            id: 'flat-list-viewability-horizontal-no-wait'
+          timeout: 120000
 - assertVisible:
     id: 'output'
     text: '.*Pizza, Burger.*'

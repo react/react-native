@@ -8,8 +8,6 @@
  * @format
  */
 
-// flowlint unsafe-getters-setters:off
-
 import type {MutationObserverId} from './internals/MutationObserverManager';
 import type MutationRecord from './MutationRecord';
 

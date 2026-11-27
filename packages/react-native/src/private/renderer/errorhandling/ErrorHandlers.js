@@ -30,23 +30,16 @@ function getExtendedError(
   // Typically, `errorValue` should be an error. However, other values such as
   // strings (or even null) are sometimes thrown.
   if (errorValue instanceof Error) {
-    /* $FlowFixMe[class-object-subtyping] added when improving typing for
-     * this parameters */
     // $FlowFixMe[incompatible-type]
     error = errorValue as ExtendedError;
   } else if (typeof errorValue === 'string') {
-    /* $FlowFixMe[class-object-subtyping] added when improving typing for
-     * this parameters */
     // $FlowFixMe[incompatible-type]
     error = new SyntheticError(errorValue) as ExtendedError;
   } else {
-    /* $FlowFixMe[class-object-subtyping] added when improving typing for
-     * this parameters */
     // $FlowFixMe[incompatible-type]
     error = new SyntheticError('Unspecified error') as ExtendedError;
   }
   try {
-    // $FlowFixMe[incompatible-use] this is in try/catch.
     error.componentStack = errorInfo.componentStack;
     error.isComponentError = true;
   } catch {

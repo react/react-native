@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`captures the initial, intermediate and final states of a native layout animation: final 3`] = `
+Object {
+  "hash": "ca2cee740993b25d861e3ab7877b9145d9b61da827186f910e7f8fc565c90068",
+  "type": "Screenshot",
+}
+`;
+
+exports[`captures the initial, intermediate and final states of a native layout animation: initial 1`] = `
+Object {
+  "hash": "47ecf073addddc0874d9c73abc39ff10b6f42eee82370d3171915c4744127865",
+  "type": "Screenshot",
+}
+`;
+
+exports[`captures the initial, intermediate and final states of a native layout animation: intermediate 2`] = `
+Object {
+  "hash": "9f8383850e11b42f14a416d4782048496e5558382631a7bbba6b125a91aba309",
+  "type": "Screenshot",
+}
+`;

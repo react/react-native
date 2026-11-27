@@ -35,12 +35,16 @@ const {
 const {
   BASELINE_SEARCH_DEPTH,
   approvalKey,
+  baselineImageKey,
   baselinePrefix,
+  blobKey,
+  existsAt,
   fetchBuffer,
   fetchJsonOrNull,
   findBaseline,
   publicUrl,
   reportPrefix,
+  storageLocation,
 } = require('./storage');
 const {validateCapture} = require('./validate');
 const fs = require('node:fs');
@@ -56,6 +60,10 @@ function requireEnv(name) {
     throw new Error(`${name} is required`);
   }
   return value;
+}
+
+function readConfig() {
+  return JSON.parse(fs.readFileSync(requireEnv('VISUAL_CONFIG'), 'utf8'));
 }
 
 function writeFile(filePath, contents) {
@@ -158,10 +166,18 @@ async function comparePlatform({
     };
   }
 
+  const location = {
+    environmentKey,
+    sha: baseline.sha,
+    imageStore: baseline.manifest.imageStore ?? null,
+  };
+  const baselineImages = new Map(
+    baseline.manifest.images.map(image => [image.id, image]),
+  );
   const expectedUrl = id =>
     publicUrl(
       publicBaseUrl,
-      `${baselinePrefix(environmentKey, baseline.sha)}/${id}.png`,
+      baselineImageKey(location, baselineImages.get(id)),
     );
   const results = await compareCapture({
     manifest,
@@ -201,7 +217,11 @@ async function comparePlatform({
     platform,
     environmentKey,
     manifest,
-    baseline: {sha: baseline.sha, distance: baseline.distance},
+    baseline: {
+      sha: baseline.sha,
+      distance: baseline.distance,
+      imageStore: location.imageStore,
+    },
     results,
     error: null,
   };
@@ -225,20 +245,35 @@ function missingCapture(platform, context) {
  * Stages the capture as the baseline for `sha`, leaving out new screenshots
  * whose two captures differed. They stay new until a later push to the
  * default branch captures them the same way twice.
+ *
+ * Only images not already in `blobs/` are staged, so a push that changes
+ * nothing visually publishes just its manifest. `blobExists(key)` checks the
+ * bucket. `validateCapture` has checked each image's hash, so its blob key
+ * matches its contents.
  */
-function stageBaseline({outDir, captureDir, manifest, sha}) {
-  const prefix = baselinePrefix(manifest.environmentKey, sha);
+async function stageBaseline({outDir, captureDir, manifest, sha, blobExists}) {
   const images = manifest.images.filter(image => image.unstable !== true);
+  const staged = new Set();
   for (const image of images) {
+    const key = blobKey(image.sha256);
+    if (staged.has(key) || (await blobExists(key))) {
+      continue;
+    }
+    staged.add(key);
     writeFile(
-      path.join(outDir, 'baseline-images', prefix, `${image.id}.png`),
+      path.join(outDir, 'baseline-blobs', key),
       fs.readFileSync(path.join(captureDir, `${image.id}.png`)),
     );
   }
-  // Uploaded after the images: a baseline exists once its manifest does.
+  // Uploaded after the blobs: a baseline exists once its manifest does.
   writeFile(
-    path.join(outDir, 'baseline-manifests', prefix, 'manifest.json'),
-    `${JSON.stringify({...manifest, images}, null, 2)}\n`,
+    path.join(
+      outDir,
+      'baseline-manifests',
+      baselinePrefix(manifest.environmentKey, sha),
+      'manifest.json',
+    ),
+    `${JSON.stringify({...manifest, imageStore: 'blobs', images}, null, 2)}\n`,
   );
 }
 
@@ -253,10 +288,8 @@ async function prepare() {
   const github = createGitHubClient();
   const artifactsDir = requireEnv('VISUAL_ARTIFACTS_DIR');
   const outDir = requireEnv('OUT_DIR');
-  const publicBaseUrl = requireEnv('VISUAL_PUBLIC_BASE_URL');
-  const config = JSON.parse(
-    fs.readFileSync(requireEnv('VISUAL_CONFIG'), 'utf8'),
-  );
+  const config = readConfig();
+  const {publicBaseUrl} = storageLocation(config);
 
   const context = await resolveContext(github);
   if (context == null) {
@@ -293,11 +326,12 @@ async function prepare() {
       );
     }
     if (context.kind === 'main') {
-      stageBaseline({
+      await stageBaseline({
         outDir,
         captureDir,
         manifest: result.manifest,
         sha: context.headSha,
+        blobExists: key => existsAt(publicUrl(publicBaseUrl, key)),
       });
     }
     platforms.push(result);
@@ -336,10 +370,21 @@ async function prepare() {
   }
 }
 
+/**
+ * A platform check reports what it found without failing: differences are
+ * neutral, and the approval gate is the only check that fails until they're
+ * approved, so an approved PR has no failing visual checks.
+ */
+function platformConclusion(platform) {
+  return platform.error == null && !summarize(platform.results).hasDifferences
+    ? 'success'
+    : 'neutral';
+}
+
 async function report() {
   const github = createGitHubClient();
   const outDir = requireEnv('OUT_DIR');
-  const publicBaseUrl = requireEnv('VISUAL_PUBLIC_BASE_URL');
+  const {publicBaseUrl} = storageLocation(readConfig());
   const state = JSON.parse(
     fs.readFileSync(path.join(outDir, 'state.json'), 'utf8'),
   );
@@ -352,27 +397,29 @@ async function report() {
   const summaryLines = [];
   const commentPlatforms = [];
   for (const platform of state.platforms) {
+    const expectedById = new Map(
+      platform.results
+        .filter(result => result.expected != null)
+        .map(result => [result.id, result.expected]),
+    );
     const imageUrl = (kind, id) =>
       kind === 'expected'
         ? publicUrl(
             publicBaseUrl,
-            `${baselinePrefix(platform.environmentKey, platform.baseline.sha)}/${id}.png`,
+            baselineImageKey(
+              {environmentKey: platform.environmentKey, ...platform.baseline},
+              expectedById.get(id),
+            ),
           )
         : publicUrl(
             publicBaseUrl,
             `${prefix}/${platform.platform}/${kind}/${id}.png`,
           );
     const output = renderCheckOutput({...platform, imageUrl});
-    const {hasDifferences} = summarize(platform.results);
     const checkRun = await github.createCheckRun({
       name: `${CHECK_NAME_PREFIX} (${platform.platform})`,
       headSha: context.headSha,
-      conclusion:
-        platform.error != null
-          ? 'neutral'
-          : hasDifferences
-            ? 'failure'
-            : 'success',
+      conclusion: platformConclusion(platform),
       output,
       detailsUrl,
     });
@@ -472,4 +519,9 @@ if (require.main === module) {
   });
 }
 
-module.exports = {resolveContext, stageBaseline};
+module.exports = {
+  comparePlatform,
+  platformConclusion,
+  resolveContext,
+  stageBaseline,
+};

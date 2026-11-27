@@ -41,6 +41,7 @@ if (!hasNativeGenerator) {
 
     // regenerator-runtime/runtime exports the regeneratorRuntime object, so we
     // can return it safely.
-    return require('regenerator-runtime/runtime'); // flowlint-line untyped-import:off
+    // $FlowFixMe[untyped-import]
+    return require('regenerator-runtime/runtime');
   });
 }

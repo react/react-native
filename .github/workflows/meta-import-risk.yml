@@ -1,0 +1,98 @@
+name: Meta import risk
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
+
+concurrency:
+  group: meta-import-risk-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  classify:
+    if: github.repository == 'react/react-native'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      risk: ${{ steps.assess.outputs.risk }}
+    steps:
+      # pull_request_target has access to the model secret even for fork PRs.
+      # Only the trusted base commit is checked out; PR code is read as data
+      # through the GitHub API and is never executed on this runner.
+      - name: Checkout trusted base
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - name: Assess changed files and patch with Muse
+        id: assess
+        uses: actions/github-script@v8
+        env:
+          META_API_KEY: ${{ secrets.EXPO_CODE_REVIEW_API_KEY }}
+        with:
+          script: |
+            const {assessPullRequest} = require('./.github/workflow-scripts/metaImportRisk');
+            const result = await assessPullRequest({
+              github, context, apiKey: process.env.META_API_KEY,
+            });
+            core.setOutput('risk', result.status);
+            core.info(`Meta import risk: ${result.status}`);
+            if (!result.aiComplete) {
+              core.setFailed('Muse did not assess the complete PR diff; the labeling job will conservatively request Meta review.');
+            }
+
+  label:
+    needs: classify
+    # A newer PR event cancels the old run. Do not treat its missing output as
+    # an unknown risk; only an explicit unknown from the classifier is fail-safe.
+    if: >-
+      always() && !cancelled() && github.repository == 'react/react-native' &&
+      contains(fromJSON('["low","high","unknown"]'), needs.classify.outputs.risk)
+    runs-on: ubuntu-latest
+    permissions:
+      # Applying a label to a PR requires PR write access, even though the
+      # REST endpoint is under issues. Keep this out of the classifier job.
+      pull-requests: write
+      issues: write
+    steps:
+      # This job has write access but no model secret and no PR checkout.
+      - name: Apply Meta Review Required when needed
+        uses: actions/github-script@v8
+        env:
+          RISK: ${{ needs.classify.outputs.risk }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const number = context.issue.number;
+            const {data: pr} = await github.rest.pulls.get({owner, repo, pull_number: number});
+            const labels = pr.labels.map(label => label.name);
+            const stale = pr.head.sha !== context.payload.pull_request.head.sha;
+            if (process.env.RISK === 'low' && !stale && !labels.includes('high-risk')) {
+              return;
+            }
+            if (labels.includes('Meta Review Required')) {
+              return;
+            }
+            // The destination label does not yet exist in every repository.
+            // Create it once on first use, then apply it idempotently.
+            try {
+              await github.rest.issues.getLabel({owner, repo, name: 'Meta Review Required'});
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              try {
+                await github.rest.issues.createLabel({
+                  owner, repo, name: 'Meta Review Required', color: 'b60205',
+                  description: 'This PR is considered risky and requires Meta to import it to do more testing before merging.',
+                });
+              } catch (createError) {
+                // A concurrent PR may have created the same label.
+                if (createError.status !== 422) throw createError;
+              }
+            }
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: number, labels: ['Meta Review Required'],
+            });

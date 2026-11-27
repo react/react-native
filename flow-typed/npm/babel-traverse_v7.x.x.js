@@ -372,7 +372,7 @@ declare module '@babel/traverse' {
     create(
       node: BabelNode,
       obj: Array<BabelNode>,
-      key: string,
+      key: string | number,
       listKey: string,
     ): NodePath<>;
     maybeQueue(path: NodePath<>, notPriority?: boolean): void;
@@ -533,13 +533,13 @@ declare module '@babel/traverse' {
 
     bindingIdentifierEquals(name: string, node: BabelNode): boolean;
 
-    getBinding(name: string): Binding | void;
+    getBinding(name: string): Binding | undefined;
 
-    getOwnBinding(name: string): Binding | void;
+    getOwnBinding(name: string): Binding | undefined;
 
-    getBindingIdentifier(name: string): BabelNodeIdentifier | void;
+    getBindingIdentifier(name: string): BabelNodeIdentifier | undefined;
 
-    getOwnBindingIdentifier(name: string): BabelNodeIdentifier | void;
+    getOwnBindingIdentifier(name: string): BabelNodeIdentifier | undefined;
 
     hasOwnBinding(name: string): boolean;
 
@@ -614,7 +614,7 @@ declare module '@babel/traverse' {
     context: TraversalContext;
     container: null | {...} | Array<{...}>;
     listKey: null | string;
-    key: null | string;
+    key: null | string | number;
 
     /* Declaring node as readonly isn't entirely correct since the node can be
      * changed by e.g. calling replaceWith. However, this is needed to reasonably
@@ -631,13 +631,13 @@ declare module '@babel/traverse' {
 
     constructor(hub: HubInterface, parent: BabelNode): NodePath<TNode>;
 
-    static get(v: {
+    static get(options: {
       hub: HubInterface,
       parentPath: ?NodePath<>,
       parent: BabelNode,
       container: null | {...} | Array<{...}>,
       listKey: null | string,
-      key: null | string,
+      key: string | number,
     }): NodePath<>;
 
     getScope(scope: Scope): Scope;
@@ -964,10 +964,10 @@ declare module '@babel/traverse' {
       parentPath: NodePath<>,
       container: ?{...} | ?Array<{...}>,
       listKey: string,
-      key: string,
+      key: string | number,
     ): void;
 
-    setKey(key: string): void;
+    setKey(key: string | number): void;
 
     requeue(pathToQueue?: NodePath<>): void;
 
@@ -1013,7 +1013,7 @@ declare module '@babel/traverse' {
 
     getCompletionRecords(): Array<NodePath<>>;
 
-    getSibling(key: string): NodePath<>;
+    getSibling(key: string | number): NodePath<>;
 
     getPrevSibling(): NodePath<>;
 

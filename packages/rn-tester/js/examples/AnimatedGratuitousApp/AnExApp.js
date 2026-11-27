@@ -255,7 +255,6 @@ class AnExApp extends React.Component<any, any> {
             openVal={this.state.openVal}
             onLayout={onLayout}
             restLayout={this.state.restLayouts[idx]}
-            // $FlowFixMe[method-unbinding] added when improving typing for this parameters
             onActivate={this.setState.bind(this, {
               activeKey: key,
               activeInitialLayout: this.state.restLayouts[idx],

@@ -39,12 +39,12 @@ function ModalOnShowOnDismiss(): React.Node {
           }}>
           <View style={[styles.centeredView, styles.modalBackdrop]}>
             <View style={styles.modalView}>
-              <Text testID="modal-on-show-count">
+              <RNTesterText testID="modal-on-show-count">
                 onShow is called {onShowCount} times
-              </Text>
-              <Text testID="modal-on-dismiss-count">
+              </RNTesterText>
+              <RNTesterText testID="modal-on-dismiss-count">
                 onDismiss is called {onDismissCount} times
-              </Text>
+              </RNTesterText>
               <Pressable
                 style={[styles.button, styles.buttonClose]}
                 onPress={() => setModalVisible(false)}>

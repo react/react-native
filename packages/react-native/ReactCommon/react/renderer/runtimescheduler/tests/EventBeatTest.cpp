@@ -9,14 +9,26 @@
 #include <hermes/hermes.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
+#include <react/renderer/core/ConcreteComponentDescriptor.h>
+#include <react/renderer/core/ConcreteShadowNode.h>
 #include <react/renderer/core/EventBeat.h>
+#include <react/renderer/core/EventQueue.h>
 #include <react/renderer/runtimescheduler/RuntimeScheduler.h>
 #include <memory>
+#include <string>
 #include <thread>
+#include <vector>
 
 #include "StubQueue.h"
 
 namespace facebook::react {
+
+// NOLINTNEXTLINE(modernize-avoid-c-arrays, facebook-hte-CArray)
+constexpr char ImmediateUpdateTestComponentName[] = "ImmediateUpdateTest";
+using ImmediateUpdateTestShadowNode =
+    ConcreteShadowNode<ImmediateUpdateTestComponentName, ShadowNode, Props>;
+using ImmediateUpdateTestDescriptor =
+    ConcreteComponentDescriptor<ImmediateUpdateTestShadowNode>;
 
 class EventBeatTestFeatureFlags : public ReactNativeFeatureFlagsDefaults {
  public:
@@ -64,6 +76,23 @@ class EventBeatTest : public testing::Test {
 
   void TearDown() override {
     ReactNativeFeatureFlags::dangerouslyReset();
+  }
+
+  std::unique_ptr<EventQueue> makeStateQueue(StatePipe statePipe) {
+    return std::make_unique<EventQueue>(
+        EventQueueProcessor({}, {}, std::move(statePipe), {}),
+        std::move(eventBeat_));
+  }
+
+  StateUpdate makeStateUpdate(
+      const SharedShadowNodeFamily& family,
+      std::function<void()> apply) {
+    return {
+        .family = family,
+        .callback = [apply = std::move(apply)](const StateData::Shared& data) {
+          apply();
+          return data;
+        }};
   }
 
   std::unique_ptr<facebook::hermes::HermesRuntime> runtime_;
@@ -180,6 +209,96 @@ TEST_F(EventBeatTest, synchronousRequestIsNotStrandedBehindScheduledBeat) {
   stubQueue_->tick();
   EXPECT_EQ(beatCount, 2);
   EXPECT_EQ(stubQueue_->size(), 0);
+}
+
+TEST_F(EventBeatTest, immediateModeDuringRenderingDrainsQueuedStateInline) {
+  ImmediateUpdateTestDescriptor descriptor({});
+  auto queuedFamily = descriptor.createFamily(
+      {.tag = 1, .surfaceId = 1, .instanceHandle = nullptr});
+  auto immediateFamily = descriptor.createFamily(
+      {.tag = 2, .surfaceId = 2, .instanceHandle = nullptr});
+  auto* beat = eventBeat_.get();
+  std::vector<std::string> trace;
+  auto queue = makeStateQueue(
+      [](const StateUpdate& update) { update.callback(nullptr); });
+
+  std::thread driver([this]() {
+    stubQueue_->waitForTask();
+    stubQueue_->tick();
+  });
+  runtimeScheduler_->executeNowOnTheSameThread([&](jsi::Runtime&) {
+    runtimeScheduler_->scheduleRenderingUpdate(1, [&]() {
+      trace.emplace_back("render-start");
+      std::thread producer([&]() {
+        queue->enqueueStateUpdate(makeStateUpdate(
+            queuedFamily, [&]() { trace.emplace_back("queued-state"); }));
+      });
+      producer.join();
+      queue->enqueueStateUpdate(
+          makeStateUpdate(
+              immediateFamily,
+              [&]() { trace.emplace_back("immediate-state"); }),
+          EventQueue::UpdateMode::unstable_Immediate);
+      trace.emplace_back("render-end");
+    });
+  });
+  driver.join();
+
+  const std::vector<std::string> expected{
+      "render-start", "queued-state", "immediate-state", "render-end"};
+  EXPECT_EQ(trace, expected);
+  beat->induce();
+  stubQueue_->flush();
+  EXPECT_EQ(trace, expected);
+}
+
+TEST_F(EventBeatTest, existingImmediateModeStillDrainsQueuedState) {
+  ImmediateUpdateTestDescriptor descriptor({});
+  auto queuedFamily = descriptor.createFamily(
+      {.tag = 1, .surfaceId = 1, .instanceHandle = nullptr});
+  auto immediateFamily = descriptor.createFamily(
+      {.tag = 2, .surfaceId = 2, .instanceHandle = nullptr});
+  auto* beat = eventBeat_.get();
+  std::vector<std::string> trace;
+  auto queue = makeStateQueue(
+      [](const StateUpdate& update) { update.callback(nullptr); });
+
+  queue->enqueueStateUpdate(makeStateUpdate(
+      queuedFamily, [&]() { trace.emplace_back("queued-state"); }));
+  queue->enqueueStateUpdate(
+      makeStateUpdate(
+          immediateFamily, [&]() { trace.emplace_back("immediate-state"); }),
+      EventQueue::UpdateMode::unstable_Immediate);
+
+  EXPECT_EQ(
+      trace, (std::vector<std::string>{"queued-state", "immediate-state"}));
+  beat->induce();
+  stubQueue_->flush();
+  EXPECT_EQ(
+      trace, (std::vector<std::string>{"queued-state", "immediate-state"}));
+}
+
+TEST_F(
+    EventBeatTest,
+    existingImmediateModeStillSupersedesAdjacentQueuedFamilyUpdate) {
+  ImmediateUpdateTestDescriptor descriptor({});
+  auto family = descriptor.createFamily(
+      {.tag = 1, .surfaceId = 1, .instanceHandle = nullptr});
+  auto* beat = eventBeat_.get();
+  std::vector<std::string> trace;
+  auto queue = makeStateQueue(
+      [](const StateUpdate& update) { update.callback(nullptr); });
+
+  queue->enqueueStateUpdate(makeStateUpdate(
+      family, [&]() { trace.emplace_back("superseded-state"); }));
+  queue->enqueueStateUpdate(
+      makeStateUpdate(family, [&]() { trace.emplace_back("latest-state"); }),
+      EventQueue::UpdateMode::unstable_Immediate);
+
+  EXPECT_EQ(trace, (std::vector<std::string>{"latest-state"}));
+  beat->induce();
+  stubQueue_->flush();
+  EXPECT_EQ(trace, (std::vector<std::string>{"latest-state"}));
 }
 
 } // namespace facebook::react
