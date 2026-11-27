@@ -94,6 +94,7 @@ add_react_common_subdir(react/renderer/components/modal)
 add_react_common_subdir(react/renderer/components/root)
 add_react_common_subdir(react/renderer/components/scrollview)
 add_react_common_subdir(react/renderer/components/text)
+add_react_common_subdir(react/renderer/components/textinput)
 add_react_common_subdir(react/renderer/components/view)
 add_react_common_subdir(react/renderer/consistency)
 add_react_common_subdir(react/renderer/core)
@@ -146,7 +147,6 @@ file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/stubs/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/oss/*.cpp
 )
-list(APPEND SOURCES ${REACT_COMMON_DIR}/react/renderer/components/textinput/BaseTextInputProps.cpp)
 add_executable(fantom_tester ${SOURCES})
 
 target_include_directories(fantom_tester PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -236,6 +236,7 @@ target_link_libraries(fantom_tester
     rrc_root
     rrc_scrollview
     rrc_text
+    rrc_textinput
     rrc_view
     runtimeexecutor
     yogacore
