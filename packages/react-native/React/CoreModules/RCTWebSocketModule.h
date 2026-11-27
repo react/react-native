@@ -20,7 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class SRWebSocket;
 
-typedef SRWebSocket * (^SRWebSocketProvider)(NSURLRequest *request);
+// Returning nil falls back to the default WebSocket implementation.
+typedef SRWebSocket *_Nullable (^SRWebSocketProvider)(NSURLRequest *request);
 
 RCT_EXTERN void RCTSetCustomSRWebSocketProvider(SRWebSocketProvider provider);
 

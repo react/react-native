@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * Structured error data extracted from a raw error message.
  * Mirrors LogBoxLog.js / parseLogBoxLog.js data model.
@@ -38,9 +40,11 @@
  */
 @interface RCTRedBox2ErrorParser : NSObject
 
-+ (RCTRedBox2ErrorData *)parseErrorMessage:(NSString *)message
++ (RCTRedBox2ErrorData *)parseErrorMessage:(nullable NSString *)message
                                       name:(nullable NSString *)name
                             componentStack:(nullable NSString *)componentStack
                                    isFatal:(BOOL)isFatal;
 
 @end
+
+NS_ASSUME_NONNULL_END

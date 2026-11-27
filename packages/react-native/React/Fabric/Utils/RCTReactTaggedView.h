@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable UIView *)view;
 - (NSInteger)tag;
 
-- (BOOL)isEqual:(id)other;
+- (BOOL)isEqual:(nullable id)other;
 - (NSUInteger)hash;
 
 @end
