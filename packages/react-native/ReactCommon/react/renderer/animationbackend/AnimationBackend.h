@@ -36,6 +36,11 @@ struct CallbackWithId {
   Callback callback;
 };
 
+struct RegisteredFrontend {
+  AnimationFrontend frontend;
+  bool started{false};
+};
+
 class AnimationBackend : public UIManagerAnimationBackend {
  public:
   using ResumeCallback = std::function<void()>;
@@ -56,6 +61,9 @@ class AnimationBackend : public UIManagerAnimationBackend {
   void pushAnimationMutations(const Callback &callback) override;
   CallbackId start(const Callback &callback) override;
   void stop(CallbackId callbackId) override;
+  AnimationFrontendId registerFrontend(AnimationFrontend frontend) override;
+  void startFrontend(AnimationFrontendId frontendId) override;
+  void stopFrontend(AnimationFrontendId frontendId) override;
 
  private:
   using SurfaceUpdates = std::unordered_map<Tag, AnimationMutation>;
@@ -69,7 +77,11 @@ class AnimationBackend : public UIManagerAnimationBackend {
       std::unordered_map<SurfaceId, SurfaceUpdates> &surfaceUpdates,
       const std::set<SurfaceId> &asyncFlushSurfaces);
   void applyMutations(std::vector<AnimationMutations> batches);
+  void resumeFramesLocked();
+  void pauseFramesIfIdleLocked();
   std::vector<CallbackWithId> callbacks;
+  // Indexed by frontend id - 1.
+  std::vector<RegisteredFrontend> frontends_;
   std::shared_ptr<AnimatedPropsRegistry> animatedPropsRegistry_;
   std::shared_ptr<AnimationChoreographer> animationChoreographer_;
   std::unique_ptr<AnimationBackendCommitHook> commitHook_;
