@@ -275,4 +275,25 @@ std::optional<FocusDirection> FocusOrderingHelper::resolveFocusDirection(
 
   return std::nullopt;
 }
+
+std::optional<std::vector<Tag>> FocusOrderingHelper::getRelativeAncestorTags(
+    const ShadowNode& rootShadowNode,
+    const ShadowNode& childShadowNode) {
+  ShadowNode::AncestorList ancestorList =
+      childShadowNode.getFamily().getAncestors(rootShadowNode);
+
+  if (ancestorList.empty()) {
+    return std::nullopt;
+  }
+
+  // ignore the first ancestor as it is the rootShadowNode itself
+  std::vector<Tag> ancestorTags;
+  for (auto it = std::next(ancestorList.begin()); it != ancestorList.end();
+       ++it) {
+    auto& ancestor = *it;
+    ancestorTags.push_back(ancestor.first.get().getTag());
+  }
+
+  return ancestorTags;
+}
 } // namespace facebook::react
