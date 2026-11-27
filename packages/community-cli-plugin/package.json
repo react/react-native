@@ -35,7 +35,7 @@
     "@react-native/asset-utils": "0.87.0-main",
     "@react-native/dev-middleware": "0.87.0-main",
     "commander": "^12.0.0",
-    "compression": "^1.7.1",
+    "compression": "^1.8.2",
     "connect": "^3.6.5",
     "debug": "^4.4.0",
     "invariant": "^2.2.4",
