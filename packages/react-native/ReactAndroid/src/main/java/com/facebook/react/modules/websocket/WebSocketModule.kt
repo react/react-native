@@ -209,9 +209,7 @@ public class WebSocketModule(context: ReactApplicationContext) :
                 }
 
                 override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                  if (webSocketConnections.readable(connection, webSocket)) {
-                    webSocket.close(code, reason)
-                  }
+                  webSocketConnections.peerClosing(connection, webSocket, code, reason)
                 }
 
                 override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {

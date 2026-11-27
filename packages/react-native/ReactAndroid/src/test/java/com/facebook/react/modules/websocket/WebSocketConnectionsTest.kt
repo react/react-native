@@ -19,6 +19,7 @@ class WebSocketConnectionsTest {
   private class Socket(private val rejectClose: Boolean = false) : WebSocket {
     var cancellations = 0
     var closes = 0
+    var closeFrame: Pair<Int, String?>? = null
 
     override fun request() = Request.Builder().url("https://localhost/").build()
 
@@ -31,6 +32,7 @@ class WebSocketConnectionsTest {
     override fun close(code: Int, reason: String?): Boolean {
       if (rejectClose) throw IllegalArgumentException("Invalid close frame")
       closes++
+      closeFrame = Pair(code, reason)
       return true
     }
 
@@ -224,5 +226,30 @@ class WebSocketConnectionsTest {
     val missing = mutableListOf<Int>()
     assertNull(registry.socketForSend(42) { missing.add(it) })
     assertEquals(listOf(42), missing)
+  }
+
+  @Test
+  fun emptyPeerCloseReceivesNormalCloseReply() {
+    val registry = WebSocketConnections()
+    val connection = registry.create(1)
+    val socket = Socket()
+    assertTrue(registry.opened(connection, socket))
+    registry.peerClosing(connection, socket, 1005, "")
+    assertNull(registry.socketForSend(1) { fail("Unexpected missing socket") })
+    registry.peerClosing(connection, socket, 1005, "")
+    registry.close(1, 1000, "local close")
+    assertEquals(1, socket.closes)
+    assertEquals(Pair(1000, ""), socket.closeFrame)
+    assertTrue(registry.finish(connection, socket))
+  }
+
+  @Test
+  fun peerCloseWithStatusEchoesCodeAndReason() {
+    val registry = WebSocketConnections()
+    val connection = registry.create(1)
+    val socket = Socket()
+    assertTrue(registry.opened(connection, socket))
+    registry.peerClosing(connection, socket, 1001, "going away")
+    assertEquals(Pair(1001, "going away"), socket.closeFrame)
   }
 }

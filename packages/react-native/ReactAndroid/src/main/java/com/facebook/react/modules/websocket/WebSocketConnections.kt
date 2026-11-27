@@ -73,6 +73,15 @@ internal class WebSocketConnections {
           !connection.closing &&
           !connection.finished
 
+  fun peerClosing(connection: Connection, socket: WebSocket, code: Int, reason: String) {
+    synchronized(this) {
+      if (!readable(connection, socket)) return
+      connection.closing = true
+    }
+    // OkHttp reports 1005 for an empty peer Close frame. It is reserved on the wire.
+    socket.close(if (code == 1005) 1000 else code, reason)
+  }
+
   fun socketForSend(id: Int, onMissing: (Int) -> Unit): WebSocket? {
     val pendingSocket =
         synchronized(this) {
