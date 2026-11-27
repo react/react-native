@@ -11,6 +11,8 @@ import android.content.Context
 import java.io.File
 import java.util.concurrent.TimeUnit
 import okhttp3.Cache
+import okhttp3.ConnectionPool
+import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 
 /**
@@ -23,6 +25,15 @@ public object OkHttpClientProvider {
 
   // User-provided OkHttpClient factory
   internal var factory: OkHttpClientFactory? = null
+
+  // Building an OkHttpClient without an explicit SSL socket factory makes OkHttp resolve the
+  // platform trust manager (loading the system trust store) and create an SSLContext, which costs
+  // 10-20 ms of CPU on a mid-range phone. React Native builds at least two clients per process
+  // (the networking module and Fresco), so that setup is done once here and the clients created by
+  // createClientBuilder() derive from it with newBuilder(), which copies the socket factory, trust
+  // manager and certificate chain cleaner. Everything else (dispatcher, connection pool, cookie
+  // jar, timeouts) stays per client, exactly as with a fresh Builder.
+  private val tlsConfiguredClient: OkHttpClient by lazy { OkHttpClient.Builder().build() }
 
   @JvmStatic
   public fun setOkHttpClientFactory(factory: OkHttpClientFactory?) {
@@ -48,7 +59,10 @@ public object OkHttpClientProvider {
   public fun createClientBuilder(): OkHttpClient.Builder {
     // No timeouts by default
     val client: OkHttpClient.Builder =
-        OkHttpClient.Builder()
+        tlsConfiguredClient
+            .newBuilder()
+            .dispatcher(Dispatcher())
+            .connectionPool(ConnectionPool())
             .connectTimeout(0, TimeUnit.MILLISECONDS)
             .readTimeout(0, TimeUnit.MILLISECONDS)
             .writeTimeout(0, TimeUnit.MILLISECONDS)
