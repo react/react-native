@@ -456,6 +456,24 @@ using namespace facebook::react;
   // DisplayLink is used to call timer callbacks.
   _displayLink = [[RCTDisplayLink alloc] initWithFrameUpdateObserver:timing];
 
+  // The first text measurement of the first commit pays for TextKit's and the system font's
+  // initialisation on the JS thread; do that once on a background queue now, while the JS thread
+  // is still evaluating the bundle. Utility QoS keeps it on an efficiency core so it does not
+  // compete with the JS thread for a performance core.
+  dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+    NSAttributedString *sample =
+        [[NSAttributedString alloc] initWithString:@"React Native"
+                                        attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14]}];
+    NSTextStorage *storage = [[NSTextStorage alloc] initWithAttributedString:sample];
+    NSLayoutManager *layoutManager = [NSLayoutManager new];
+    NSTextContainer *container = [[NSTextContainer alloc] initWithSize:CGSizeMake(1000, CGFLOAT_MAX)];
+    container.lineFragmentPadding = 0;
+    [layoutManager addTextContainer:container];
+    [storage addLayoutManager:layoutManager];
+    [layoutManager ensureLayoutForTextContainer:container];
+    (void)[layoutManager usedRectForTextContainer:container];
+  });
+
   auto &inspectorFlags = jsinspector_modern::InspectorFlags::getInstance();
   ReactInstance::JSRuntimeFlags options = {.isProfiling = inspectorFlags.getIsProfilingBuild()};
   _reactInstance->initializeRuntime(options, [=](jsi::Runtime &runtime) {
