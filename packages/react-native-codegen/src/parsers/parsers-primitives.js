@@ -540,12 +540,19 @@ function translateArrayTypeAnnotation(
       elementType: wrapNullable(isElementTypeNullable, _elementType),
     });
   } catch (ex) {
-    return wrapNullable(nullable, {
-      type: 'ArrayTypeAnnotation',
-      elementType: {
-        type: 'AnyTypeAnnotation',
-      },
-    });
+    if (
+      ex instanceof UnsupportedTypeAnnotationParserError &&
+      ex.typeAnnotationType === 'AnyTypeAnnotation'
+    ) {
+      return wrapNullable(nullable, {
+        type: 'ArrayTypeAnnotation',
+        elementType: {
+          type: 'AnyTypeAnnotation',
+        },
+      });
+    } else {
+      throw ex;
+    }
   }
 }
 
