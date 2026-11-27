@@ -552,6 +552,30 @@ function ItemWithSeparator<ItemT>(
   });
 
   useEffect(() => {
+    setLeadingSeparatorProps({
+      leadingItem: props.leadingItem,
+      leadingSection: props.leadingSection,
+      section: props.section,
+      trailingItem: props.item,
+      trailingSection: props.trailingSection,
+    });
+    setSeparatorProps({
+      leadingItem: props.item,
+      leadingSection: props.leadingSection,
+      section: props.section,
+      trailingItem: props.trailingItem,
+      trailingSection: props.trailingSection,
+    });
+  }, [
+    props.item,
+    props.leadingItem,
+    props.leadingSection,
+    props.section,
+    props.trailingItem,
+    props.trailingSection,
+  ]);
+
+  useEffect(() => {
     setSelfHighlightCallback(cellKey, setSeparatorHighlighted);
     // $FlowFixMe[incompatible-type]
     setSelfUpdatePropsCallback(cellKey, setSeparatorProps);
