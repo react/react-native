@@ -11,24 +11,24 @@
 import type {HostInstance} from '../../src/private/types/HostInstance';
 
 export type NativeSyntheticEvent<out T> = Readonly<{
-  bubbles: ?boolean,
-  cancelable: ?boolean,
+  bubbles: boolean,
+  cancelable: boolean,
   currentTarget: number | HostInstance,
-  defaultPrevented: ?boolean,
+  defaultPrevented: boolean,
   dispatchConfig: Readonly<{
     registrationName: string,
   }>,
-  eventPhase: ?number,
+  eventPhase: number,
   preventDefault: () => void,
   isDefaultPrevented: () => boolean,
   stopPropagation: () => void,
   isPropagationStopped: () => boolean,
-  isTrusted: ?boolean,
+  isTrusted: boolean,
   nativeEvent: T,
   persist: () => void,
   target: ?number | HostInstance,
   timeStamp: number,
-  type: ?string,
+  type: string,
 }>;
 
 export type ResponderSyntheticEvent<T> = Readonly<{
