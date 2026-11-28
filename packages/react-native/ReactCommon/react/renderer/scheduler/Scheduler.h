@@ -11,6 +11,7 @@
 
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <shared_mutex>
 #include <vector>
@@ -125,6 +126,22 @@ class Scheduler final : public UIManagerDelegate {
   friend class SurfaceHandler;
 
   SchedulerDelegate *delegate_;
+
+  /*
+   * Rendering updates queued on the RuntimeScheduler can run after the host
+   * has detached and destroyed the delegate, e.g. while an instance is torn
+   * down for a reload, with no JS error to clear the queue. They reach the
+   * delegate through this box: an update calls the delegate it was queued for
+   * only while that is still the current one, and `setDelegate` waits for an
+   * update that is calling it. Recursive: the call can release the last
+   * reference to the host, which detaches the delegate on the same thread.
+   */
+  struct DelegateBox {
+    std::recursive_mutex mutex;
+    SchedulerDelegate *delegate{nullptr};
+  };
+  std::shared_ptr<DelegateBox> delegateBox_{std::make_shared<DelegateBox>()};
+
   SharedComponentDescriptorRegistry componentDescriptorRegistry_;
   RuntimeExecutor runtimeExecutor_;
   std::shared_ptr<UIManager> uiManager_;

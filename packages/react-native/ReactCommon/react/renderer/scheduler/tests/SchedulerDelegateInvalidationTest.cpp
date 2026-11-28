@@ -12,9 +12,13 @@
 // uiManagerDidDispatchCommand). The lambda captures the delegate by raw
 // pointer; if the delegate is destroyed (as part of an instance teardown
 // triggered by an uncaught fatal error) before the lambda runs, the
-// dereference is a use-after-free. What closes the race is
+// dereference is a use-after-free. Error-driven teardown is covered by
 // RuntimeScheduler_Modern::handleTaskError, which clears the pending
-// rendering updates before the host error handler drops the delegate.
+// rendering updates before the host error handler drops the delegate. Any
+// other teardown (e.g. an instance reload) is covered by
+// Scheduler::setDelegate: a queued update only calls the delegate it was queued
+// for while that is still set, and detaching waits for an update that is
+// calling it.
 //
 // The test drives the *real* Scheduler::uiManagerDidFinishTransaction so the
 // rendering-update lambda is enqueued via the regular code path into a real
@@ -56,10 +60,13 @@
 #include <react/utils/ContextContainer.h>
 
 #include <folly/dynamic.h>
+#include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <memory>
 #include <queue>
+#include <thread>
 #include <utility>
 
 namespace facebook::react {
@@ -265,9 +272,9 @@ class SchedulerDelegateInvalidationTest : public ::testing::Test {
     // Note: step 1 does NOT drain RuntimeScheduler_Modern's
     // pendingRenderingUpdates_. That's exactly the point of the test —
     // surface-level shutdown can't reach the lambda race; the race lives in
-    // the runtime scheduler's queue and is only closed by the invalidation
-    // token guard added in Scheduler::setDelegate or by runtime-scheduler-level
-    // queue clearing on error.
+    // the runtime scheduler's queue and is only closed by the delegate check
+    // in Scheduler::setDelegate or by runtime-scheduler-level queue clearing
+    // on error.
     auto onTaskError = [this](
                            jsi::Runtime& /*runtime*/, jsi::JSError& /*error*/) {
       jsThrowObserved_ = true;
@@ -482,43 +489,118 @@ TEST_F(SchedulerDelegateInvalidationTest, JSThrowInitiatedTeardownIsSafe) {
 }
 
 // ---------------------------------------------------------------------------
-// Test 3 — The window that remains open: a delegate detached with no error
-// involved.
+// Test 3 — Delegate detached with no error involved, as an instance teardown
+// for a reload does before it destroys the delegate.
 //
-// handleTaskError clears pendingRenderingUpdates_ before the host error
-// handler runs, so an error-driven teardown is safe (Test 2). A plain
-// setDelegate swap never reaches handleTaskError, so the lambda enqueued in
-// (a) still calls through the raw pointer it captured when the queue drains
-// in (c). Had the host also destroyed the delegate — as an instance teardown
-// does — that call would be a use-after-free.
-//
-// The delegate is deliberately kept alive here rather than destroyed under an
-// EXPECT_DEATH. Asserting on the crash asks undefined behaviour to reliably
-// terminate the process, which it does not: the death-test form of this test
-// (and its two predecessors) passed on the fbcode host but flaked above 88%
-// on the Android instrumentation runner, reporting "failed to die" until
-// trunk auto-disabled them. Observing the stale call directly pins the same
-// open window deterministically.
+// handleTaskError never runs, so the rendering updates enqueued in (a) are
+// still queued when they drain in (c). They must not call the detached
+// delegate: the host is free to destroy it right after setDelegate(nullptr)
+// returns (RCTScheduler's dealloc does), which made the call a
+// use-after-free. The delegate is kept alive here so the stale call shows up
+// as a count instead of undefined behaviour.
 // ---------------------------------------------------------------------------
 TEST_F(
     SchedulerDelegateInvalidationTest,
-    DelegateDetachedWithoutError_PendingRenderingUpdateCallsStaleDelegate) {
+    DelegateDetachedWithoutError_PendingRenderingUpdatesAreDropped) {
   setUp();
+  ASSERT_NE(rootShadowNode_, nullptr);
 
-  // (a) Enqueue a rendering-update lambda capturing delegate_ raw.
+  // (a) Enqueue rendering-update lambdas from both lambda sites.
   scheduler_->uiManagerDidFinishTransaction(
       coordinator_, /*mountSynchronously=*/false);
-  EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 0);
+  scheduler_->uiManagerDidDispatchCommand(
+      rootShadowNode_, "scrollTo", folly::dynamic::array());
 
-  // (b) Host swaps the delegate out. No JS throw, so nothing clears the
+  // (b) Host detaches the delegate. No JS throw, so nothing clears the
   // rendering-update queue.
   scheduler_->setDelegate(nullptr);
-  EXPECT_EQ(scheduler_->getDelegate(), nullptr);
 
-  // (c) Drain — the lambda calls through its captured pointer even though the
-  // scheduler itself no longer has a delegate.
+  // (c) Drain — the lambdas see the delegate is gone and do nothing.
   runOneEventLoopTick();
-  EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 1);
+  EXPECT_EQ(delegate_->shouldRenderTransactionsCount(), 0);
+  EXPECT_EQ(delegate_->didDispatchCommandCount(), 0);
+}
+
+// ---------------------------------------------------------------------------
+// Test 3b — Detaching while a rendering update is calling the delegate on the
+// JS thread waits for that call to return, so the host cannot destroy the
+// delegate under it.
+// ---------------------------------------------------------------------------
+TEST_F(
+    SchedulerDelegateInvalidationTest,
+    DelegateDetach_WaitsForRunningRenderingUpdate) {
+  setUp();
+
+  class BlockingDelegate : public RecordingDelegate {
+   public:
+    std::atomic<bool> entered{false};
+    std::atomic<bool> release{false};
+    std::atomic<bool> returned{false};
+    void schedulerShouldRenderTransactions(
+        const std::shared_ptr<const MountingCoordinator>& /*unused*/) override {
+      entered = true;
+      while (!release) {
+        std::this_thread::yield();
+      }
+      returned = true;
+    }
+  } blocking;
+  scheduler_->setDelegate(&blocking);
+
+  scheduler_->uiManagerDidFinishTransaction(
+      coordinator_, /*mountSynchronously=*/false);
+  std::thread jsThread([this] { runOneEventLoopTick(); });
+  while (!blocking.entered) {
+    std::this_thread::yield();
+  }
+
+  std::atomic<bool> detached{false};
+  std::thread hostThread([&] {
+    scheduler_->setDelegate(nullptr);
+    detached = true;
+  });
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  EXPECT_FALSE(detached) << "setDelegate returned while the delegate ran";
+
+  blocking.release = true;
+  hostThread.join();
+  jsThread.join();
+  EXPECT_TRUE(blocking.returned);
+  EXPECT_TRUE(detached);
+}
+
+// ---------------------------------------------------------------------------
+// Test 3c — The delegate call can drop the last reference to the host, which
+// detaches the delegate on the JS thread itself (e.g. RCTScheduler released
+// inside RCTSurfacePresenter). That must not deadlock.
+// ---------------------------------------------------------------------------
+TEST_F(
+    SchedulerDelegateInvalidationTest,
+    DelegateDetach_FromInsideRenderingUpdate) {
+  setUp();
+
+  class DetachingDelegate : public RecordingDelegate {
+   public:
+    Scheduler* scheduler{nullptr};
+    int calls{0};
+    void schedulerShouldRenderTransactions(
+        const std::shared_ptr<const MountingCoordinator>& /*unused*/) override {
+      ++calls;
+      scheduler->setDelegate(nullptr);
+    }
+  } detaching;
+  detaching.scheduler = scheduler_.get();
+  scheduler_->setDelegate(&detaching);
+
+  scheduler_->uiManagerDidFinishTransaction(
+      coordinator_, /*mountSynchronously=*/false);
+  scheduler_->uiManagerDidFinishTransaction(
+      coordinator_, /*mountSynchronously=*/false);
+  runOneEventLoopTick();
+
+  // The first update detached the delegate; the second one is dropped.
+  EXPECT_EQ(detaching.calls, 1);
+  EXPECT_EQ(scheduler_->getDelegate(), nullptr);
 }
 
 // ---------------------------------------------------------------------------
@@ -561,8 +643,8 @@ TEST_F(
 // race wouldn't be reachable." It would not — surface-shutdown clears the
 // per-surface UIManager pointer but doesn't touch the runtime scheduler's
 // pending-rendering-updates queue. The lambda still runs and still calls
-// the delegate. Only an error-driven queue clear, or a longer-term
-// runtime-scheduler-level shutdown signal, closes this race.
+// the delegate. What closes this race is detaching the delegate (Test 3) or
+// an error-driven queue clear (Test 2).
 // ---------------------------------------------------------------------------
 TEST_F(
     SchedulerDelegateInvalidationTest,
