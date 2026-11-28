@@ -5708,6 +5708,7 @@ class facebook::react::SafeAreaViewProps : public facebook::react::HostPlatformV
 
 class facebook::react::Scheduler : public facebook::react::UIManagerDelegate {
   public Scheduler(const facebook::react::SchedulerToolbox& schedulerToolbox, facebook::react::UIManagerAnimationDelegate* animationDelegate, facebook::react::SchedulerDelegate* delegate);
+  public Scheduler(const facebook::react::SchedulerToolbox& schedulerToolbox, facebook::react::UIManagerAnimationDelegate* animationDelegate, std::shared_ptr<facebook::react::SchedulerDelegate> delegate);
   public facebook::react::SchedulerDelegate* getDelegate() const;
   public std::shared_ptr<const facebook::react::ContextContainer> getContextContainer() const;
   public std::shared_ptr<facebook::react::UIManager> getUIManager() const;

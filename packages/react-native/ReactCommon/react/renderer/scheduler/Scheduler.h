@@ -11,6 +11,7 @@
 
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <shared_mutex>
 #include <vector>
@@ -44,6 +45,10 @@ class Scheduler final : public UIManagerDelegate {
       const SchedulerToolbox &schedulerToolbox,
       UIManagerAnimationDelegate *animationDelegate,
       SchedulerDelegate *delegate);
+  Scheduler(
+      const SchedulerToolbox &schedulerToolbox,
+      UIManagerAnimationDelegate *animationDelegate,
+      std::shared_ptr<SchedulerDelegate> delegate);
   ~Scheduler() override;
 
 #pragma mark - Surface Management
@@ -123,8 +128,18 @@ class Scheduler final : public UIManagerDelegate {
 
  private:
   friend class SurfaceHandler;
+  struct DelegateState;
+
+  Scheduler(
+      const SchedulerToolbox &schedulerToolbox,
+      UIManagerAnimationDelegate *animationDelegate,
+      SchedulerDelegate *delegate,
+      std::shared_ptr<SchedulerDelegate> owner);
+  std::shared_ptr<DelegateState> getDelegateState() const;
 
   SchedulerDelegate *delegate_;
+  mutable std::mutex delegateStateMutex_;
+  std::shared_ptr<DelegateState> delegateState_;
   SharedComponentDescriptorRegistry componentDescriptorRegistry_;
   RuntimeExecutor runtimeExecutor_;
   std::shared_ptr<UIManager> uiManager_;

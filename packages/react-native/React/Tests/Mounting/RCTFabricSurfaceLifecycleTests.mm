@@ -18,6 +18,29 @@ using facebook::react::RuntimeScheduler;
 using facebook::react::RuntimeSchedulerKey;
 using facebook::react::SurfaceHandler;
 
+@interface RCTSurfacePresenter (TerminationTesting)
+- (void)_applicationWillTerminate;
+@end
+
+@interface RCTSchedulerTerminationProbe : NSObject
+@property (nonatomic, weak) id delegate;
+@property (nonatomic, copy) dispatch_block_t onStopObserving;
+@property (nonatomic, copy) void (^onDealloc)(BOOL onMainThread);
+- (void)stopObservingLayoutAnimations;
+@end
+
+@implementation RCTSchedulerTerminationProbe
+- (void)stopObservingLayoutAnimations
+{
+  self.onStopObserving();
+}
+
+- (void)dealloc
+{
+  self.onDealloc([NSThread isMainThread]);
+}
+@end
+
 @interface RCTFabricSurfaceLifecycleTests : XCTestCase
 @end
 
@@ -77,6 +100,49 @@ using facebook::react::SurfaceHandler;
 
   [surface stop];
   XCTAssertEqual(surface.surfaceHandler.getStatus(), SurfaceHandler::Status::Registered);
+}
+
+- (void)testTerminationStopsObserverBeforeBackgroundSchedulerRelease
+{
+  XCTAssertTrue([NSThread isMainThread]);
+  RCTSurfacePresenter *presenter = [RCTSurfacePresenter new];
+  XCTestExpectation *released = [self expectationWithDescription:@"Scheduler released by in-flight callback"];
+  __block BOOL stoppedOnMain = NO;
+  __block BOOL releasedOnMain = YES;
+  __block RCTSchedulerTerminationProbe *inFlightScheduler;
+  __weak RCTSchedulerTerminationProbe *weakScheduler;
+  @autoreleasepool {
+    RCTSchedulerTerminationProbe *scheduler = [RCTSchedulerTerminationProbe new];
+    scheduler.delegate = presenter;
+    scheduler.onStopObserving = ^{
+      stoppedOnMain = [NSThread isMainThread];
+    };
+    scheduler.onDealloc = ^(BOOL onMainThread) {
+      releasedOnMain = onMainThread;
+      [released fulfill];
+    };
+    weakScheduler = scheduler;
+    inFlightScheduler = scheduler;
+    [presenter setValue:scheduler forKey:@"scheduler"];
+  }
+
+  @autoreleasepool {
+    [presenter _applicationWillTerminate];
+  }
+
+  XCTAssertNil(presenter.scheduler);
+  XCTAssertNotNil(weakScheduler);
+  XCTAssertNil(weakScheduler.delegate);
+  XCTAssertTrue(stoppedOnMain);
+
+  dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+    @autoreleasepool {
+      inFlightScheduler = nil;
+    }
+  });
+  [self waitForExpectations:@[ released ] timeout:2];
+  XCTAssertNil(weakScheduler);
+  XCTAssertFalse(releasedOnMain);
 }
 
 @end
