@@ -139,12 +139,15 @@ function execute(
           : path.join(outputPath, 'ReactCodegen');
 
       if (runReactNativeCodegen) {
-        const schemaInfos = generateSchemaInfos(libraries, platform);
+        const schemaInfos = generateSchemaInfos(
+          libraries.filter(library =>
+            mustGenerateNativeCode(projectRoot, library),
+          ),
+          platform,
+        );
         generateNativeCode(
           reactCodegenOutputPath,
-          schemaInfos.filter(schemaInfo =>
-            mustGenerateNativeCode(projectRoot, schemaInfo),
-          ),
+          schemaInfos,
           pkgJsonIncludesGeneratedCode(pkgJson),
           platform,
           forceOutputPath,
@@ -276,14 +279,14 @@ function defaultOutputPathForIOS(baseOutputPath /*: string */) {
 
 function mustGenerateNativeCode(
   includeLibraryPath /*: string */,
-  schemaInfo /*: $FlowFixMe */,
+  library /*: $FlowFixMe */,
 ) {
   // If library's 'codegenConfig' sets 'includesGeneratedCode' to 'true',
   // then we assume that native code is shipped with the library,
   // and we don't need to generate it.
   return (
-    schemaInfo.library.libraryPath === includeLibraryPath ||
-    !schemaInfo.library.config.includesGeneratedCode
+    library.libraryPath === includeLibraryPath ||
+    !library.config.includesGeneratedCode
   );
 }
 
