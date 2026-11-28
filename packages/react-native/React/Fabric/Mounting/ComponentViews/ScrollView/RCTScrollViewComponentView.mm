@@ -348,14 +348,29 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
            oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
 {
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
-  if (layoutMetrics.layoutDirection != oldLayoutMetrics.layoutDirection) {
-    CGAffineTransform transform = (layoutMetrics.layoutDirection == LayoutDirection::LeftToRight)
-        ? CGAffineTransformIdentity
-        : CGAffineTransformMakeScale(-1, 1);
+  [self _updateRightToLeftTransform];
+}
 
+// In RTL, a horizontal scroll view is mirrored (with its content view mirrored back) so it starts at the right edge.
+// A vertical one is left as is: mirroring it also mirrors the views UIKit adds to the scroll view outside the
+// content view, such as the navigation bar's large title on iOS 26.
+- (BOOL)_isMirrored
+{
+  const auto &scrollViewProps = static_cast<const ScrollViewProps &>(*_props);
+  return _layoutMetrics.layoutDirection == LayoutDirection::RightToLeft && scrollViewProps.horizontal;
+}
+
+- (void)_updateRightToLeftTransform
+{
+  BOOL rtl = _layoutMetrics.layoutDirection == LayoutDirection::RightToLeft;
+  BOOL mirrored = [self _isMirrored];
+  CGAffineTransform transform = mirrored ? CGAffineTransformMakeScale(-1, 1) : CGAffineTransformIdentity;
+  if (!CGAffineTransformEqualToTransform(_scrollView.transform, transform)) {
     _containerView.transform = transform;
     _scrollView.transform = transform;
   }
+  _scrollView.semanticContentAttribute = (rtl && !mirrored) ? UISemanticContentAttributeForceRightToLeft
+                                                            : UISemanticContentAttributeForceLeftToRight;
 }
 
 - (bool)isInverted
@@ -502,6 +517,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   }
 
   [super updateProps:props oldProps:oldProps];
+  [self _updateRightToLeftTransform];
 
   // Must run after `super updateProps:` so it is based on the latest calculated view.
   ((RCTEnhancedScrollView *)_scrollView).inverted = [self isInverted];
@@ -653,7 +669,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   metrics.timestamp = CACurrentMediaTime();
   metrics.responderIgnoreScroll = !_isUserTriggeredScrolling;
 
-  if (_layoutMetrics.layoutDirection == LayoutDirection::RightToLeft) {
+  if ([self _isMirrored]) {
     metrics.contentOffset.x = metrics.contentSize.width - metrics.containerSize.width - metrics.contentOffset.x;
   }
 
@@ -744,7 +760,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
   const auto &props = static_cast<const ScrollViewProps &>(*_props);
   // Reset zoom scale to default. This must happen before resetting contentOffset:
-  // in RTL the mirroring transform makes UIKit report zoomScale == -1, and changing
+  // in horizontal RTL the mirroring transform makes UIKit report zoomScale == -1, and changing
   // it to 1 makes UIKit move contentOffset.
   _scrollView.zoomScale = 1.0;
   _scrollView.contentOffset = RCTCGPointFromPoint(props.contentOffset);
@@ -1157,7 +1173,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 
 - (void)scrollToOffset:(CGPoint)offset animated:(BOOL)animated
 {
-  if (_layoutMetrics.layoutDirection == LayoutDirection::RightToLeft) {
+  if ([self _isMirrored]) {
     // Adjusting offset.x in right to left layout direction.
     offset.x = self.contentSize.width - _scrollView.frame.size.width - offset.x;
   }
