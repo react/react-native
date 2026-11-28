@@ -1193,6 +1193,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    delayPressInInScrollView: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-27',
+        description:
+          'Delay `onPressIn` of `Pressable` placed inside a `ScrollView`, so press feedback does not show when the touch turns into a scroll.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     externalElementInspectionEnabled: {
       defaultValue: true,
       metadata: {

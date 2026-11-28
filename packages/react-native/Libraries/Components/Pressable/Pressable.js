@@ -17,16 +17,21 @@ import type {
 } from '../../Types/CoreEventTypes';
 import type {ViewProps} from '../View/ViewPropTypes';
 
+import * as ReactNativeFeatureFlags from '../../../src/private/featureflags/ReactNativeFeatureFlags';
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import usePressability from '../../Pressability/usePressability';
 import {type RectOrSize} from '../../StyleSheet/Rect';
 import useMergeRefs from '../../Utilities/useMergeRefs';
+import ScrollViewContext from '../ScrollView/ScrollViewContext';
 import View from '../View/View';
 import useAndroidRippleForView, {
   type PressableAndroidRippleConfig,
 } from './useAndroidRippleForView';
 import * as React from 'react';
-import {memo, useMemo, useRef, useState} from 'react';
+import {memo, useContext, useMemo, useRef, useState} from 'react';
+
+// Gives the parent scroll view time to take the touch before feedback shows.
+const SCROLL_VIEW_PRESS_DELAY_MS = 130;
 
 export type PressableInstance = HostInstance;
 
@@ -245,6 +250,15 @@ function Pressable({
 
   const [pressed, setPressed] = usePressState(testOnly_pressed === true);
 
+  const isInScrollView = useContext(ScrollViewContext) != null;
+
+  const delayPressIn =
+    unstable_pressDelay == null &&
+    isInScrollView &&
+    ReactNativeFeatureFlags.delayPressInInScrollView()
+      ? SCROLL_VIEW_PRESS_DELAY_MS
+      : unstable_pressDelay;
+
   const shouldUpdatePressed =
     typeof children === 'function' || typeof style === 'function';
 
@@ -294,7 +308,7 @@ function Pressable({
       delayHoverIn,
       delayHoverOut,
       delayLongPress,
-      delayPressIn: unstable_pressDelay,
+      delayPressIn,
       onBlur,
       onFocus,
       onHoverIn,
@@ -335,6 +349,7 @@ function Pressable({
       delayHoverIn,
       delayHoverOut,
       delayLongPress,
+      delayPressIn,
       disabled,
       hitSlop,
       onBlur,
@@ -349,7 +364,6 @@ function Pressable({
       pressRetentionOffset,
       setPressed,
       shouldUpdatePressed,
-      unstable_pressDelay,
     ],
   );
 

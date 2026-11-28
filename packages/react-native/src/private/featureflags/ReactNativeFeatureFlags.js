@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<22b28ed43914155e9274821135c34ccb>>
+ * @generated SignedSource<<44ebdef41288c04bdcf23202e285539e>>
  * @flow strict
  * @noformat
  */
@@ -34,6 +34,7 @@ export type ReactNativeFeatureFlagsJsOnly = Readonly<{
   animatedKeepListenersOnDetach: Getter<boolean>,
   animatedShouldSyncValueBeforeStartCallback: Getter<boolean>,
   deferFlatListFocusChangeRenderUpdate: Getter<boolean>,
+  delayPressInInScrollView: Getter<boolean>,
   externalElementInspectionEnabled: Getter<boolean>,
   fixCrossOrientationNestedListViewability: Getter<boolean>,
   fixVirtualizeListCollapseWindowSize: Getter<boolean>,
@@ -180,6 +181,11 @@ export const animatedShouldSyncValueBeforeStartCallback: Getter<boolean> = creat
  * Use the deferred cell render update mechanism for focus change in FlatList.
  */
 export const deferFlatListFocusChangeRenderUpdate: Getter<boolean> = createJavaScriptFlagGetter('deferFlatListFocusChangeRenderUpdate', false);
+
+/**
+ * Delay `onPressIn` of `Pressable` placed inside a `ScrollView`, so press feedback does not show when the touch turns into a scroll.
+ */
+export const delayPressInInScrollView: Getter<boolean> = createJavaScriptFlagGetter('delayPressInInScrollView', false);
 
 /**
  * Enable the external inspection API for DevTools to communicate with the Inspector overlay.
