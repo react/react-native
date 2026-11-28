@@ -141,7 +141,6 @@ constructor(context: Context, private val fpsListener: FpsListener? = null) :
   override var removeClippedSubviews: Boolean
     get() = _removeClippedSubviews
     set(value) {
-      if (ReactNativeFeatureFlags.disableSubviewClippingAndroid()) return
       if (value && clippingRect == null) clippingRect = Rect()
       _removeClippedSubviews = value
       updateClippingRect()
