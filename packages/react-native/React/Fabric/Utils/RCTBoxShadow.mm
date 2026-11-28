@@ -78,7 +78,13 @@ RCTGetOutsetBoxShadowLayer(const facebook::react::BoxShadow &shadow, RCTCornerRa
   const RCTCornerInsets shadowRectCornerInsets =
       RCTGetCornerInsets(cornerRadiiForBoxShadow(cornerRadii, shadow.spreadDistance), UIEdgeInsetsZero);
 
-  CGRect shadowRect = CGRectInset(shadowLayer.bounds, -shadow.spreadDistance, -shadow.spreadDistance);
+  // A negative spread can shrink the shadow rect to zero but not past it: CGRectInset would return CGRectNull, which
+  // ends up as NaN in CoreGraphics. Capping each inset at half the size keeps the rect centred on the layer.
+  const CGRect bounds = shadowLayer.bounds;
+  CGRect shadowRect = CGRectInset(
+      bounds,
+      fmin(-shadow.spreadDistance, bounds.size.width / 2),
+      fmin(-shadow.spreadDistance, bounds.size.height / 2));
   shadowRect = CGRectOffset(shadowRect, shadow.offsetX, shadow.offsetY);
   CGPathRef shadowRectPath = RCTPathCreateWithRoundedRect(shadowRect, shadowRectCornerInsets, nil, NO);
   shadowLayer.shadowPath = shadowRectPath;
