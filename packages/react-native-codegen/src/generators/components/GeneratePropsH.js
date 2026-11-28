@@ -277,7 +277,7 @@ const ArrayEnumTemplate = ({
 using ${enumMask} = uint32_t;
 
 struct ${enumMask}Wrapped {
-  ${enumMask} value;
+  ${enumMask} value{};
 };
 
 enum class ${enumName}: ${enumMask} {
