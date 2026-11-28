@@ -93,7 +93,7 @@ internal object FilterHelper {
             else -> throw IllegalArgumentException("Invalid color matrix filter: $filterName")
           }
 
-      resultColorMatrix.preConcat(tempColorMatrix)
+      resultColorMatrix.postConcat(tempColorMatrix)
     }
 
     return ColorMatrixColorFilter(resultColorMatrix)
