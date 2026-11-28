@@ -39,7 +39,6 @@ private fun positionToPixels(lengthPercentage: LengthPercentage, availableSpace:
       lengthPercentage.resolve(availableSpace).dpToPx()
     }
 
-
 internal fun calculateBackgroundImageSize(
     containerWidth: Float,
     containerHeight: Float,
@@ -82,7 +81,6 @@ internal fun calculateBackgroundImageSize(
 
   return finalWidth to finalHeight
 }
-
 
 internal class BackgroundImageDrawable(
     private val context: Context,
