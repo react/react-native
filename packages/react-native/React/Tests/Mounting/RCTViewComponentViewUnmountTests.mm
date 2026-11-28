@@ -86,10 +86,10 @@ static NSString *RCTUnmountAndReportAssert(
   XCTAssertNotEqualObjects(thrownName, NSRangeException);
 }
 
-// A recycled view can receive children before its own props are updated. If
-// the new owner is zero-sized, layer invalidation does not reconcile the old
-// clipping container. Unmount must do so before checking the child's parent.
-- (void)testUnmountReconcilesRecycledContainerAtZeroSize
+// When a zero-sized view stops needing its clipping container, layer
+// invalidation returns early and does not move the children out of it. Unmount
+// must reconcile the container before checking the child's parent.
+- (void)testUnmountReconcilesStaleContainerAtZeroSize
 {
   RCTViewComponentView *parent = [[RCTViewComponentView alloc] initWithFrame:CGRectZero];
   auto clippingProps = std::make_shared<ViewProps>();
@@ -98,17 +98,12 @@ static NSString *RCTUnmountAndReportAssert(
   [parent updateProps:clippingProps oldProps:parent.props];
   [parent finalizeUpdates:RNComponentViewUpdateMaskAll];
 
-  RCTViewComponentView *previousChild = [RCTViewComponentView new];
-  [parent mountChildComponentView:previousChild index:0];
-  UIView *previousContainer = previousChild.superview;
-  XCTAssertNotEqual(previousContainer, parent);
-  XCTAssertNotNil(previousContainer);
-  [parent unmountChildComponentView:previousChild index:0];
-  [parent prepareForRecycle];
-
-  // Fabric mounts descendants before applying the recycled parent's new props.
   RCTViewComponentView *child = [RCTViewComponentView new];
   [parent mountChildComponentView:child index:0];
+  UIView *previousContainer = child.superview;
+  XCTAssertNotEqual(previousContainer, parent);
+  XCTAssertNotNil(previousContainer);
+
   [parent updateProps:std::make_shared<ViewProps>() oldProps:parent.props];
   [parent finalizeUpdates:RNComponentViewUpdateMaskAll];
   XCTAssertTrue(CGSizeEqualToSize(parent.bounds.size, CGSizeZero));
