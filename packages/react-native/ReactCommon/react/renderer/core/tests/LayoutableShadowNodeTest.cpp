@@ -262,6 +262,52 @@ TEST(LayoutableShadowNodeTest, contentOriginOffset) {
   EXPECT_EQ(relativeLayoutMetrics.frame.origin.y, 20);
 }
 
+#ifndef ANDROID
+/*
+ * Horizontal RTL <ScrollView> 100 wide with 300 of content, scrolled 50 from
+ * the left edge of the content in UIKit coordinates. The last <View> sits at
+ * x=200 in the content and shows at x=50 on screen.
+ */
+TEST(LayoutableShadowNodeTest, contentOriginOffsetInRightToLeftScrollView) {
+  auto builder = simpleComponentBuilder();
+  auto childShadowNode = std::shared_ptr<ViewShadowNode>{};
+  // clang-format off
+  auto element =
+    Element<ScrollViewShadowNode>()
+      .finalize([](ScrollViewShadowNode &shadowNode){
+        auto layoutMetrics = EmptyLayoutMetrics;
+        layoutMetrics.frame.size = {.width=100, .height=100};
+        layoutMetrics.layoutDirection = LayoutDirection::RightToLeft;
+        shadowNode.setLayoutMetrics(layoutMetrics);
+      })
+      .stateData([](ScrollViewState &data) {
+        data.contentOffset = {.x=50, .y=0};
+        data.contentBoundingRect = {.size={.width=300, .height=100}};
+      })
+      .children({
+        Element<ViewShadowNode>()
+        .finalize([](ViewShadowNode &shadowNode){
+          auto layoutMetrics = EmptyLayoutMetrics;
+          layoutMetrics.frame.origin = {.x=200, .y=0};
+          layoutMetrics.frame.size = {.width=100, .height=100};
+          shadowNode.setLayoutMetrics(layoutMetrics);
+        })
+        .reference(childShadowNode)
+    });
+  // clang-format on
+
+  auto parentShadowNode = builder.build(element);
+
+  auto relativeLayoutMetrics =
+      LayoutableShadowNode::computeRelativeLayoutMetrics(
+          childShadowNode->getFamily(),
+          *parentShadowNode,
+          {.includeTransform = true});
+
+  EXPECT_EQ(relativeLayoutMetrics.frame.origin.x, 50);
+}
+#endif
+
 /*
  * ┌────────────────────────┐
  * │<View>                  │

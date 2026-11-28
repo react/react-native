@@ -235,14 +235,21 @@ void NativeFantom::enqueueScrollEvent(
 
   scrollViewShadowNode->getConcreteEventEmitter().onScroll(scrollEvent);
 
+  auto contentOffset = point;
+  if (scrollViewShadowNode->getLayoutMetrics().layoutDirection ==
+      LayoutDirection::RightToLeft) {
+    contentOffset.x = scrollEvent.contentSize.width -
+        scrollEvent.containerSize.width - point.x;
+  }
+
   auto state =
       std::static_pointer_cast<const ScrollViewShadowNode::ConcreteState>(
           scrollViewShadowNode->getState());
   state->updateState(
-      [point](const ScrollViewShadowNode::ConcreteState::Data& oldData)
+      [contentOffset](const ScrollViewShadowNode::ConcreteState::Data& oldData)
           -> ScrollViewShadowNode::ConcreteState::SharedData {
         auto newData = oldData;
-        newData.contentOffset = point;
+        newData.contentOffset = contentOffset;
         return std::make_shared<
             const ScrollViewShadowNode::ConcreteState::Data>(newData);
       });
