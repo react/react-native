@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<f06aa9c4b4027083a00720ea796a5d43>>
+ * @generated SignedSource<<8aafec6ecc2bf7bb739eb7f7c8d39943>>
  */
 
 /**
@@ -180,6 +180,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableAccumulatedUpdatesInRawPropsAndroid();
+  }
+
+  bool enableAliasedTextRoleInheritance() override {
+    auto value = values_["enableAliasedTextRoleInheritance"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableAliasedTextRoleInheritance();
   }
 
   bool enableAndroidTextMeasurementOptimizations() override {
@@ -396,6 +405,15 @@ class ReactNativeFeatureFlagsDynamicProvider : public ReactNativeFeatureFlagsDef
     }
 
     return ReactNativeFeatureFlagsDefaults::enableInteractableResponderViews();
+  }
+
+  bool enableInteractiveInlineButtons() override {
+    auto value = values_["enableInteractiveInlineButtons"];
+    if (!value.isNull()) {
+      return value.getBool();
+    }
+
+    return ReactNativeFeatureFlagsDefaults::enableInteractiveInlineButtons();
   }
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS() override {

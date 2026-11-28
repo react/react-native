@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1a71fb4528797b171985c1f778c00741>>
+ * @generated SignedSource<<cc277e953a0c4c0fa2be393dc8a6de71>>
  */
 
 /**
@@ -86,6 +86,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableAccumulatedUpdatesInRawPropsAndroid() override {
+    return false;
+  }
+
+  bool enableAliasedTextRoleInheritance() override {
     return false;
   }
 
@@ -182,6 +186,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableInteractableResponderViews() override {
+    return false;
+  }
+
+  bool enableInteractiveInlineButtons() override {
     return false;
   }
 

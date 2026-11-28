@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<ba133ff3d53077a74e57be7f3b53ddd6>>
+ * @generated SignedSource<<064763dca795082aea67c88bab7c089f>>
  */
 
 /**
@@ -117,6 +117,11 @@ bool NativeReactNativeFeatureFlags::enableAccessibilityOrder(
 bool NativeReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableAccumulatedUpdatesInRawPropsAndroid();
+}
+
+bool NativeReactNativeFeatureFlags::enableAliasedTextRoleInheritance(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableAliasedTextRoleInheritance();
 }
 
 bool NativeReactNativeFeatureFlags::enableAndroidTextMeasurementOptimizations(
@@ -237,6 +242,11 @@ bool NativeReactNativeFeatureFlags::enableImperativeFocus(
 bool NativeReactNativeFeatureFlags::enableInteractableResponderViews(
     jsi::Runtime& /*runtime*/) {
   return ReactNativeFeatureFlags::enableInteractableResponderViews();
+}
+
+bool NativeReactNativeFeatureFlags::enableInteractiveInlineButtons(
+    jsi::Runtime& /*runtime*/) {
+  return ReactNativeFeatureFlags::enableInteractiveInlineButtons();
 }
 
 bool NativeReactNativeFeatureFlags::enableInteropViewManagerClassLookUpOptimizationIOS(

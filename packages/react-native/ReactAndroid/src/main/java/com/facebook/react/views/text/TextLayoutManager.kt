@@ -300,6 +300,21 @@ internal object TextLayoutManager {
     }
   }
 
+  private fun isInlineInteractiveRole(
+      role: ReactAccessibilityDelegate.Role?,
+      accessibilityRole: ReactAccessibilityDelegate.AccessibilityRole?,
+  ): Boolean {
+    val effectiveRole =
+        if (role != null) ReactAccessibilityDelegate.AccessibilityRole.fromRole(role)
+        else accessibilityRole
+    return when (effectiveRole) {
+      ReactAccessibilityDelegate.AccessibilityRole.LINK -> true
+      ReactAccessibilityDelegate.AccessibilityRole.BUTTON ->
+          ReactNativeFeatureFlags.enableInteractiveInlineButtons()
+      else -> false
+    }
+  }
+
   @OptIn(UnstableReactNativeAPI::class)
   private fun buildSpannableFromFragments(
       assets: AssetManager,
@@ -353,13 +368,7 @@ internal object TextLayoutManager {
             ),
         )
       } else if (end >= start) {
-        val roleIsLink =
-            if (textAttributes.role != null)
-                (textAttributes.role == ReactAccessibilityDelegate.Role.LINK)
-            else
-                (textAttributes.accessibilityRole ==
-                    ReactAccessibilityDelegate.AccessibilityRole.LINK)
-        if (roleIsLink) {
+        if (isInlineInteractiveRole(textAttributes.role, textAttributes.accessibilityRole)) {
           if (ReactNativeFeatureFlags.enablePreparedTextLayout()) {
             ops.add(SetSpanOperation(start, end, ReactLinkSpan(i)))
           } else {
@@ -591,14 +600,7 @@ internal object TextLayoutManager {
             spanFlags,
         )
       } else {
-        val roleIsLink =
-            if (fragment.props.role != null)
-                (fragment.props.role == ReactAccessibilityDelegate.Role.LINK)
-            else
-                (fragment.props.accessibilityRole ==
-                    ReactAccessibilityDelegate.AccessibilityRole.LINK)
-
-        if (roleIsLink) {
+        if (isInlineInteractiveRole(fragment.props.role, fragment.props.accessibilityRole)) {
           if (ReactNativeFeatureFlags.enablePreparedTextLayout()) {
             spannable.setSpan(ReactLinkSpan(i), start, end, spanFlags)
           } else {

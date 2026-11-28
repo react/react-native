@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0128ee1e6f9a35114e76a548f1ccc8ab>>
+ * @generated SignedSource<<953b3143d10a41299b365cf336bf65ba>>
  */
 
 /**
@@ -119,6 +119,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = accessor.enableAccumulatedUpdatesInRawPropsAndroid()
+
+  /**
+   * When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) inherits neither.
+   */
+  @JvmStatic
+  public fun enableAliasedTextRoleInheritance(): Boolean = accessor.enableAliasedTextRoleInheritance()
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.
@@ -263,6 +269,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableInteractableResponderViews(): Boolean = accessor.enableInteractableResponderViews()
+
+  /**
+   * When enabled, inline text with a button role produces a ClickableSpan (like a link).
+   */
+  @JvmStatic
+  public fun enableInteractiveInlineButtons(): Boolean = accessor.enableInteractiveInlineButtons()
 
   /**
    * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.

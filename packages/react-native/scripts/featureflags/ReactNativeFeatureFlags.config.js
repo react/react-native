@@ -214,6 +214,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableAliasedTextRoleInheritance: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-30',
+        description:
+          'When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) inherits neither.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableAndroidTextMeasurementOptimizations: {
       defaultValue: true,
       metadata: {
@@ -466,6 +477,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2026-08-07',
         description:
           'Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableInteractiveInlineButtons: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-10-30',
+        description:
+          'When enabled, inline text with a button role produces a ClickableSpan (like a link).',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },

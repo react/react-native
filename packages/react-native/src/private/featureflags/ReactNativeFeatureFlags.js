@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<22b28ed43914155e9274821135c34ccb>>
+ * @generated SignedSource<<4c16a25bbb894b5f666085f71b0c0193>>
  * @flow strict
  * @noformat
  */
@@ -63,6 +63,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   disableViewPreallocationAndroid: Getter<boolean>,
   enableAccessibilityOrder: Getter<boolean>,
   enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean>,
+  enableAliasedTextRoleInheritance: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableAsyncDiskCacheCheckInMultiSourceImageAndroid: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
@@ -87,6 +88,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableImperativeEvents: Getter<boolean>,
   enableImperativeFocus: Getter<boolean>,
   enableInteractableResponderViews: Getter<boolean>,
+  enableInteractiveInlineButtons: Getter<boolean>,
   enableInteropViewManagerClassLookUpOptimizationIOS: Getter<boolean>,
   enableIntersectionObserverByDefault: Getter<boolean>,
   enableKeyEvents: Getter<boolean>,
@@ -281,6 +283,10 @@ export const enableAccessibilityOrder: Getter<boolean> = createNativeFlagGetter(
  */
 export const enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean> = createNativeFlagGetter('enableAccumulatedUpdatesInRawPropsAndroid', false);
 /**
+ * When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) inherits neither.
+ */
+export const enableAliasedTextRoleInheritance: Getter<boolean> = createNativeFlagGetter('enableAliasedTextRoleInheritance', false);
+/**
  * Enables various optimizations throughout the path of measuring text on Android.
  */
 export const enableAndroidTextMeasurementOptimizations: Getter<boolean> = createNativeFlagGetter('enableAndroidTextMeasurementOptimizations', true);
@@ -376,6 +382,10 @@ export const enableImperativeFocus: Getter<boolean> = createNativeFlagGetter('en
  * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
  */
 export const enableInteractableResponderViews: Getter<boolean> = createNativeFlagGetter('enableInteractableResponderViews', false);
+/**
+ * When enabled, inline text with a button role produces a ClickableSpan (like a link).
+ */
+export const enableInteractiveInlineButtons: Getter<boolean> = createNativeFlagGetter('enableInteractiveInlineButtons', false);
 /**
  * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
  */

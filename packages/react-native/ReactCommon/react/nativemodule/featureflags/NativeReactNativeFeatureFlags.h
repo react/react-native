@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<c3300a3944904f5129031e9159d17307>>
+ * @generated SignedSource<<1e2cbd47d8ec2fdd70c4d1fa93d3ace1>>
  */
 
 /**
@@ -68,6 +68,8 @@ class NativeReactNativeFeatureFlags
 
   bool enableAccumulatedUpdatesInRawPropsAndroid(jsi::Runtime& runtime);
 
+  bool enableAliasedTextRoleInheritance(jsi::Runtime& runtime);
+
   bool enableAndroidTextMeasurementOptimizations(jsi::Runtime& runtime);
 
   bool enableAsyncDiskCacheCheckInMultiSourceImageAndroid(jsi::Runtime& runtime);
@@ -115,6 +117,8 @@ class NativeReactNativeFeatureFlags
   bool enableImperativeFocus(jsi::Runtime& runtime);
 
   bool enableInteractableResponderViews(jsi::Runtime& runtime);
+
+  bool enableInteractiveInlineButtons(jsi::Runtime& runtime);
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS(jsi::Runtime& runtime);
 

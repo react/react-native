@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<59361ec9827f932f3f0ff8400d262580>>
+ * @generated SignedSource<<1ec351c0bd5ff72d8272187e0595ed93>>
  */
 
 /**
@@ -115,6 +115,11 @@ class ReactNativeFeatureFlags {
    * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
    */
   RN_EXPORT static bool enableAccumulatedUpdatesInRawPropsAndroid();
+
+  /**
+   * When enabled, a text fragment that sets either `role` or `accessibilityRole` (the two are aliases) inherits neither.
+   */
+  RN_EXPORT static bool enableAliasedTextRoleInheritance();
 
   /**
    * Enables various optimizations throughout the path of measuring text on Android.
@@ -235,6 +240,11 @@ class ReactNativeFeatureFlags {
    * Android views that declare a gesture-responder handler (e.g. PanResponder) register a no-op touch listener so they can be recognized as interactable.
    */
   RN_EXPORT static bool enableInteractableResponderViews();
+
+  /**
+   * When enabled, inline text with a button role produces a ClickableSpan (like a link).
+   */
+  RN_EXPORT static bool enableInteractiveInlineButtons();
 
   /**
    * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
