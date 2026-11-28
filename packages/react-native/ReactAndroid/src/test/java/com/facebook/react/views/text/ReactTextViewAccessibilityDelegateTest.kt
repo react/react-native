@@ -9,6 +9,7 @@ package com.facebook.react.views.text
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.os.Bundle
 import android.text.Layout
 import android.text.SpannableString
 import android.text.Spanned
@@ -22,6 +23,8 @@ import android.text.style.LocaleSpan
 import android.text.style.TtsSpan
 import android.util.DisplayMetrics
 import android.view.View
+import android.view.accessibility.AccessibilityEvent
+import android.widget.FrameLayout
 import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
@@ -192,6 +195,30 @@ class ReactTextViewAccessibilityDelegateTest {
     assertThat(nodeText.getSpanEnd(localeSpan)).isEqualTo(2)
   }
 
+  @Test
+  fun `prepared layout text steps by character and word`() {
+    val view = preparedLayoutTextView(SpannableString("Hello, big world"))
+    val steps = recordSteps(view)
+
+    assertThat(createNodeInfo(view).movementGranularities).isNotZero()
+    repeat(3) { step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD) }
+    assertThat(step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD)).isFalse()
+    step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD, forward = false)
+    step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_CHARACTER)
+    view.performAccessibilityAction(AccessibilityNodeInfoCompat.ACTION_SET_SELECTION, null)
+    step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD)
+    view.preparedLayout = preparedLayoutTextView(SpannableString("Read the docs")).preparedLayout
+    step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD)
+    view.recycleView()
+    view.preparedLayout = preparedLayoutTextView(SpannableString("Read the docs")).preparedLayout
+    step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD)
+    view.contentDescription = "Delete listing"
+    step(view, AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD)
+
+    assertThat(steps)
+        .containsExactly("Hello", "big", "world", "world", "w", "Hello", "Read", "Read", "Delete")
+  }
+
   private fun delegate(): AccessibilityDelegateCompat? = ViewCompat.getAccessibilityDelegate(view)
 
   private fun textWithLink(): Spanned =
@@ -244,6 +271,33 @@ class ReactTextViewAccessibilityDelegateTest {
 
   private fun installDelegate(view: View, text: Spanned) {
     ReactTextViewAccessibilityDelegate.updateAccessibilityLinks(view, text)
+  }
+
+  private fun step(view: View, granularity: Int, forward: Boolean = true): Boolean =
+      view.performAccessibilityAction(
+          if (forward) AccessibilityNodeInfoCompat.ACTION_NEXT_AT_MOVEMENT_GRANULARITY
+          else AccessibilityNodeInfoCompat.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY,
+          Bundle().apply {
+            putInt(
+                AccessibilityNodeInfoCompat.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT,
+                granularity,
+            )
+          },
+      )
+
+  private fun recordSteps(view: View): List<String> {
+    val steps = mutableListOf<String>()
+    object : FrameLayout(view.context) {
+          override fun requestSendAccessibilityEvent(
+              child: View,
+              event: AccessibilityEvent,
+          ): Boolean {
+            val text = event.text.firstOrNull() ?: event.contentDescription
+            return steps.add(text.toString().substring(event.fromIndex, event.toIndex))
+          }
+        }
+        .addView(view)
+    return steps
   }
 
   private fun createNodeInfo(view: View): AccessibilityNodeInfoCompat =

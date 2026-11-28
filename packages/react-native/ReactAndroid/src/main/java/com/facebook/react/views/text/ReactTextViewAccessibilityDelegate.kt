@@ -13,6 +13,7 @@ import android.text.Layout
 import android.text.Spanned
 import android.text.style.ClickableSpan
 import android.view.View
+import android.view.accessibility.AccessibilityEvent
 import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
@@ -21,6 +22,7 @@ import com.facebook.react.R
 import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.uimanager.ReactAccessibilityDelegate
 import com.facebook.react.views.text.internal.span.ReactClickableSpan
+import java.text.BreakIterator
 
 @OptIn(UnstableReactNativeAPI::class)
 internal class ReactTextViewAccessibilityDelegate(
@@ -29,6 +31,9 @@ internal class ReactTextViewAccessibilityDelegate(
     originalImportantForAccessibility: Int,
 ) : ReactAccessibilityDelegate(view, originalFocus, originalImportantForAccessibility) {
   private var accessibilityLinks: AccessibilityLinks? = null
+  private var textCursor = -1
+  private var breaks: BreakIterator? = null
+  private var breaksGranularity = 0
 
   init {
     accessibilityLinks = hostView.getTag(R.id.accessibility_links) as AccessibilityLinks?
@@ -221,6 +226,83 @@ internal class ReactTextViewAccessibilityDelegate(
     // it is holding so TalkBack knows what to announce when focusing it.
     if (host is PreparedLayoutTextView) {
       info.text = host.text
+      if (host.contentDescription.isNullOrEmpty() && !host.text.isNullOrEmpty()) {
+        info.addAction(AccessibilityNodeInfoCompat.ACTION_NEXT_AT_MOVEMENT_GRANULARITY)
+        info.addAction(AccessibilityNodeInfoCompat.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY)
+        info.movementGranularities =
+            AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_CHARACTER or
+                AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD
+      }
+    }
+  }
+
+  override fun performAccessibilityAction(host: View, action: Int, args: Bundle?): Boolean {
+    if (host is PreparedLayoutTextView && host.contentDescription.isNullOrEmpty()) {
+      when (action) {
+        AccessibilityNodeInfoCompat.ACTION_SET_SELECTION -> textCursor = -1
+        AccessibilityNodeInfoCompat.ACTION_NEXT_AT_MOVEMENT_GRANULARITY,
+        AccessibilityNodeInfoCompat.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY ->
+            return traverseText(
+                host,
+                action,
+                args?.getInt(AccessibilityNodeInfoCompat.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT)
+                    ?: 0,
+            )
+      }
+    }
+    return super.performAccessibilityAction(host, action, args)
+  }
+
+  internal fun resetTextTraversal() {
+    textCursor = -1
+    breaks = null
+  }
+
+  private fun traverseText(host: PreparedLayoutTextView, action: Int, granularity: Int): Boolean {
+    val text = host.text ?: return false
+    val locale = host.resources.configuration.locales[0]
+    val breaks =
+        this.breaks?.takeIf { breaksGranularity == granularity }
+            ?: when (granularity) {
+              AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_CHARACTER ->
+                  BreakIterator.getCharacterInstance(locale)
+              AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD ->
+                  BreakIterator.getWordInstance(locale)
+              else -> return false
+            }.also {
+              it.setText(text.toString())
+              this.breaks = it
+              breaksGranularity = granularity
+            }
+    val forward = action == AccessibilityNodeInfoCompat.ACTION_NEXT_AT_MOVEMENT_GRANULARITY
+    var from = if (textCursor >= 0) textCursor else if (forward) 0 else text.length
+    while (true) {
+      val to = if (forward) breaks.following(from) else breaks.preceding(from)
+      if (to == BreakIterator.DONE) {
+        return false
+      }
+      val start = minOf(from, to)
+      val end = maxOf(from, to)
+      if (
+          granularity == AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_CHARACTER ||
+              (start until end).any { Character.isLetterOrDigit(Character.codePointAt(text, it)) }
+      ) {
+        textCursor = to
+        @Suppress("DEPRECATION")
+        val event =
+            AccessibilityEvent.obtain(
+                AccessibilityEvent.TYPE_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY
+            )
+        host.onInitializeAccessibilityEvent(event)
+        event.text.add(text)
+        event.fromIndex = start
+        event.toIndex = end
+        event.action = action
+        event.movementGranularity = granularity
+        host.parent?.requestSendAccessibilityEvent(host, event)
+        return true
+      }
+      from = to
     }
   }
 
