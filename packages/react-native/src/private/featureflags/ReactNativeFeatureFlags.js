@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<22b28ed43914155e9274821135c34ccb>>
+ * @generated SignedSource<<7ebfa81a7946dbef40d8aaf735ab20c0>>
  * @flow strict
  * @noformat
  */
@@ -100,6 +100,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
   enableResizeObserverByDefault: Getter<boolean>,
+  enableSetNativePropsBatching: Getter<boolean>,
   enableSwiftUIBasedFilters: Getter<boolean>,
   enableViewCulling: Getter<boolean>,
   enableViewRecycling: Getter<boolean>,
@@ -428,6 +429,10 @@ export const enablePropsUpdateReconciliationAndroid: Getter<boolean> = createNat
  * Enables the ResizeObserver Web API in React Native.
  */
 export const enableResizeObserverByDefault: Getter<boolean> = createNativeFlagGetter('enableResizeObserverByDefault', false);
+/**
+ * Commits the props set by `setNativeProps` during a JS task in one shadow tree commit per surface, in a microtask, instead of one commit per call. Reads of the shadow tree from JS commit them first. Bridgeless only.
+ */
+export const enableSetNativePropsBatching: Getter<boolean> = createNativeFlagGetter('enableSetNativePropsBatching', false);
 /**
  * When enabled, it will use SwiftUI for filter effects like blur on iOS.
  */

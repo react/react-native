@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5948daf54ab796ec4bc2754bd309cbc1>>
+ * @generated SignedSource<<c0f427f385252507266fb768a63f9560>>
  */
 
 /**
@@ -348,6 +348,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enableResizeObserverByDefault() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableResizeObserverByDefault");
+    return method(javaProvider_);
+  }
+
+  bool enableSetNativePropsBatching() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableSetNativePropsBatching");
     return method(javaProvider_);
   }
 
@@ -909,6 +915,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enableResizeObserverByDefault(
   return ReactNativeFeatureFlags::enableResizeObserverByDefault();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::enableSetNativePropsBatching(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableSetNativePropsBatching();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::enableSwiftUIBasedFilters(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableSwiftUIBasedFilters();
@@ -1341,6 +1352,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enableResizeObserverByDefault",
         JReactNativeFeatureFlagsCxxInterop::enableResizeObserverByDefault),
+      makeNativeMethod(
+        "enableSetNativePropsBatching",
+        JReactNativeFeatureFlagsCxxInterop::enableSetNativePropsBatching),
       makeNativeMethod(
         "enableSwiftUIBasedFilters",
         JReactNativeFeatureFlagsCxxInterop::enableSwiftUIBasedFilters),

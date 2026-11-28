@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<59361ec9827f932f3f0ff8400d262580>>
+ * @generated SignedSource<<0091ec152736bb8470618636c88c4c03>>
  */
 
 /**
@@ -300,6 +300,11 @@ class ReactNativeFeatureFlags {
    * Enables the ResizeObserver Web API in React Native.
    */
   RN_EXPORT static bool enableResizeObserverByDefault();
+
+  /**
+   * Commits the props set by `setNativeProps` during a JS task in one shadow tree commit per surface, in a microtask, instead of one commit per call. Reads of the shadow tree from JS commit them first. Bridgeless only.
+   */
+  RN_EXPORT static bool enableSetNativePropsBatching();
 
   /**
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.

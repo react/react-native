@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0128ee1e6f9a35114e76a548f1ccc8ab>>
+ * @generated SignedSource<<7d2aaa6f1519e6afa9faeab706006575>>
  */
 
 /**
@@ -341,6 +341,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableResizeObserverByDefault(): Boolean = accessor.enableResizeObserverByDefault()
+
+  /**
+   * Commits the props set by `setNativeProps` during a JS task in one shadow tree commit per surface, in a microtask, instead of one commit per call. Reads of the shadow tree from JS commit them first. Bridgeless only.
+   */
+  @JvmStatic
+  public fun enableSetNativePropsBatching(): Boolean = accessor.enableSetNativePropsBatching()
 
   /**
    * When enabled, it will use SwiftUI for filter effects like blur on iOS.

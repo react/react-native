@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<eda7892bb6355bf6e239bc56948b06c5>>
+ * @generated SignedSource<<5d6259ea28fd7f45e7d8c3a14202700e>>
  */
 
 /**
@@ -72,6 +72,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
   private var enableResizeObserverByDefaultCache: Boolean? = null
+  private var enableSetNativePropsBatchingCache: Boolean? = null
   private var enableSwiftUIBasedFiltersCache: Boolean? = null
   private var enableViewCullingCache: Boolean? = null
   private var enableViewRecyclingCache: Boolean? = null
@@ -586,6 +587,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enableResizeObserverByDefault()
       enableResizeObserverByDefaultCache = cached
+    }
+    return cached
+  }
+
+  override fun enableSetNativePropsBatching(): Boolean {
+    var cached = enableSetNativePropsBatchingCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableSetNativePropsBatching()
+      enableSetNativePropsBatchingCache = cached
     }
     return cached
   }

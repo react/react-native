@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<49d72918b9b9df7d50b7baa9fa4aa85b>>
+ * @generated SignedSource<<06dcb12e5e640bb6172f260e39d17549>>
  */
 
 /**
@@ -126,6 +126,8 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enablePropsUpdateReconciliationAndroid(): Boolean = false
 
   override fun enableResizeObserverByDefault(): Boolean = false
+
+  override fun enableSetNativePropsBatching(): Boolean = false
 
   override fun enableSwiftUIBasedFilters(): Boolean = false
 

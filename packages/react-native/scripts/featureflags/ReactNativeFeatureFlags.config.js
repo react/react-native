@@ -608,6 +608,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableSetNativePropsBatching: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-11-27',
+        description:
+          'Commits the props set by `setNativeProps` during a JS task in one shadow tree commit per surface, in a microtask, instead of one commit per call. Reads of the shadow tree from JS commit them first. Bridgeless only.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     enableSwiftUIBasedFilters: {
       defaultValue: false,
       metadata: {
