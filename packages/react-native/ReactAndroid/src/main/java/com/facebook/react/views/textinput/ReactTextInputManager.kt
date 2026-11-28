@@ -55,6 +55,7 @@ import com.facebook.react.uimanager.ViewDefaults
 import com.facebook.react.uimanager.ViewProps
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.annotations.ReactPropGroup
+import com.facebook.react.uimanager.drawable.CompositeBackgroundDrawable
 import com.facebook.react.uimanager.events.BlurEvent
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.uimanager.events.FocusEvent
@@ -532,14 +533,15 @@ public open class ReactTextInputManager public constructor() :
 
   @ReactProp(name = "underlineColorAndroid", customType = "Color")
   public fun setUnderlineColor(view: ReactEditText, underlineColor: Int?) {
+    // The underline is the EditText's own background. Once BackgroundStyleApplicator wraps it, tint
+    // only that drawable, so the filter does not also tint box shadows and outlines.
+    val background =
+        view.background.let { if (it is CompositeBackgroundDrawable) it.originalBackground else it }
+            ?: return
+
     // Drawable.mutate() can sometimes crash due to an AOSP bug:
     // See https://code.google.com/p/android/issues/detail?id=191754 for more info
-    val background = view.background
     var drawableToMutate = background
-
-    if (background == null) {
-      return
-    }
 
     if (background.constantState != null) {
       try {

@@ -20,7 +20,7 @@ import ExampleTextInput from './ExampleTextInput';
 import TextInputSharedExamples from './TextInputSharedExamples';
 import * as React from 'react';
 import {useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 
 const ToggleDefaultPaddingExample = (): React.Node => {
   const [hasPadding, setHasPadding] = useState(false);
@@ -31,6 +31,35 @@ const ToggleDefaultPaddingExample = (): React.Node => {
       <RNTesterText onPress={() => setHasPadding(!hasPadding)}>
         Toggle padding
       </RNTesterText>
+    </View>
+  );
+};
+
+const BoxShadowUnderlineColorExample = (): React.Node => {
+  const [underlineColor, setUnderlineColor] = useState<'transparent' | 'red'>(
+    'transparent',
+  );
+
+  return (
+    <View
+      testID="textinput-box-shadow-underline"
+      style={styles.boxShadowContainer}>
+      <Pressable
+        testID="textinput-box-shadow-underline-toggle"
+        onPress={() =>
+          setUnderlineColor(color => (color === 'red' ? 'transparent' : 'red'))
+        }>
+        <RNTesterText testID="textinput-box-shadow-underline-label">
+          {`underlineColorAndroid="${underlineColor}" (tap to change)`}
+        </RNTesterText>
+      </Pressable>
+      <View style={styles.boxShadowBackdrop}>
+        <ExampleTextInput
+          placeholder="The shadow stays black"
+          style={styles.boxShadow}
+          underlineColorAndroid={underlineColor}
+        />
+      </View>
     </View>
   );
 };
@@ -48,6 +77,18 @@ const styles = StyleSheet.create({
   },
   wrappedText: {
     maxWidth: 300,
+  },
+  boxShadowContainer: {
+    gap: 10,
+  },
+  boxShadowBackdrop: {
+    backgroundColor: '#e5e5e5',
+    padding: 20,
+  },
+  boxShadow: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    boxShadow: '0px 6px 10px 0px rgba(0, 0, 0, 0.4)',
   },
 });
 
@@ -488,6 +529,15 @@ const examples: Array<RNTesterModuleExample> = [
           />
         </View>
       );
+    },
+  },
+  {
+    title: 'boxShadow and underlineColorAndroid',
+    name: 'boxShadowUnderlineColor',
+    description:
+      'Changing underlineColorAndroid tints the underline, not the box shadow',
+    render: function (): React.Node {
+      return <BoxShadowUnderlineColorExample />;
     },
   },
   {
