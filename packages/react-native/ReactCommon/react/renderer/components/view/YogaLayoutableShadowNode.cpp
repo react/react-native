@@ -556,15 +556,14 @@ void YogaLayoutableShadowNode::configureYogaTree(
   YGConfigSetPointScaleFactor(&yogaConfig_, pointScaleFactor);
 
   // A measurable node's measurement depends on `fontSizeMultiplier`, but unlike
-  // `pointScaleFactor` it is not part of the Yoga config, so a change does not
-  // invalidate Yoga's layout cache. Dirty the node when it changes to force
-  // re-measurement. We propagate up to the root so an unchanged, still-cached
-  // ancestor isn't skipped by `calculateLayoutInternal` before reaching us. An
-  // owner that is already dirty stops it; the child loop below covers that.
+  // `pointScaleFactor` it is not part of the Yoga config. Dirty the node to
+  // force re-measurement; the child loop below propagates to ancestors without
+  // crossing a `display: none` boundary.
   if (getTraits().check(ShadowNodeTraits::Trait::MeasurableYogaNode) &&
       !floatEquality(
           getLayoutMetrics().fontSizeMultiplier, fontSizeMultiplier)) {
-    yogaNode_.markDirtyAndPropagate();
+    yogaNode_.setDirty(true);
+    yogaNode_.setLayoutComputedFlexBasis(yoga::FloatOptional{});
   }
 
   // TODO: `swapLeftAndRight` modified backing props and cannot be undone
@@ -611,6 +610,7 @@ void YogaLayoutableShadowNode::configureYogaTree(
     if (updatedYogaNode.isDirty() && !yogaNode_.isDirty() &&
         yogaNode_.style().display() != yoga::Display::None) {
       yogaNode_.setDirty(true);
+      yogaNode_.setLayoutComputedFlexBasis(yoga::FloatOptional{});
     }
   }
 }
