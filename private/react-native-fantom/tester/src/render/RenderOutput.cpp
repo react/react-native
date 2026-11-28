@@ -107,7 +107,7 @@ folly::dynamic RenderOutput::renderAttributedString(
 
     folly::dynamic text = folly::dynamic::object;
     text["type"] = "Text";
-    text["children"] = fragment.string;
+    text["children"] = folly::dynamic::array(fragment.string);
 #if RN_DEBUG_STRING_CONVERTIBLE
     text["props"] = renderProps(fragment.textAttributes.getDebugProps());
 #else
