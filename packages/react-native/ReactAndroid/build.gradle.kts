@@ -234,6 +234,25 @@ val preparePrefab by
                           "../ReactCommon/react/renderer/components/textinput/platform/android/",
                           "",
                       ),
+                      // rrc_modal
+                      Pair(
+                          "../ReactCommon/react/renderer/components/modal/",
+                          "react/renderer/components/modal/",
+                      ),
+                      // rrc_progressbar
+                      Pair("../ReactCommon/react/renderer/components/progressbar/android/", ""),
+                      // rrc_safeareaview
+                      Pair(
+                          "../ReactCommon/react/renderer/components/safeareaview/",
+                          "react/renderer/components/safeareaview/",
+                      ),
+                      // rrc_switch
+                      Pair("../ReactCommon/react/renderer/components/switch/androidswitch/", ""),
+                      // virtualview
+                      Pair(
+                          "../ReactCommon/react/renderer/components/virtualview/",
+                          "react/renderer/components/virtualview/",
+                      ),
                       // react_newarchdefaults
                       Pair("src/main/jni/react/newarchdefaults", ""),
                       // react_nativemodule_core
