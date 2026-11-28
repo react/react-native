@@ -62,6 +62,8 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   UIView<RCTBackedTextInputViewProtocol, RCTBackedTextInputViewPendingEdit> *_backedTextInputView;
   NSUInteger _mostRecentEventCount;
   NSAttributedString *_lastStringStateWasUpdatedWith;
+  // The React styles currently applied to the multiline input.
+  NSAttributedString *_lastAppliedMultilineReactText;
 
   /*
    * UIKit uses either UITextField or UITextView as its UIKit element for <TextInput>. UITextField is for single line
@@ -376,6 +378,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   if (!_state) {
     assert(false && "State is `null` for <TextInput> component.");
+    _lastAppliedMultilineReactText = nil;
     _backedTextInputView.attributedText = nil;
     return;
   }
@@ -388,11 +391,23 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
   if (_mostRecentEventCount == _state->getData().mostRecentEventCount) {
     NSAttributedString *attributedString = RCTNSAttributedStringFromAttributedStringBox(data.attributedStringBox);
-    if (![attributedString.string isEqualToString:_backedTextInputView.attributedText.string]) {
+    NSAttributedString *nativeText = _backedTextInputView.attributedText;
+    BOOL sameText = [attributedString.string isEqualToString:nativeText.string];
+    if (!sameText) {
       [_backedTextInputView rct_invalidatePendingTextInputEdit];
     }
     _comingFromJS = YES;
-    [self _setAttributedString:attributedString];
+    BOOL tracksReactStyle = [_backedTextInputView isKindOfClass:[RCTUITextView class]] &&
+        data.attributedStringBox.getMode() == AttributedStringBox::Mode::Value;
+    if (!(sameText && tracksReactStyle &&
+          [self _applyMultilineStyleUpdate:attributedString previousReactText:_lastAppliedMultilineReactText])) {
+      if ([self _setAttributedString:attributedString]) {
+        _lastAppliedMultilineReactText = tracksReactStyle ? attributedString : nil;
+      } else if (
+          sameText && tracksReactStyle && [self _multilineReactText:attributedString matchesNativeText:nativeText]) {
+        _lastAppliedMultilineReactText = attributedString;
+      }
+    }
     _comingFromJS = NO;
   }
 }
@@ -422,6 +437,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   _mostRecentEventCount = 0;
   _comingFromJS = NO;
   _lastStringStateWasUpdatedWith = nil;
+  _lastAppliedMultilineReactText = nil;
   _ignoreNextTextInputCall = NO;
   _didMoveToWindow = NO;
   _backedTextInputView.inputAccessoryViewID = nil;
@@ -641,6 +657,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   const auto &props = static_cast<const TextInputProps &>(*_props);
 
   if (props.traits.clearTextOnFocus) {
+    _lastAppliedMultilineReactText = nil;
     _backedTextInputView.attributedText = nil;
     [self textInputDidChange];
   }
@@ -671,7 +688,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (value && ![value isEqualToString:_backedTextInputView.attributedText.string]) {
     NSAttributedString *attributedString =
         [[NSAttributedString alloc] initWithString:value attributes:_backedTextInputView.defaultTextAttributes];
-    [self _setAttributedString:attributedString];
+    if ([self _setAttributedString:attributedString]) {
+      _lastAppliedMultilineReactText = nil;
+    }
     [self _updateState];
   }
 
@@ -821,6 +840,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     return;
   }
   NSAttributedString *attributedString = _backedTextInputView.attributedText;
+  if (_lastAppliedMultilineReactText &&
+      ![_lastAppliedMultilineReactText.string isEqualToString:attributedString.string]) {
+    _lastAppliedMultilineReactText = nil;
+  }
   auto data = _state->getData();
   _lastStringStateWasUpdatedWith = attributedString;
   data.attributedStringBox = RCTAttributedStringBoxFromNSAttributedString(attributedString);
@@ -860,10 +883,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [_backedTextInputView setSelectedTextRange:range notifyDelegate:YES];
 }
 
-- (void)_setAttributedString:(NSAttributedString *)attributedString
+- (BOOL)_setAttributedString:(NSAttributedString *)attributedString
 {
   if ([self _textOf:attributedString equals:_backedTextInputView.attributedText]) {
-    return;
+    return NO;
   }
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
   NSInteger oldTextLength = _backedTextInputView.attributedText.string.length;
@@ -894,6 +917,98 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   [self _restoreTextSelectionAndIgnoreCaretChange:YES];
   [self _updateTypingAttributes];
   _lastStringStateWasUpdatedWith = attributedString;
+  return YES;
+}
+
+- (BOOL)_multilineReactText:(NSAttributedString *)text matchesNativeText:(NSAttributedString *)nativeText
+{
+  if ([self _shouldCompareTextWithoutAttributes]) {
+    return NO;
+  }
+
+  // A native edit can leave UIKit's fallback font on a React text echo.
+  __block NSMutableAttributedString *comparableText = nil;
+  [nativeText enumerateAttribute:@"NSOriginalFont"
+                         inRange:NSMakeRange(0, nativeText.length)
+                         options:0
+                      usingBlock:^(id font, NSRange range, BOOL *stop) {
+                        if (font) {
+                          if (!comparableText) {
+                            comparableText = [nativeText mutableCopy];
+                          }
+                          [comparableText addAttribute:NSFontAttributeName value:font range:range];
+                          [comparableText removeAttribute:@"NSOriginalFont" range:range];
+                        }
+                      }];
+  return RCTIsAttributedStringEffectivelySame(
+      text,
+      comparableText ?: nativeText,
+      _originalTypingAttributes,
+      static_cast<const TextInputProps &>(*_props).textAttributes);
+}
+
+- (BOOL)_applyMultilineStyleUpdate:(NSAttributedString *)text previousReactText:(NSAttributedString *)previousReactText
+{
+  if (![text.string isEqualToString:previousReactText.string]) {
+    return NO;
+  }
+  if ([self _shouldCompareTextWithoutAttributes]) {
+    return YES;
+  }
+
+  RCTUITextView *textView = (RCTUITextView *)_backedTextInputView;
+  NSTextStorage *storage = textView.textStorage;
+  NSRange selection = textView.selectedRange;
+  CGPoint contentOffset = textView.contentOffset;
+  BOOL edited = NO;
+  [storage beginEditing];
+  // Compare two React snapshots so UIKit's fallback fonts and transient attributes do not cause an edit.
+  for (NSUInteger location = 0; location < text.length;) {
+    NSRange remaining = NSMakeRange(location, text.length - location);
+    NSRange currentRange;
+    NSRange previousRange;
+    NSDictionary<NSAttributedStringKey, id> *attributes = [text attributesAtIndex:location
+                                                            longestEffectiveRange:&currentRange
+                                                                          inRange:remaining];
+    NSDictionary<NSAttributedStringKey, id> *previousAttributes = [previousReactText attributesAtIndex:location
+                                                                                 longestEffectiveRange:&previousRange
+                                                                                               inRange:remaining];
+    NSRange range = NSIntersectionRange(currentRange, previousRange);
+
+    for (NSAttributedStringKey key in attributes) {
+      if ([key isEqualToString:RCTAttributedStringEventEmitterKey] ||
+          [attributes[key] isEqual:previousAttributes[key]]) {
+        continue;
+      }
+      if ([key isEqualToString:NSFontAttributeName]) {
+        [storage removeAttribute:@"NSOriginalFont" range:range];
+      }
+      [storage addAttribute:key value:attributes[key] range:range];
+      edited = YES;
+    }
+    for (NSAttributedStringKey key in previousAttributes) {
+      if (attributes[key] == nil && ![key isEqualToString:RCTAttributedStringEventEmitterKey]) {
+        [storage removeAttribute:key range:range];
+        edited = YES;
+      }
+    }
+    location = NSMaxRange(range);
+  }
+  [storage endEditing];
+
+  if (edited) {
+    if (selection.location != NSNotFound && !NSEqualRanges(selection, textView.selectedRange)) {
+      textView.selectedRange = selection;
+    }
+    [self _restoreTextSelection];
+    if (!CGPointEqualToPoint(contentOffset, textView.contentOffset)) {
+      textView.contentOffset = contentOffset;
+    }
+    [self _updateTypingAttributes];
+    _lastStringStateWasUpdatedWith = textView.attributedText;
+  }
+  _lastAppliedMultilineReactText = text;
+  return YES;
 }
 
 // Ensure that newly typed text will inherit any custom attributes. We follow the logic of RN Android, where attributes
@@ -924,6 +1039,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 - (void)_setMultiline:(BOOL)multiline
 {
+  _lastAppliedMultilineReactText = nil;
   [_backedTextInputView removeFromSuperview];
   UIView<RCTBackedTextInputViewProtocol, RCTBackedTextInputViewPendingEdit> *backedTextInputView =
       multiline ? [RCTUITextView new] : [RCTUITextField new];
@@ -950,7 +1066,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   }
 }
 
-- (BOOL)_textOf:(NSAttributedString *)newText equals:(NSAttributedString *)oldText
+- (BOOL)_shouldCompareTextWithoutAttributes
 {
   // When the dictation is running we can't update the attributed text on the backed up text view
   // because setting the attributed string will kill the dictation. This means that we can't impose
@@ -959,9 +1075,15 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   // text that we should disregard. See
   // https://developer.apple.com/documentation/uikit/uitextinput/1614489-markedtextrange?language=objc for more info.
   // Also, updating the attributed text while inputting Korean language will break input mechanism.
-  // If the user added an emoji, the system adds a font attribute for the emoji and stores the original font in
-  // NSOriginalFont. Lastly, when entering a password, etc., there will be additional styling on the field as the native
-  // text view handles showing the last character for a split second.
+  // Secure text entry adds styling while showing the last character for a split second.
+  return [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"dictation"] ||
+      [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"ko-KR"] ||
+      _backedTextInputView.markedTextRange || _backedTextInputView.isSecureTextEntry;
+}
+
+- (BOOL)_textOf:(NSAttributedString *)newText equals:(NSAttributedString *)oldText
+{
+  // When UIKit substitutes a fallback font, it stores the requested font under NSOriginalFont.
   __block BOOL fontHasBeenUpdatedBySystem = false;
   [oldText enumerateAttribute:@"NSOriginalFont"
                       inRange:NSMakeRange(0, oldText.length)
@@ -972,12 +1094,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
                      }
                    }];
 
-  BOOL shouldFallbackToBareTextComparison =
-      [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"dictation"] ||
-      [_backedTextInputView.textInputMode.primaryLanguage isEqualToString:@"ko-KR"] ||
-      _backedTextInputView.markedTextRange || _backedTextInputView.isSecureTextEntry || fontHasBeenUpdatedBySystem;
-
-  if (shouldFallbackToBareTextComparison) {
+  if ([self _shouldCompareTextWithoutAttributes] || fontHasBeenUpdatedBySystem) {
     return [newText.string isEqualToString:oldText.string];
   } else {
     return RCTIsAttributedStringEffectivelySame(
