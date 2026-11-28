@@ -102,6 +102,16 @@ using EdgeMargins = RectangleEdges<MarginValue>;
  * Resolves margins into absolute insets against the given size.
  * Percentages on the vertical edges resolve against the height, and those on
  * the horizontal edges resolve against the width.
+ *
+ * This intentionally matches Chrome, Firefox, and Safari's rootMargin behavior
+ * rather than the spec, which says "Percentages are resolved relative to the
+ * width of the undilated rectangle." Chrome and Safari also use height for
+ * vertical scrollMargin percentages. A width-only change is unlikely to be
+ * web-compatible, so preserve browser parity here.
+ * https://w3c.github.io/IntersectionObserver/#root-intersection-rectangle
+ * https://issues.chromium.org/issues/40725112
+ * Chromium's ResolveMargin uses height for top/bottom and width for left/right:
+ * https://chromium.googlesource.com/chromium/src/+/refs/heads/main/third_party/blink/renderer/core/intersection_observer/intersection_geometry.cc
  */
 inline EdgeInsets resolveEdgeMargins(const EdgeMargins &margins, const Size &size) noexcept
 {
