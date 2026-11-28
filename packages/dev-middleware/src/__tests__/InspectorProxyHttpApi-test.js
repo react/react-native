@@ -71,7 +71,6 @@ describe('inspector proxy HTTP API', () => {
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         ]);
 
@@ -86,7 +85,6 @@ describe('inspector proxy HTTP API', () => {
             app: 'bar-app',
             id: 'page1-updated',
             title: 'bar-title-updated',
-            vm: 'bar-vm-updated',
           },
         ]);
 
@@ -100,7 +98,6 @@ describe('inspector proxy HTTP API', () => {
           expect.objectContaining({
             id: 'device1-page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           }),
         ]);
 
@@ -108,7 +105,6 @@ describe('inspector proxy HTTP API', () => {
           expect.objectContaining({
             id: 'device1-page1-updated',
             title: 'bar-title-updated',
-            vm: 'bar-vm-updated',
           }),
         ]);
       } finally {
@@ -127,7 +123,6 @@ describe('inspector proxy HTTP API', () => {
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         ]);
 
@@ -147,7 +142,6 @@ describe('inspector proxy HTTP API', () => {
           expect.objectContaining({
             id: 'device1-page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           }),
         ]);
 
@@ -168,7 +162,6 @@ describe('inspector proxy HTTP API', () => {
           app: 'bar-app',
           id: 'page1',
           title: 'bar-title',
-          vm: 'bar-vm',
         },
       ]);
 
@@ -204,7 +197,6 @@ describe('inspector proxy HTTP API', () => {
             },
             title: 'bar-title',
             type: 'node',
-            vm: 'bar-vm',
             webSocketDebuggerUrl: expect.any(String),
           },
           {
@@ -239,13 +231,11 @@ describe('inspector proxy HTTP API', () => {
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
           {
             app: 'bar-app-other',
             id: 'page1',
             title: 'bar-title-other',
-            vm: 'bar-vm-other',
           },
         ]);
 
@@ -259,7 +249,6 @@ describe('inspector proxy HTTP API', () => {
           expect.objectContaining({
             id: 'device1-page1',
             title: 'bar-title-other',
-            vm: 'bar-vm-other',
           }),
         ]);
       } finally {
@@ -278,7 +267,6 @@ describe('inspector proxy HTTP API', () => {
           app: 'bar-app',
           id: 'page1',
           title: 'bar-title',
-          vm: 'bar-vm',
         };
 
         let deviceHttp, deviceHttps;
@@ -327,7 +315,6 @@ describe('inspector proxy HTTP API', () => {
             app: 'bar-app 📱',
             id: 'page1 🛂',
             title: 'bar-title 📰',
-            vm: 'bar-vm 🤖',
           },
         ]);
 
@@ -342,7 +329,6 @@ describe('inspector proxy HTTP API', () => {
             deviceName: 'foo',
             id: 'device1-page1 🛂',
             title: 'bar-title 📰',
-            vm: 'bar-vm 🤖',
           }),
         ]);
       } finally {
@@ -363,7 +349,6 @@ describe('inspector proxy HTTP API', () => {
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         ]);
 
@@ -391,7 +376,6 @@ describe('inspector proxy HTTP API', () => {
           app: 'bar-app',
           id: 'page1',
           title: 'bar-title',
-          vm: 'bar-vm',
           capabilities: {
             // Ensure the device target can be found when launching the debugger
             nativePageReloads: true,

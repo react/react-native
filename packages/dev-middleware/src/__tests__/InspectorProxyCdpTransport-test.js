@@ -15,10 +15,14 @@ import type {
   PageDescription,
 } from '../inspector-proxy/types';
 
+import {WS_CLOSE_REASON} from '../inspector-proxy/Device';
 import {fetchJson} from './FetchUtils';
 import {createDebuggerMock} from './InspectorDebuggerUtils';
 import {createDeviceMock} from './InspectorDeviceUtils';
-import {sendFromDebuggerToTarget} from './InspectorProtocolUtils';
+import {
+  createAndConnectTarget,
+  sendFromDebuggerToTarget,
+} from './InspectorProtocolUtils';
 import {withAbortSignalForEachTest} from './ResourceUtils';
 import {withServerForEachTest} from './ServerUtils';
 import until from 'wait-for-expect';
@@ -51,7 +55,6 @@ describe.each(['HTTP', 'HTTPS'])(
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         ]);
 
@@ -111,7 +114,6 @@ describe.each(['HTTP', 'HTTPS'])(
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         ]);
 
@@ -167,7 +169,6 @@ describe.each(['HTTP', 'HTTPS'])(
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         ]);
         let pageList: Array<PageDescription> = [];
@@ -217,7 +218,6 @@ describe.each(['HTTP', 'HTTPS'])(
             app: 'bar-app',
             id: 'page1',
             title: 'bar-title',
-            vm: 'bar-vm',
           },
         ]);
         let pageList: Array<PageDescription> = [];
@@ -291,7 +291,6 @@ describe.each(['HTTP', 'HTTPS'])(
               app: 'bar-app',
               id: 'page1',
               title: 'bar-title',
-              vm: 'bar-vm',
             },
           ]);
 
@@ -337,7 +336,6 @@ describe.each(['HTTP', 'HTTPS'])(
               app: 'bar-app',
               id: 'page1',
               title: 'bar-title',
-              vm: 'bar-vm',
             },
           ]);
 
@@ -363,6 +361,41 @@ describe.each(['HTTP', 'HTTPS'])(
       },
     );
 
+    test('device disconnect event closes the debugger connection', async () => {
+      const {device, debugger_, sessionId} = await createAndConnectTarget(
+        serverRef,
+        autoCleanup.signal,
+        {
+          app: 'bar-app',
+          id: 'page1',
+          title: 'bar-title',
+        },
+      );
+      const debuggerClosed = new Promise<{code: number, reason: string}>(
+        resolve =>
+          debugger_.socket.once('close', (code: number, reason: Buffer) =>
+            resolve({code, reason: reason.toString()}),
+          ),
+      );
+
+      try {
+        device.send({
+          event: 'disconnect',
+          payload: {
+            pageId: 'page1',
+            sessionId,
+          },
+        });
+        expect(await debuggerClosed).toEqual({
+          code: 1000,
+          reason: WS_CLOSE_REASON.PAGE_REMOVED,
+        });
+      } finally {
+        device.close();
+        debugger_.close();
+      }
+    });
+
     describe('session ID handling', () => {
       test('each debugger connection receives a unique session ID', async () => {
         let device, debugger1, debugger2;
@@ -376,7 +409,6 @@ describe.each(['HTTP', 'HTTPS'])(
               app: 'bar-app',
               id: 'page1',
               title: 'bar-title',
-              vm: 'bar-vm',
             },
           ]);
           let pageList: Array<PageDescription> = [];
@@ -439,7 +471,6 @@ describe.each(['HTTP', 'HTTPS'])(
               app: 'bar-app',
               id: 'page1',
               title: 'bar-title',
-              vm: 'bar-vm',
             },
           ]);
           let pageList: Array<PageDescription> = [];
@@ -493,7 +524,6 @@ describe.each(['HTTP', 'HTTPS'])(
               app: 'bar-app',
               id: 'page1',
               title: 'bar-title',
-              vm: 'bar-vm',
             },
           ]);
           let pageList: Array<PageDescription> = [];
@@ -546,7 +576,6 @@ describe.each(['HTTP', 'HTTPS'])(
               app: 'bar-app',
               id: 'page1',
               title: 'bar-title',
-              vm: 'bar-vm',
             },
           ]);
           let pageList: Array<PageDescription> = [];

@@ -16,9 +16,6 @@ export type TargetCapabilityFlags = Readonly<{
   /**
    * The target supports a stable page representation across reloads.
    *
-   * In the proxy, this disables legacy page reload emulation and the
-   * additional 'React Native Experimental' target in `/json/list`.
-   *
    * In the launch flow, this allows targets to be matched directly by
    * `logicalDeviceId`.
    */
@@ -39,10 +36,7 @@ export type TargetCapabilityFlags = Readonly<{
 export type PageFromDevice = Readonly<{
   id: string,
   title: string,
-  /** Sent from modern targets only */
   description?: string,
-  /** @deprecated This is sent from legacy targets only */
-  vm?: string,
   app: string,
   capabilities?: TargetCapabilityFlags,
 }>;
@@ -123,8 +117,6 @@ export type PageDescription = Readonly<{
   // React Native specific fields
   /** @deprecated Prefer `title` */
   deviceName: string,
-  /** @deprecated This is sent from legacy targets only */
-  vm?: string,
 
   // React Native specific metadata
   reactNative: Readonly<{

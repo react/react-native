@@ -71,8 +71,6 @@ type DebuggerConnection = {
   sessionId: string,
 };
 
-const REACT_NATIVE_RELOADABLE_PAGE_ID = '-1';
-
 export type DeviceOptions = Readonly<{
   id: string,
   name: string,
@@ -108,14 +106,6 @@ export default class Device {
 
   // Stores information about currently connected debuggers, keyed by sessionId.
   #debuggerConnections: Map<string, DebuggerConnection> = new Map();
-
-  // Last known Page ID of the React Native page.
-  // This is used by debugger connections that don't have PageID specified
-  // (and will interact with the latest React Native page).
-  #lastConnectedLegacyReactNativePage: ?Page = null;
-
-  // Whether we are in the middle of a reload in the REACT_NATIVE_RELOADABLE_PAGE.
-  #isLegacyPageReloading: boolean = false;
 
   // The previous "GetPages" message, for deduplication in debug logs.
   #lastGetPagesMessage: string = '';
@@ -244,10 +234,7 @@ export default class Device {
         // Delete from map first so #sendDisconnectEventToDevice can correctly
         // check if there are other debuggers connected to this page
         this.#debuggerConnections.delete(sessionId);
-        this.#sendDisconnectEventToDevice(
-          this.#mapToDevicePageId(debuggerConnection.pageId),
-          sessionId,
-        );
+        this.#sendDisconnectEventToDevice(debuggerConnection.pageId, sessionId);
         debuggerConnection.socket.close(code, reason);
       }
     } else {
@@ -255,10 +242,7 @@ export default class Device {
       const connections = Array.from(this.#debuggerConnections.entries());
       this.#debuggerConnections.clear();
       for (const [sid, debuggerConnection] of connections) {
-        this.#sendDisconnectEventToDevice(
-          this.#mapToDevicePageId(debuggerConnection.pageId),
-          sid,
-        );
+        this.#sendDisconnectEventToDevice(debuggerConnection.pageId, sid);
         debuggerConnection.socket.close(code, reason);
       }
     }
@@ -327,11 +311,7 @@ export default class Device {
   }
 
   getPagesList(): ReadonlyArray<Page> {
-    if (this.#lastConnectedLegacyReactNativePage) {
-      return [...this.#pages.values(), this.#createSyntheticPage()];
-    } else {
-      return [...this.#pages.values()];
-    }
+    return [...this.#pages.values()];
   }
 
   // Handles new debugger connection to this device:
@@ -349,10 +329,7 @@ export default class Device {
       userAgent: string | null,
     }>,
   ) {
-    const page: ?Page =
-      pageId === REACT_NATIVE_RELOADABLE_PAGE_ID
-        ? this.#createSyntheticPage()
-        : this.#pages.get(pageId);
+    const page: ?Page = this.#pages.get(pageId);
 
     if (!page) {
       debug(
@@ -429,7 +406,7 @@ export default class Device {
               const payload = JSON.stringify({
                 event: 'wrappedEvent',
                 payload: {
-                  pageId: this.#mapToDevicePageId(pageId),
+                  pageId,
                   wrappedEvent: JSON.stringify(message),
                   sessionId,
                 },
@@ -450,7 +427,7 @@ export default class Device {
       }
     }
 
-    this.#sendConnectEventToDevice(this.#mapToDevicePageId(pageId), sessionId);
+    this.#sendConnectEventToDevice(pageId, sessionId);
 
     // $FlowFixMe[incompatible-type]
     socket.on('message', (message: string) => {
@@ -481,7 +458,7 @@ export default class Device {
         this.#sendMessageToDevice({
           event: 'wrappedEvent',
           payload: {
-            pageId: this.#mapToDevicePageId(pageId),
+            pageId,
             wrappedEvent: JSON.stringify(processedReq),
             sessionId,
           },
@@ -528,19 +505,6 @@ export default class Device {
     return page.capabilities[flag] === true;
   }
 
-  /**
-   * Returns the synthetic "React Native Experimental (Improved Chrome Reloads)" page.
-   */
-  #createSyntheticPage(): Page {
-    return {
-      id: REACT_NATIVE_RELOADABLE_PAGE_ID,
-      title: 'React Native Experimental (Improved Chrome Reloads)',
-      vm: "don't use",
-      app: this.#app,
-      capabilities: {},
-    };
-  }
-
   // Handles messages received from device:
   // 1. For getPages responses updates local #pages list.
   // 2. All other messages are forwarded to debugger as wrappedEvent.
@@ -574,53 +538,17 @@ export default class Device {
           )}`,
         );
       }
-
-      // Check if device has a new legacy React Native page.
-      // There is usually no more than 2-3 pages per device so this operation
-      // is not expensive.
-      // TODO(hypuk): It is better for VM to send update event when new page is
-      // created instead of manually checking this on every getPages result.
-      for (const page of this.#pages.values()) {
-        if (this.#pageHasCapability(page, 'nativePageReloads')) {
-          continue;
-        }
-
-        if (page.title.includes('React')) {
-          if (page.id !== this.#lastConnectedLegacyReactNativePage?.id) {
-            this.#newLegacyReactNativePage(page);
-            break;
-          }
-        }
-      }
     } else if (message.event === 'disconnect') {
-      // Device sends disconnect events when a legacy page is reloaded, or when
-      // it ends or rejects a debugger session (e.g. the page was removed).
-      const pageId = message.payload.pageId;
+      // Device sends disconnect events when it ends or rejects a debugger
+      // session (e.g. the page was removed).
       const sessionId = message.payload.sessionId;
-
-      // TODO(moti): Handle null case explicitly, e.g. swallow disconnect events
-      // for unknown pages.
-      const page: ?Page = this.#pages.get(pageId);
       const debuggerConnection = this.#debuggerConnections.get(sessionId);
-
-      if (page != null && this.#pageHasCapability(page, 'nativePageReloads')) {
-        if (debuggerConnection != null) {
-          this.#debuggerConnections.delete(sessionId);
-          debuggerConnection.socket.close(
-            WS_CLOSURE_CODE.NORMAL,
-            WS_CLOSE_REASON.PAGE_REMOVED,
-          );
-        }
-        return;
-      }
-
-      if (
-        debuggerConnection &&
-        debuggerConnection.socket.readyState === WS.OPEN &&
-        debuggerConnection.pageId !== REACT_NATIVE_RELOADABLE_PAGE_ID
-      ) {
-        debug(`Legacy page ${pageId} is reloading (sessionId: ${sessionId}).`);
-        debuggerConnection.socket.send(JSON.stringify({method: 'reload'}));
+      if (debuggerConnection != null) {
+        this.#debuggerConnections.delete(sessionId);
+        debuggerConnection.socket.close(
+          WS_CLOSURE_CODE.NORMAL,
+          WS_CLOSE_REASON.PAGE_REMOVED,
+        );
       }
     } else if (message.event === 'wrappedEvent') {
       const debuggerConnection = this.#debuggerConnections.get(
@@ -671,66 +599,6 @@ export default class Device {
       }
       this.#deviceSocket.send(messageToSend);
     } catch (error) {}
-  }
-
-  // We received new React Native Page ID.
-  #newLegacyReactNativePage(page: Page) {
-    debug(`React Native page updated to ${page.id}`);
-
-    // Find the debugger connection that's connected to the reloadable page
-    let reloadablePageDebugger: ?DebuggerConnection = null;
-    for (const debuggerConnection of this.#debuggerConnections.values()) {
-      if (debuggerConnection.pageId === REACT_NATIVE_RELOADABLE_PAGE_ID) {
-        reloadablePageDebugger = debuggerConnection;
-        break;
-      }
-    }
-
-    if (reloadablePageDebugger == null) {
-      // We can just remember new page ID without any further actions if no
-      // debugger is currently attached or attached debugger is not
-      // "Reloadable React Native" connection.
-      this.#lastConnectedLegacyReactNativePage = page;
-      return;
-    }
-    const oldPageId = this.#lastConnectedLegacyReactNativePage?.id;
-    this.#lastConnectedLegacyReactNativePage = page;
-    this.#isLegacyPageReloading = true;
-
-    // We already had a debugger connected to React Native page and a
-    // new one appeared - in this case we need to emulate execution context
-    // detroy and resend Debugger.enable and Runtime.enable commands to new
-    // page.
-
-    if (oldPageId != null) {
-      this.#sendDisconnectEventToDevice(
-        oldPageId,
-        reloadablePageDebugger.sessionId,
-      );
-    }
-
-    this.#sendConnectEventToDevice(page.id, reloadablePageDebugger.sessionId);
-
-    const toSend = [
-      {method: 'Runtime.enable', id: 1e9},
-      {method: 'Debugger.enable', id: 1e9},
-    ];
-
-    for (const message of toSend) {
-      const pageId = reloadablePageDebugger.pageId;
-      this.#deviceEventReporter?.logRequest(message, 'proxy', {
-        pageId,
-        frontendUserAgent: reloadablePageDebugger.userAgent ?? null,
-      });
-      this.#sendMessageToDevice({
-        event: 'wrappedEvent',
-        payload: {
-          pageId: this.#mapToDevicePageId(page.id),
-          wrappedEvent: JSON.stringify(message),
-          sessionId: reloadablePageDebugger.sessionId,
-        },
-      });
-    }
   }
 
   /**
@@ -845,43 +713,6 @@ export default class Device {
           );
         }
       }
-    }
-
-    if (
-      /* $FlowFixMe[invalid-compare] Error discovered during Constant Condition
-       * roll out. See https://fburl.com/workplace/4oq3zi07. */
-      payload.method === 'Runtime.executionContextCreated' &&
-      this.#isLegacyPageReloading
-    ) {
-      // The new context is ready. First notify Chrome that we've reloaded so
-      // it'll resend its breakpoints. If we do this earlier, we may not be
-      // ready to receive them.
-      debuggerInfo.socket.send(
-        JSON.stringify({method: 'Runtime.executionContextsCleared'}),
-      );
-
-      // The VM starts in a paused mode. Ask it to resume.
-      // Note that if setting breakpoints in early initialization functions,
-      // there's a currently race condition between these functions executing
-      // and Chrome re-applying the breakpoints due to the message above.
-      //
-      // This is not an issue in VSCode/Nuclide where the IDE knows to resume
-      // at its convenience.
-      const resumeMessage = {method: 'Debugger.resume', id: 0};
-      this.#deviceEventReporter?.logRequest(resumeMessage, 'proxy', {
-        pageId: debuggerInfo.pageId,
-        frontendUserAgent: debuggerInfo.userAgent ?? null,
-      });
-      this.#sendMessageToDevice({
-        event: 'wrappedEvent',
-        payload: {
-          pageId: this.#mapToDevicePageId(debuggerInfo.pageId),
-          wrappedEvent: JSON.stringify(resumeMessage),
-          sessionId: debuggerInfo.sessionId,
-        },
-      });
-
-      this.#isLegacyPageReloading = false;
     }
 
     if (payload.method === 'Runtime.consoleAPICalled') {
@@ -1070,17 +901,6 @@ export default class Device {
       sendErrorResponse(
         `Failed to fetch source url ${pathToSource === undefined ? 'undefined' : JSON.stringify(pathToSource)} for scriptId ${req.params.scriptId}: ${err.message}`,
       );
-    }
-  }
-
-  #mapToDevicePageId(pageId: string): string {
-    if (
-      pageId === REACT_NATIVE_RELOADABLE_PAGE_ID &&
-      this.#lastConnectedLegacyReactNativePage != null
-    ) {
-      return this.#lastConnectedLegacyReactNativePage.id;
-    } else {
-      return pageId;
     }
   }
 
