@@ -9,6 +9,8 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+#import <unordered_set>
+
 #import <React/RCTAssert.h>
 #import <React/RCTComponent.h>
 #import <React/RCTLog.h>
@@ -48,6 +50,13 @@ static void RCTPerformMountInstructions(
 {
   TraceSection s("RCTPerformMountInstructions");
 
+  // A transaction can be mounted synchronously from inside a UIKit animation block, for example when a component
+  // sends an immediate state update from one. The views it creates are configured without that animation, so they
+  // appear in place instead of animating in from a zero frame (or a recycled view's last frame). Existing views
+  // still animate along.
+  BOOL isInsideAnimationBlock = [UIView inheritedAnimationDuration] > 0;
+  std::unordered_set<Tag> createdTags;
+
   for (const auto &mutation : mutations) {
     switch (mutation.type) {
       case ShadowViewMutation::Create: {
@@ -56,6 +65,9 @@ static void RCTPerformMountInstructions(
             [registry dequeueComponentViewWithComponentHandle:newChildShadowView.componentHandle
                                                           tag:newChildShadowView.tag];
         observerCoordinator.registerViewComponentDescriptor(newChildViewDescriptor, surfaceId);
+        if (isInsideAnimationBlock) {
+          createdTags.insert(newChildShadowView.tag);
+        }
         break;
       }
 
@@ -80,12 +92,22 @@ static void RCTPerformMountInstructions(
 
         RCTAssert(newChildShadowView.props, @"`newChildShadowView.props` must not be null.");
 
-        [newChildComponentView updateProps:newChildShadowView.props oldProps:nullptr];
-        [newChildComponentView updateEventEmitter:newChildShadowView.eventEmitter];
-        [newChildComponentView updateState:newChildShadowView.state oldState:nullptr];
-        [newChildComponentView updateLayoutMetrics:newChildShadowView.layoutMetrics
-                                  oldLayoutMetrics:EmptyLayoutMetrics];
-        [newChildComponentView finalizeUpdates:RNComponentViewUpdateMaskAll];
+        auto configureComponentView = [&]() {
+          [newChildComponentView updateProps:newChildShadowView.props oldProps:nullptr];
+          [newChildComponentView updateEventEmitter:newChildShadowView.eventEmitter];
+          [newChildComponentView updateState:newChildShadowView.state oldState:nullptr];
+          [newChildComponentView updateLayoutMetrics:newChildShadowView.layoutMetrics
+                                    oldLayoutMetrics:EmptyLayoutMetrics];
+          [newChildComponentView finalizeUpdates:RNComponentViewUpdateMaskAll];
+        };
+
+        if (isInsideAnimationBlock && createdTags.contains(newChildShadowView.tag)) {
+          [UIView performWithoutAnimation:^{
+            configureComponentView();
+          }];
+        } else {
+          configureComponentView();
+        }
 
         [parentViewDescriptor.view mountChildComponentView:newChildComponentView index:mutation.index];
         break;
