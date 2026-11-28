@@ -496,6 +496,55 @@ describe('translatePodspecToSpmTarget', () => {
     }
   });
 
+  it('redirects publicHeadersPath to include/ shim when <SwiftName>.h sits next to subdirectories', () => {
+    const depDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-umbrella-'));
+    try {
+      fs.mkdirSync(path.join(depDir, 'apple', 'Handlers'), {recursive: true});
+      fs.writeFileSync(path.join(depDir, 'apple', 'RNGestureHandler.h'), '');
+      fs.writeFileSync(path.join(depDir, 'apple', 'RNGestureHandler.mm'), '');
+      fs.writeFileSync(
+        path.join(depDir, 'apple', 'Handlers', 'RNTapHandler.h'),
+        '',
+      );
+      const model = podspec({sourceFiles: ['apple/**/*.{h,m,mm}']});
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({
+          name: 'react-native-gesture-handler',
+          root: depDir,
+          swiftName: 'RNGestureHandler',
+        }),
+      );
+      expect(spec.publicHeadersPath).toBe('include');
+      expect(spec.namespacedShimHeaders).toEqual(['apple/RNGestureHandler.h']);
+      expect(spec.headerSearchPaths).toContain('apple');
+    } finally {
+      fs.rmSync(depDir, {recursive: true, force: true});
+    }
+  });
+
+  it('keeps publicHeadersPath when a custom module.modulemap sits beside <SwiftName>.h and subdirectories', () => {
+    const depDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-umbrella-map-'));
+    try {
+      fs.mkdirSync(path.join(depDir, 'apple', 'Handlers'), {recursive: true});
+      fs.writeFileSync(path.join(depDir, 'apple', 'RNGestureHandler.h'), '');
+      fs.writeFileSync(path.join(depDir, 'apple', 'module.modulemap'), '');
+      const model = podspec({sourceFiles: ['apple/**/*.{h,m,mm}']});
+      const spec = translatePodspecToSpmTarget(
+        model,
+        autolinkedDep({
+          name: 'react-native-gesture-handler',
+          root: depDir,
+          swiftName: 'RNGestureHandler',
+        }),
+      );
+      expect(spec.publicHeadersPath).toBe('apple');
+      expect(spec.namespacedShimHeaders).toEqual([]);
+    } finally {
+      fs.rmSync(depDir, {recursive: true, force: true});
+    }
+  });
+
   it('filters out files matching exclude_files globs after expansion', () => {
     const depDir = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-translate-'));
     try {
@@ -1094,6 +1143,23 @@ end
     }
   });
 
+  it('writes include/<SwiftName>/ shim headers when inferred publicHeadersPath has <SwiftName>.h beside subdirs', () => {
+    fs.mkdirSync(path.join(depRoot, 'ios', 'Handlers'), {recursive: true});
+    fs.writeFileSync(path.join(depRoot, 'ios', 'ReactNativeFoo.h'), '');
+    fs.writeFileSync(path.join(depRoot, 'ios', 'ReactNativeFoo.mm'), '');
+    fs.writeFileSync(path.join(depRoot, 'ios', 'Handlers', 'Sub.h'), '');
+    makePodspec();
+    const result = scaffoldPackageSwiftForDep(makeDep(), makeCtx());
+    expect(result.status).toBe('written');
+    const pkg = fs.readFileSync(path.join(depRoot, 'Package.swift'), 'utf8');
+    expect(pkg).toContain('publicHeadersPath: "include"');
+    const shim = fs.readFileSync(
+      path.join(depRoot, 'include', 'ReactNativeFoo', 'ReactNativeFoo.h'),
+      'utf8',
+    );
+    expect(shim).toContain('#import "../../ios/ReactNativeFoo.h"');
+  });
+
   // The migration step: a name derived from the podspec is recorded in the
   // library's package.json, so the next run needs no podspec to find it.
   describe('swiftpmConfig.name', () => {
@@ -1620,7 +1686,7 @@ describe('SCAFFOLDER_VERSION', () => {
   });
 
   it('is at the version the current emitter output requires', () => {
-    expect(SCAFFOLDER_VERSION).toBe(22);
+    expect(SCAFFOLDER_VERSION).toBe(23);
   });
 
   it('emitter writes the current version to the file', () => {

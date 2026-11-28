@@ -119,7 +119,10 @@ const {log, warn} = makeLogger('scaffold-package-swift');
 // `.target(...)` requires (the reverse order fails to resolve).
 // v22: podspecs that call `install_modules_dependencies(s)` get
 // `.define("RCT_NEW_ARCH_ENABLED", to: "1")`, as CocoaPods adds it.
-const SCAFFOLDER_VERSION = 22;
+// v23: when inferred publicHeadersPath contains `<SwiftName>.h` alongside
+// subdirectories (rejected by SwiftPM as an invalid umbrella header layout),
+// redirect publicHeadersPath to a generated `include/<SwiftName>/` shim dir.
+const SCAFFOLDER_VERSION = 23;
 const SCAFFOLDER_VERSION_LINE_RE = /^\/\/ AUTO-SCAFFOLDED-VERSION: (\d+)$/m;
 
 const AUTOGEN_MARKER =
@@ -234,6 +237,36 @@ function collectSubdirs(
   };
   walk(path.join(depRoot, base), base === '.' ? '.' : base);
   return out;
+}
+
+/**
+ * SwiftPM treats `<publicHeadersPath>/<TargetName>.h` (without a custom
+ * `module.modulemap`) as an umbrella header and rejects the target when any
+ * subdirectory sits beside it (e.g. `apple/RNGestureHandler.h` next to
+ * `apple/Handlers/`, or `ios/RNCMaskedView.h` next to
+ * `ios/RNCMaskedView.xcodeproj/`).
+ */
+function hasUmbrellaHeaderWithSubdirs(
+  depRoot /*: string */,
+  relDir /*: string */,
+  swiftName /*: string */,
+) /*: boolean */ {
+  const absDir = path.join(depRoot, relDir);
+  if (
+    !fs.existsSync(path.join(absDir, `${swiftName}.h`)) ||
+    fs.existsSync(path.join(absDir, 'module.modulemap'))
+  ) {
+    return false;
+  }
+  try {
+    return fs
+      .readdirSync(absDir, {withFileTypes: true})
+      .some(
+        entry => entry.isDirectory() && !entry.name.toString().startsWith('.'),
+      );
+  } catch {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -483,6 +516,35 @@ function translatePodspecToSpmTarget(
     }
   }
   let namespacedShimHeaders /*: Array<string> */ = [];
+  if (
+    publicHeadersPath != null &&
+    publicHeadersPath !== 'include' &&
+    hasUmbrellaHeaderWithSubdirs(dep.root, publicHeadersPath, swiftName)
+  ) {
+    // SwiftPM rejects a publicHeadersPath containing `<SwiftName>.h` beside
+    // subdirectories. Mirror its top-level headers into `include/<SwiftName>/`
+    // instead so SwiftPM accepts the target and dependents can
+    // `#import <SwiftName/Header.h>`.
+    const umbrellaDir = publicHeadersPath;
+    const dirPrefix = `${umbrellaDir}/`;
+    const directHeaders = expandedSources.filter(
+      f =>
+        f.startsWith(dirPrefix) &&
+        !f.slice(dirPrefix.length).includes('/') &&
+        f.endsWith('.h'),
+    );
+    if (directHeaders.length > 0) {
+      namespacedShimHeaders = directHeaders;
+    } else {
+      namespacedShimHeaders = fs
+        .readdirSync(path.join(dep.root, umbrellaDir))
+        .filter(f => f.endsWith('.h'))
+        .sort()
+        .map(f => path.posix.join(umbrellaDir, f));
+    }
+    addSearchPath(umbrellaDir);
+    publicHeadersPath = 'include';
+  }
   if (publicHeadersPath == null) {
     // Root-level podspecs (`s.source_files = "*.{h,m,mm}"`) keep their
     // headers in the package root. CocoaPods exposes them to dependents as
@@ -1087,17 +1149,19 @@ function scaffoldPackageSwiftForDep(
         'utf8',
       );
     }
-    // Mirror root-level headers into the generated include/<SwiftName>/ shim
-    // dir (publicHeadersPath) so dependents can use the CocoaPods header-map
-    // spelling `#import <SwiftName/Header.h>`.
+    // Mirror headers into the generated include/<SwiftName>/ shim dir
+    // (publicHeadersPath) so dependents can use the CocoaPods header-map
+    // spelling `#import <SwiftName/Header.h>` without triggering SwiftPM's
+    // umbrella-header-with-subdirectories layout error.
     if (spec.namespacedShimHeaders.length > 0) {
       const shimDir = path.join(dep.root, 'include', spec.swiftName);
       fs.mkdirSync(shimDir, {recursive: true});
       for (const header of spec.namespacedShimHeaders) {
+        const headerName = path.posix.basename(header);
         fs.writeFileSync(
-          path.join(shimDir, header),
+          path.join(shimDir, headerName),
           `// AUTO-SCAFFOLDED by react-native spm scaffold — the namespaced\n` +
-            `// spelling (<${spec.swiftName}/${header}>) of the package-root header,\n` +
+            `// spelling (<${spec.swiftName}/${headerName}>) of ${header},\n` +
             `// matching how CocoaPods header maps expose it.\n` +
             `#import "../../${header}"\n`,
           'utf8',
