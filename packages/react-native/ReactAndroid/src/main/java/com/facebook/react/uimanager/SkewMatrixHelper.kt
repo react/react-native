@@ -15,17 +15,20 @@ import com.facebook.react.bridge.ReadableType
 
 /**
  * Builds a 2D-affine [Matrix] from a `transform` array for the subset of operations Android `View`
- * cannot represent through its individual property setters (specifically `skewX` / `skewY`). Used
- * by [BaseViewManager.setTransformProperty] to apply such transforms via `View.setAnimationMatrix`
- * on Android Q+.
+ * cannot represent through its individual property setters (specifically skew, from `skewX` /
+ * `skewY` or a `matrix`). Used by [BaseViewManager.setTransformProperty] to apply such transforms
+ * via `View.setAnimationMatrix` on Android Q+.
  */
 internal object SkewMatrixHelper {
+  private const val SKEW_EPSILON = 1e-5
+
   /**
    * Returns true if [transforms] contains only operations representable by a Skia [Matrix] in 2D:
    * `rotate` / `rotateZ`, `scale`, `scaleX` / `scaleY`, `translate` / `translateX` / `translateY`
-   * with zero Z, `skewX`, `skewY`. Returns false for `matrix`, `perspective`, `rotateX`, `rotateY`,
-   * a `translate` with a non-zero Z component, and the raw 16-element matrix shorthand used by
-   * Fabric LayoutAnimations.
+   * with zero Z, `skewX`, `skewY`, and a 16-element 2D-affine `matrix`; and at least one of them
+   * skews: `skewX`, `skewY`, or a `matrix` whose X and Y axes are not perpendicular. Returns false
+   * for `perspective`, `rotateX`, `rotateY`, a `translate` with a non-zero Z component, any other
+   * `matrix`, and the raw 16-element matrix shorthand used by Fabric LayoutAnimations.
    */
   @JvmStatic
   fun isAffine2DTransformWithSkew(transforms: ReadableArray): Boolean {
@@ -45,7 +48,15 @@ internal object SkewMatrixHelper {
       if (!iterator.hasNextKey()) continue
       val type = iterator.nextKey()
       when (type) {
-        "matrix",
+        "matrix" -> {
+          val matrix = map.getArray(type)
+          if (matrix == null || !isAffine2DMatrix(matrix)) {
+            return false
+          }
+          if (hasSkew(matrix)) {
+            hasSkewTransform = true
+          }
+        }
         "perspective",
         "rotateX",
         "rotateY" -> return false
@@ -136,6 +147,12 @@ internal object SkewMatrixHelper {
                 pivotXPx,
                 pivotYPx,
             )
+        "matrix" -> {
+          val values = map.getArray(type) ?: continue
+          matrix.preTranslate(pivotXPx, pivotYPx)
+          matrix.preConcat(toAndroidMatrix(values))
+          matrix.preTranslate(-pivotXPx, -pivotYPx)
+        }
         "translate" -> {
           val value = map.getArray(type)
           if (value != null && value.size() >= 1) {
@@ -164,6 +181,48 @@ internal object SkewMatrixHelper {
 
   private fun isRawMatrixShorthand(transforms: ReadableArray): Boolean =
       transforms.size() == 16 && transforms.getType(0) == ReadableType.Number
+
+  // `matrix` is column-major: x' = m[0] x + m[4] y + m[12], y' = m[1] x + m[5] y + m[13].
+  // The other entries are the Z axis, perspective and the homogeneous scale.
+  private fun isAffine2DMatrix(matrix: ReadableArray): Boolean {
+    if (matrix.size() != 16) {
+      return false
+    }
+    for (i in intArrayOf(2, 3, 6, 7, 8, 9, 11, 14)) {
+      if (matrix.getDouble(i) != 0.0) {
+        return false
+      }
+    }
+    return matrix.getDouble(10) == 1.0 && matrix.getDouble(15) == 1.0
+  }
+
+  private fun hasSkew(matrix: ReadableArray): Boolean {
+    val xAxisX = matrix.getDouble(0)
+    val xAxisY = matrix.getDouble(1)
+    val yAxisX = matrix.getDouble(4)
+    val yAxisY = matrix.getDouble(5)
+    val cosineBetweenAxes =
+        (xAxisX * yAxisX + xAxisY * yAxisY) /
+            (Math.hypot(xAxisX, xAxisY) * Math.hypot(yAxisX, yAxisY))
+    return Math.abs(cosineBetweenAxes) > SKEW_EPSILON
+  }
+
+  private fun toAndroidMatrix(matrix: ReadableArray): Matrix =
+      Matrix().apply {
+        setValues(
+            floatArrayOf(
+                matrix.getDouble(0).toFloat(),
+                matrix.getDouble(4).toFloat(),
+                PixelUtil.toPixelFromDIP(matrix.getDouble(12).toFloat()),
+                matrix.getDouble(1).toFloat(),
+                matrix.getDouble(5).toFloat(),
+                PixelUtil.toPixelFromDIP(matrix.getDouble(13).toFloat()),
+                0f,
+                0f,
+                1f,
+            )
+        )
+      }
 
   private fun resolveOriginAxis(
       origin: ReadableArray,

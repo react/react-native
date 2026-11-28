@@ -92,9 +92,51 @@ class SkewMatrixHelperTest {
   }
 
   @Test
-  fun isAffine2DTransformWithSkew_falseForMatrix() {
+  fun isAffine2DTransformWithSkew_falseForMatrixWithoutSkew() {
     val transforms = JavaOnlyArray.of(JavaOnlyMap.of("matrix", identityMatrixShorthand()))
     assertThat(SkewMatrixHelper.isAffine2DTransformWithSkew(transforms)).isFalse()
+  }
+
+  @Test
+  fun isAffine2DTransformWithSkew_trueForMatrixWithSkew() {
+    val transforms = JavaOnlyArray.of(JavaOnlyMap.of("matrix", skewXRotateTranslateMatrix()))
+    assertThat(SkewMatrixHelper.isAffine2DTransformWithSkew(transforms)).isTrue()
+  }
+
+  @Test
+  fun isAffine2DTransformWithSkew_falseForMatrixWithRotationAndUnevenScale() {
+    // rotate(30deg) then scaleX(2) keeps the axes perpendicular, so it has no skew.
+    val cos = Math.cos(Math.toRadians(30.0))
+    val sin = Math.sin(Math.toRadians(30.0))
+    val matrix = matrix2D(2 * cos, 2 * sin, -sin, cos, 0.0, 0.0)
+    val transforms = JavaOnlyArray.of(JavaOnlyMap.of("matrix", matrix))
+    assertThat(SkewMatrixHelper.isAffine2DTransformWithSkew(transforms)).isFalse()
+  }
+
+  @Test
+  fun isAffine2DTransformWithSkew_falseForMatrixWithSkewAndPerspective() {
+    val matrix = skewXRotateTranslateMatrix(11 to -1.0 / 800)
+    val transforms = JavaOnlyArray.of(JavaOnlyMap.of("matrix", matrix))
+    assertThat(SkewMatrixHelper.isAffine2DTransformWithSkew(transforms)).isFalse()
+  }
+
+  @Test
+  fun isAffine2DTransformWithSkew_falseForMatrixWithSkewAndRotateX() {
+    val matrix = skewXRotateTranslateMatrix(6 to 0.5, 9 to -0.5)
+    val transforms = JavaOnlyArray.of(JavaOnlyMap.of("matrix", matrix))
+    assertThat(SkewMatrixHelper.isAffine2DTransformWithSkew(transforms)).isFalse()
+  }
+
+  @Test
+  fun isAffine2DTransformWithSkew_falseForMatrixWithSkewAndTranslateZ() {
+    val matrix = skewXRotateTranslateMatrix(14 to 5.0)
+    val transforms = JavaOnlyArray.of(JavaOnlyMap.of("matrix", matrix))
+    assertThat(SkewMatrixHelper.isAffine2DTransformWithSkew(transforms)).isFalse()
+  }
+
+  @Test
+  fun isAffine2DTransformWithSkew_falseForRawMatrixShorthandWithSkew() {
+    assertThat(SkewMatrixHelper.isAffine2DTransformWithSkew(skewXRotateTranslateMatrix())).isFalse()
   }
 
   @Test
@@ -181,6 +223,27 @@ class SkewMatrixHelperTest {
   }
 
   @Test
+  fun buildAffine2DMatrix_matrixWithSkew_equalsEquivalentTransformList() {
+    val list =
+        JavaOnlyArray.of(
+            JavaOnlyMap.of("translate", JavaOnlyArray.of(10.0, 20.0)),
+            JavaOnlyMap.of("rotate", "30deg"),
+            JavaOnlyMap.of("skewX", "20deg"),
+        )
+    val matrix = JavaOnlyArray.of(JavaOnlyMap.of("matrix", skewXRotateTranslateMatrix()))
+    val origin = JavaOnlyArray.of("25%", 10.0)
+    for (transformOrigin in listOf(null, origin)) {
+      val expected =
+          matrixValues(SkewMatrixHelper.buildAffine2DMatrix(list, 100f, 60f, transformOrigin))
+      val actual =
+          matrixValues(SkewMatrixHelper.buildAffine2DMatrix(matrix, 100f, 60f, transformOrigin))
+      for (i in 0 until 9) {
+        assertThat(actual[i]).isCloseTo(expected[i], within(EPSILON))
+      }
+    }
+  }
+
+  @Test
   fun emptyMapInTransforms_doesNotThrow() {
     // Regression test for T274692242: an empty map in the transforms array caused
     // NoSuchElementException from keySetIterator().nextKey() without hasNextKey() guard.
@@ -205,6 +268,30 @@ class SkewMatrixHelperTest {
     val values = FloatArray(9)
     matrix.getValues(values)
     return values
+  }
+
+  // translate(10, 20) rotate(30deg) skewX(20deg), in the column-major layout of `matrix`.
+  private fun skewXRotateTranslateMatrix(vararg overrides: Pair<Int, Double>): JavaOnlyArray {
+    val cos = Math.cos(Math.toRadians(30.0))
+    val sin = Math.sin(Math.toRadians(30.0))
+    val tan = Math.tan(Math.toRadians(20.0))
+    return matrix2D(cos, sin, cos * tan - sin, sin * tan + cos, 10.0, 20.0, *overrides)
+  }
+
+  private fun matrix2D(
+      a: Double,
+      b: Double,
+      c: Double,
+      d: Double,
+      tx: Double,
+      ty: Double,
+      vararg overrides: Pair<Int, Double>,
+  ): JavaOnlyArray {
+    val values = doubleArrayOf(a, b, 0.0, 0.0, c, d, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, tx, ty, 0.0, 1.0)
+    for ((index, value) in overrides) {
+      values[index] = value
+    }
+    return JavaOnlyArray.of(*values.toTypedArray())
   }
 
   private fun identityMatrixShorthand(): JavaOnlyArray {
