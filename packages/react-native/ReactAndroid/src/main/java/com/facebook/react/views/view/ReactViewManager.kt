@@ -21,10 +21,10 @@ import com.facebook.react.common.ReactConstants
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.BackgroundStyleApplicator
+import com.facebook.react.uimanager.ImportantForAccessibilityHelper
 import com.facebook.react.uimanager.LengthPercentage
 import com.facebook.react.uimanager.PixelUtil.dpToPx
 import com.facebook.react.uimanager.PointerEvents
-import com.facebook.react.uimanager.ReactAxOrderHelper
 import com.facebook.react.uimanager.Spacing
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
@@ -91,13 +91,32 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
   }
 
   override fun onDropViewInstance(view: ReactViewGroup) {
+    view.dropAccessibilityOrder()
     super.onDropViewInstance(view)
-    view.cleanUpAxOrderListener()
+  }
+
+  override fun onAfterUpdateTransaction(view: ReactViewGroup) {
+    view.applyFocusProps()
+    super.onAfterUpdateTransaction(view)
   }
 
   @ReactProp(name = "accessible")
   public open fun setAccessible(view: ReactViewGroup, accessible: Boolean) {
-    view.isFocusable = accessible
+    view.updateFocusProps(view.focusProps.copy(accessible = accessible))
+  }
+
+  override fun setScreenReaderFocusable(view: ReactViewGroup, screenReaderFocusable: Boolean) {
+    view.updateFocusProps(view.focusProps.copy(screenReaderFocusable = screenReaderFocusable))
+  }
+
+  override fun setImportantForAccessibility(
+      view: ReactViewGroup,
+      importantForAccessibility: String?,
+  ) {
+    val mode =
+        ImportantForAccessibilityHelper.parseImportantForAccessibility(importantForAccessibility)
+            ?: return
+    view.updateFocusProps(view.focusProps.copy(importantForAccessibility = mode))
   }
 
   override fun resetDisabledFromAccessibilityState(view: ReactViewGroup) {
@@ -110,9 +129,7 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
       return
     }
 
-    for (i in 0 until view.childCount) {
-      ReactAxOrderHelper.cleanUpAxOrder(view.getChildAt(i))
-    }
+    view.restoreAccessibilityOrderFocusability()
 
     if (nativeIds == null) {
       view.axOrderList = null
@@ -440,23 +457,18 @@ public open class ReactViewManager : ReactClippingViewManager<ReactViewGroup>() 
   }
 
   @ReactProp(name = "focusable")
-  public open fun setFocusable(view: ReactViewGroup, focusable: Boolean) {
-    if (focusable) {
+  public open fun setFocusable(view: ReactViewGroup, focusable: Boolean?) {
+    view.updateFocusProps(view.focusProps.copy(focusable = focusable))
+    if (focusable == true) {
       view.setOnClickListener {
         val eventDispatcher = UIManagerHelper.getEventDispatcher(view.context as ReactContext)
         eventDispatcher?.dispatchEvent(
             ViewGroupClickEvent(UIManagerHelper.getSurfaceId(view.context), view.id),
         )
       }
-
-      // Clickable elements are focusable. On API 26, this is taken care by setClickable.
-      // Explicitly calling setFocusable here for backward compatibility.
-      view.isFocusable = true
     } else {
       view.setOnClickListener(null)
       view.isClickable = false
-      // Don't set view.setFocusable(false) because we might still want it to be focusable for
-      // accessibility reasons
     }
   }
 

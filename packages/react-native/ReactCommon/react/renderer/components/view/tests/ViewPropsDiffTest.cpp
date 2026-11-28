@@ -144,6 +144,18 @@ TEST(ViewPropsDiffTest, emitsAnExplicitRoleNone) {
       {{dynamic::object("role", "none")("accessibilityRole", "button")}});
 }
 
+// ReactViewManager tells an explicit focusable={false} from an unset one.
+TEST(ViewPropsDiffTest, emitsAnExplicitFocusableFalse) {
+  expectPayloads({{dynamic::object("focusable", false)}});
+}
+
+TEST(ViewPropsDiffTest, removingFocusableEmitsNull) {
+  expectPayloads({
+      {dynamic::object("focusable", false)},
+      {dynamic::object("focusable", nullptr)},
+  });
+}
+
 // BaseViewManager clears the value and the content description only for null.
 TEST(ViewPropsDiffTest, removingAccessibilityValueEmitsNull) {
   expectPayloads({
