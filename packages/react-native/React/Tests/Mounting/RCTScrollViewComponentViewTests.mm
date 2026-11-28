@@ -8,6 +8,7 @@
 #import <React/RCTEnhancedScrollView.h>
 #import <React/RCTScrollContentViewComponentView.h>
 #import <React/RCTScrollViewComponentView.h>
+#import <React/RCTViewComponentView.h>
 #import <XCTest/XCTest.h>
 #import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
@@ -15,6 +16,8 @@
 #import <react/renderer/components/scrollview/ScrollContentViewState.h>
 #import <react/renderer/components/scrollview/ScrollViewProps.h>
 #import <react/renderer/components/scrollview/ScrollViewShadowNode.h>
+#import <react/renderer/components/view/ViewProps.h>
+#import <react/renderer/components/view/ViewShadowNode.h>
 #import <react/renderer/core/EventBeat.h>
 #import <react/renderer/core/EventDispatcher.h>
 #import <react/renderer/core/EventQueueProcessor.h>
@@ -190,6 +193,19 @@ class ScrollContentStateDispatch {
   inset.bottom += _simulatedSafeAreaInsets.bottom;
   inset.right += _simulatedSafeAreaInsets.right;
   return inset;
+}
+
+@end
+
+@interface RCTClippingPassSpyView : UIView
+@property (nonatomic, assign) NSUInteger clippingPassCount;
+@end
+
+@implementation RCTClippingPassSpyView
+
+- (void)updateClippedSubviewsWithClipRect:(CGRect)clipRect relativeToView:(UIView *)clipView
+{
+  self.clippingPassCount++;
 }
 
 @end
@@ -442,6 +458,30 @@ class ScrollContentStateDispatch {
   XCTAssertEqual(stateDispatch.latestUnrelatedData.safeAreaPadding.top, 99);
 }
 // NOLINTEND(cppcoreguidelines-pro-type-vararg, misc-throw-by-value-catch-by-reference)
+
+- (void)testClippingPassRunsOnlyWhenAViewRemovesClippedSubviews
+{
+  RCTScrollViewComponentView *view = [[RCTScrollViewComponentView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  RCTClippingPassSpyView *child = [[RCTClippingPassSpyView alloc] initWithFrame:CGRectMake(0, 0, 100, 1000)];
+  [view mountChildComponentView:(id)child index:0];
+  XCTAssertFalse([RCTViewComponentView anyViewRemovesClippedSubviews]);
+
+  // Scrolling past the clipping leeway runs the clipping pass, unless no view can use it.
+  view.scrollView.contentOffset = CGPointMake(0, 100);
+  [(id<UIScrollViewDelegate>)view scrollViewDidScroll:view.scrollView];
+  XCTAssertEqual(child.clippingPassCount, 0u);
+
+  RCTViewComponentView *clippingView = [RCTViewComponentView new];
+  auto clippingProps = std::make_shared<facebook::react::ViewProps>();
+  clippingProps->removeClippedSubviews = true;
+  [clippingView updateProps:clippingProps oldProps:facebook::react::ViewShadowNode::defaultSharedProps()];
+
+  view.scrollView.contentOffset = CGPointMake(0, 200);
+  [(id<UIScrollViewDelegate>)view scrollViewDidScroll:view.scrollView];
+  XCTAssertGreaterThan(child.clippingPassCount, 0u);
+
+  [view unmountChildComponentView:(id)child index:0];
+}
 
 @end
 

@@ -1139,6 +1139,12 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
     return;
   }
 
+  // Only views with `removeClippedSubviews` act on the pass below. Without any, it visits every
+  // view in the content and changes nothing, after each mounting transaction.
+  if (![RCTViewComponentView anyViewRemovesClippedSubviews]) {
+    return;
+  }
+
   [_scrollView updateClippedSubviewsWithClipRect:CGRectInset(_scrollView.bounds, -kClippingLeeway, -kClippingLeeway)
                                   relativeToView:_scrollView];
 }

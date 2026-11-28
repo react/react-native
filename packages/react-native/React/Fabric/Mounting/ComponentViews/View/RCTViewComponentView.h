@@ -93,6 +93,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (NSString *)componentViewName_DO_NOT_USE_THIS_IS_BROKEN;
 
+/*
+ * Returns `YES` when at least one view has `removeClippedSubviews` enabled.
+ * Scroll views use it to skip the clipping pass when it cannot change anything.
+ * Main thread only.
+ */
++ (BOOL)anyViewRemovesClippedSubviews;
+
 @end
 
 NS_ASSUME_NONNULL_END

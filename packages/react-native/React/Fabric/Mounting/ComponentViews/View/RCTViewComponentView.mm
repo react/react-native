@@ -106,6 +106,9 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
 }
 #endif
 
+// The number of views with `_removeClippedSubviews` set. Main thread only.
+static NSUInteger RCTViewsRemovingClippedSubviewsCount = 0;
+
 @implementation RCTViewComponentView {
   UIColor *_backgroundColor;
   CALayer *_backgroundColorLayer;
@@ -133,6 +136,11 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
 }
 #endif
 
++ (BOOL)anyViewRemovesClippedSubviews
+{
+  return RCTViewsRemovingClippedSubviewsCount > 0;
+}
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
@@ -145,6 +153,26 @@ static BOOL RCTViewIsInteractiveAccessibilityElement(UIView *view, const ViewPro
     _removeClippedSubviews = NO;
   }
   return self;
+}
+
+- (void)dealloc
+{
+  if (_removeClippedSubviews) {
+    RCTViewsRemovingClippedSubviewsCount--;
+  }
+}
+
+- (void)_setRemoveClippedSubviews:(BOOL)removeClippedSubviews
+{
+  if (_removeClippedSubviews == removeClippedSubviews) {
+    return;
+  }
+  _removeClippedSubviews = removeClippedSubviews;
+  if (removeClippedSubviews) {
+    RCTViewsRemovingClippedSubviewsCount++;
+  } else {
+    RCTViewsRemovingClippedSubviewsCount--;
+  }
 }
 
 - (facebook::react::Props::Shared)props
@@ -370,7 +398,7 @@ static BOOL RCTLayerTransformCollapsesAxis(CALayer *layer)
     // Compare against the current state, not `_props`: `prepareForRecycle` resets
     // `_removeClippedSubviews` but keeps `_props`.
     if (_removeClippedSubviews != newViewProps.removeClippedSubviews) {
-      _removeClippedSubviews = newViewProps.removeClippedSubviews;
+      [self _setRemoveClippedSubviews:newViewProps.removeClippedSubviews];
       [self _updateRemoveClippedSubviewsState];
     }
   }
@@ -896,7 +924,7 @@ static BOOL RCTEdgeInsetsEqualWithThreshold(UIEdgeInsets lhs, UIEdgeInsets rhs, 
   _propKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN = nil;
   _eventEmitter.reset();
   _isJSResponder = NO;
-  _removeClippedSubviews = NO;
+  [self _setRemoveClippedSubviews:NO];
   _reactSubviews = [NSMutableArray new];
   _layoutMetrics = EmptyLayoutMetrics;
 }
