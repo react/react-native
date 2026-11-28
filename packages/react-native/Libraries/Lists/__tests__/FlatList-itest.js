@@ -821,6 +821,193 @@ describe('<FlatList>', () => {
     });
   });
 
+  describe('rows whose height depends on the list width', () => {
+    // Rows that are not mounted when the width changes keep their metrics
+    // from the old width. Mixed with the new metrics of the mounted rows, they
+    // made the spacer after the rows kept by initialNumToRender start
+    // somewhere other than where those rows end, so the rows after it moved on
+    // every layout and the content size never stopped changing.
+    const ASPECT_RATIOS = [1.5, 2, 3];
+    const DATA = Array.from({length: 200}, (_, i) => ({key: String(i)}));
+
+    for (const [initialWidth, newWidth] of [
+      [674, 381],
+      [381, 674],
+    ]) {
+      it(`settle after the width changes from ${initialWidth} to ${newWidth} while scrolled deep`, () => {
+        const root = Fantom.createRoot({
+          viewportWidth: 800,
+          viewportHeight: 900,
+        });
+        const flatListRef = createRef<FlatList<{key: string}>>();
+        let contentSizeChanges = 0;
+        const render = (width: number) =>
+          Fantom.runTask(() => {
+            root.render(
+              <View style={{width, height: 900}}>
+                <FlatList
+                  ref={flatListRef}
+                  data={DATA}
+                  ListHeaderComponent={<View style={{height: 600}} />}
+                  renderItem={({index}) => (
+                    <View style={{padding: 8}}>
+                      <View
+                        style={{
+                          aspectRatio:
+                            ASPECT_RATIOS[index % ASPECT_RATIOS.length],
+                        }}
+                      />
+                    </View>
+                  )}
+                  onContentSizeChange={() => {
+                    contentSizeChanges++;
+                  }}
+                />
+              </View>,
+            );
+          });
+
+        const timers = Fantom.installTimerMock();
+        try {
+          // Delivers layout and lets batched renders run until the content
+          // size stops changing, and returns whether it did.
+          const settle = (): boolean => {
+            const MAX_STEPS = 50;
+            const QUIET_STEPS = 5;
+            let quietSteps = 0;
+            for (let step = 0; step < MAX_STEPS; step++) {
+              const changesBefore = contentSizeChanges;
+              Fantom.flushAllNativeEvents();
+              timers.advanceTimersByTime(100);
+              quietSteps =
+                contentSizeChanges === changesBefore ? quietSteps + 1 : 0;
+              if (quietSteps === QUIET_STEPS) {
+                return true;
+              }
+            }
+            return false;
+          };
+
+          render(initialWidth);
+          expect(settle()).toBe(true);
+
+          // Scroll far enough that the rows after the ones kept by
+          // initialNumToRender unmount.
+          const scrollView = nullthrows(
+            nullthrows(flatListRef.current).getNativeScrollRef(),
+          );
+          for (let y = 2000; y <= 30000; y += 2000) {
+            Fantom.scrollTo(scrollView, {x: 0, y, zoomScale: 1});
+            expect(settle()).toBe(true);
+          }
+
+          render(newWidth);
+          expect(settle()).toBe(true);
+        } finally {
+          timers.uninstall();
+        }
+      });
+    }
+  });
+
+  it('keeps the size of the rows after the window when one row grows on its own', () => {
+    // A row that changes size while the list keeps its width doesn't change
+    // how the other rows lay out, so the list keeps the metrics of the rows
+    // that aren't mounted, and the spacer after the window keeps its size.
+    const ROW_HEIGHT = 50;
+    const DATA = Array.from({length: 200}, (_, i) => ({key: String(i)}));
+    const root = Fantom.createRoot({viewportWidth: 400, viewportHeight: 500});
+    const flatListRef = createRef<FlatList<{key: string}>>();
+    let contentHeight = 0;
+    const render = (firstRowSize: number) =>
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList
+            ref={flatListRef}
+            data={DATA}
+            extraData={firstRowSize}
+            windowSize={3}
+            contentContainerStyle={{alignItems: 'flex-start'}}
+            renderItem={({index}) => (
+              <View
+                style={
+                  index === 0
+                    ? {width: firstRowSize, height: firstRowSize}
+                    : {width: 300, height: ROW_HEIGHT}
+                }
+              />
+            )}
+            onContentSizeChange={(width, height) => {
+              contentHeight = height;
+            }}
+          />,
+        );
+      });
+
+    const timers = Fantom.installTimerMock();
+    try {
+      const settle = () => {
+        for (let step = 0; step < 10; step++) {
+          Fantom.flushAllNativeEvents();
+          timers.advanceTimersByTime(100);
+        }
+      };
+
+      render(ROW_HEIGHT);
+      settle();
+
+      // Scroll to the end, so that every row is measured, and back to the top.
+      const scrollView = nullthrows(
+        nullthrows(flatListRef.current).getNativeScrollRef(),
+      );
+      for (let y = 500; y <= DATA.length * ROW_HEIGHT - 500; y += 500) {
+        Fantom.scrollTo(scrollView, {x: 0, y, zoomScale: 1});
+        settle();
+      }
+      Fantom.scrollTo(scrollView, {x: 0, y: 0, zoomScale: 1});
+      settle();
+      expect(contentHeight).toBe(DATA.length * ROW_HEIGHT);
+
+      // The rows after the window keep the offsets they were measured at
+      // until they are measured again, so the content can stay short by the
+      // height row 0 gained, but not lose those rows.
+      render(2 * ROW_HEIGHT);
+      settle();
+      expect(contentHeight).toBeGreaterThanOrEqual(DATA.length * ROW_HEIGHT);
+    } finally {
+      timers.uninstall();
+    }
+  });
+
+  it('does not throw when the data is replaced with fewer items after scrolling', () => {
+    // Cells measured past the end of the new data must not be used to
+    // estimate the cells that are not measured yet.
+    const root = Fantom.createRoot({viewportWidth: 400, viewportHeight: 400});
+    const flatListRef = createRef<FlatList<{key: string}>>();
+    const render = (keyPrefix: string, length: number) =>
+      Fantom.runTask(() => {
+        root.render(
+          <FlatList
+            ref={flatListRef}
+            data={Array.from({length}, (_, i) => ({key: `${keyPrefix}${i}`}))}
+            renderItem={() => <View style={{height: 44}} />}
+            windowSize={3}
+          />,
+        );
+      });
+
+    render('a', 270);
+    Fantom.flushAllNativeEvents();
+    Fantom.scrollTo(
+      nullthrows(nullthrows(flatListRef.current).getNativeScrollRef()),
+      {x: 0, y: 5000, zoomScale: 1},
+    );
+    Fantom.flushAllNativeEvents();
+
+    render('b', 20);
+    expect(() => Fantom.flushAllNativeEvents()).not.toThrow();
+  });
+
   describe('imperative methods', () => {
     const ITEM_HEIGHT = 50;
     type Item = {key: string, title: string};
