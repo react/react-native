@@ -1199,6 +1199,19 @@ module.exports = [
     },
   },
   {
+    title: 'Content size change with fixed height',
+    name: 'contentSizeChangeFixedHeight',
+    render: function (): React.Node {
+      return (
+        <View style={styles.wrappedText}>
+          <AutogrowingTextInputExample
+            style={{height: 60, backgroundColor: '#eeeeee'}}
+          />
+        </View>
+      );
+    },
+  },
+  {
     title: 'Drag and drop',
     render: function (): React.Node {
       return (
