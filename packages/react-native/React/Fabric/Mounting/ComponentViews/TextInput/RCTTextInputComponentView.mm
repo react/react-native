@@ -157,9 +157,40 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (UITraitCollection.currentTraitCollection.preferredContentSizeCategory !=
       previousTraitCollection.preferredContentSizeCategory) {
     const auto &newTextInputProps = static_cast<const TextInputProps &>(*_props);
-    _backedTextInputView.defaultTextAttributes =
+    NSMutableDictionary<NSAttributedStringKey, id> *defaultAttributes =
         RCTNSTextAttributesFromTextAttributes(newTextInputProps.getEffectiveTextAttributes(RCTFontSizeMultiplier()));
+    defaultAttributes[RCTAttributedStringEventEmitterKey] =
+        _backedTextInputView.defaultTextAttributes[RCTAttributedStringEventEmitterKey];
+    _backedTextInputView.defaultTextAttributes = defaultAttributes;
+    // `UITextField` applies `defaultTextAttributes` to its whole text, which drops the attributes of nested <Text>
+    // children (color, font family, ...). The state was already mounted, so re-apply its attributed string.
+    [self _reapplyStateAttributedString];
   }
+}
+
+- (void)_reapplyStateAttributedString
+{
+  // Replacing the text breaks dictation and Korean input, as in `_textOf:equals:`.
+  NSString *primaryLanguage = _backedTextInputView.textInputMode.primaryLanguage;
+  if (!_state || _backedTextInputView.markedTextRange || [primaryLanguage isEqualToString:@"dictation"] ||
+      [primaryLanguage isEqualToString:@"ko-KR"]) {
+    return;
+  }
+  // Before iOS 17, UIKit calls this before the state with the new size is mounted.
+  const auto &data = _state->getData();
+  if (data.reactTreeAttributedString.isEmpty() || _mostRecentEventCount != data.mostRecentEventCount ||
+      data.reactTreeAttributedString.getBaseTextAttributes().fontSizeMultiplier != RCTFontSizeMultiplier()) {
+    return;
+  }
+  NSAttributedString *attributedString = RCTNSAttributedStringFromAttributedStringBox(data.attributedStringBox);
+  if (![attributedString.string isEqualToString:_backedTextInputView.attributedText.string]) {
+    return;
+  }
+  // Skip `_textOf:equals:`: it compares only the strings, which are equal here, when the text has an emoji
+  // (NSOriginalFont) or is secure.
+  _comingFromJS = YES;
+  [self _replaceAttributedString:attributedString];
+  _comingFromJS = NO;
 }
 
 - (void)reactUpdateResponderOffsetForScrollView:(RCTScrollViewComponentView *)scrollView
@@ -865,6 +896,11 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if ([self _textOf:attributedString equals:_backedTextInputView.attributedText]) {
     return;
   }
+  [self _replaceAttributedString:attributedString];
+}
+
+- (void)_replaceAttributedString:(NSAttributedString *)attributedString
+{
   UITextRange *selectedRange = _backedTextInputView.selectedTextRange;
   NSInteger oldTextLength = _backedTextInputView.attributedText.string.length;
   _backedTextInputView.attributedText = attributedString;
