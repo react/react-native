@@ -26,6 +26,7 @@ async function buildDepenencies(
   destinations /*: ReadonlyArray<Destination> */,
   rootFolder /*: string */,
   buildFolder /*: string */,
+  mergeable /*: boolean */,
 ) {
   console.log('✅ Building dependencies...');
 
@@ -37,6 +38,7 @@ async function buildDepenencies(
         destination,
         rootFolder,
         buildFolder,
+        mergeable,
       ),
     ),
   );
@@ -51,6 +53,7 @@ async function buildPlatform(
   destination /*: Destination */,
   rootFolder /*: string */,
   buildFolder /*: string */,
+  mergeable /*: boolean */,
 ) {
   console.log(`Building ${destination}...`);
   const command = getPlatformBuildCommand(
@@ -58,16 +61,23 @@ async function buildPlatform(
     configuration,
     destination,
     buildFolder,
+    mergeable,
   );
 
   execSync(command, {cwd: rootFolder, stdio: 'inherit'});
 }
+
+// MERGEABLE_LIBRARY=YES would also reach static library targets such as glog
+// and break their link, so enable it only where MACH_O_TYPE is mh_dylib.
+const MERGEABLE_SETTINGS =
+  "'MERGEABLE_LIBRARY=$(MERGEABLE_LIBRARY_$(MACH_O_TYPE))' MERGEABLE_LIBRARY_mh_dylib=YES";
 
 function getPlatformBuildCommand(
   scheme /*: string */,
   configuration /*: string */,
   destination /*: Destination */,
   buildFolder /*: string */,
+  mergeable /*: boolean */,
 ) /*: string */ {
   const command =
     `xcodebuild -scheme "${scheme}" -destination "generic/platform=${destination}" ` +
@@ -76,12 +86,14 @@ function getPlatformBuildCommand(
     'SKIP_INSTALL=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
     DEBUG_INFORMATION_FORMAT=dwarf-with-dsym';
+  if (configuration !== 'Release') {
+    return command;
+  }
   // Xcode defaults Release to -Os. Android builds these dependencies at -O2 in
   // Release. A command-line setting applies to every configuration, so add it
   // only to Release builds.
-  return configuration === 'Release'
-    ? `${command} GCC_OPTIMIZATION_LEVEL=2`
-    : command;
+  const releaseCommand = `${command} GCC_OPTIMIZATION_LEVEL=2`;
+  return mergeable ? `${releaseCommand} ${MERGEABLE_SETTINGS}` : releaseCommand;
 }
 
 module.exports = {

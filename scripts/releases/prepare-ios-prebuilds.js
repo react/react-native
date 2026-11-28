@@ -54,6 +54,7 @@ async function main() {
       cli.destinations,
       rootFolder,
       buildFolder,
+      cli.mergeable,
     );
   }
 

@@ -71,6 +71,11 @@ const cli = yargs
     describe:
       'Require Hermes headers when composing the ReactNativeHeaders XCFramework.',
   })
+  .option('mergeable', {
+    type: 'boolean',
+    describe:
+      'Build Release frameworks as mergeable libraries, which Xcode can merge into the app executable.',
+  })
   .help();
 
 /**
@@ -86,6 +91,7 @@ async function getCLIConfiguration() /*: Promise<?{
   destinations: ReadonlyArray<Destination>,
   identity: ?string,
   requireHermes: boolean,
+  mergeable: boolean,
 }> */ {
   // Run input parsing
   const argv = await cli.argv;
@@ -131,6 +137,7 @@ async function getCLIConfiguration() /*: Promise<?{
     destinations: resolvedPlatforms,
     identity: argv.identity,
     requireHermes: argv.requireHermes ?? false,
+    mergeable: argv.mergeable ?? false,
   };
 }
 
