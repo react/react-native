@@ -18,7 +18,7 @@ public class PopupMenuSelectionEvent(surfaceId: Int, viewId: Int, private val it
     return EVENT_NAME
   }
 
-  override fun getEventData(): WritableMap {
+  protected override fun getEventData(): WritableMap {
     val eventData: WritableMap = Arguments.createMap()
     eventData.putInt("target", viewTag)
     eventData.putDouble("item", item.toDouble())
