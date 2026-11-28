@@ -71,6 +71,34 @@ describe('<ScrollView>', () => {
     });
   });
 
+  describe('hitSlop', () => {
+    it('widens parent overflowInset when hitSlop extends past parent', () => {
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(
+          <View collapsable={false} style={{width: 100, height: 100}}>
+            <ScrollView
+              hitSlop={{top: 10, left: 20, bottom: 70, right: 80}}
+              style={{width: 40, height: 40}}
+            />
+          </View>,
+        );
+      });
+
+      const parent = root
+        .getRenderedOutput({
+          includeLayoutMetrics: true,
+          props: ['^layoutMetrics-overflowInset$'],
+        })
+        .toJSONObject();
+
+      expect(parent.props['layoutMetrics-overflowInset']).toBe(
+        '{top:-10,right:-20,bottom:-10,left:-20}',
+      );
+    });
+  });
+
   describe('ref', () => {
     it('receives an instance or null', () => {
       const root = Fantom.createRoot();

@@ -9,6 +9,7 @@
 
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/root/RootComponentDescriptor.h>
+#include <react/renderer/components/scrollview/ScrollViewShadowNode.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
 #include <react/renderer/element/ComponentBuilder.h>
 #include <react/renderer/element/Element.h>
@@ -442,6 +443,62 @@ TEST_F(LayoutTest, overflowInsetHitSlopTransformTranslateTest) {
   EXPECT_EQ(layoutMetricsABC.overflowInset.top, -50);
   EXPECT_EQ(layoutMetricsABC.overflowInset.right, 0);
   EXPECT_EQ(layoutMetricsABC.overflowInset.bottom, 0);
+}
+
+TEST_F(LayoutTest, overflowInsetScrollViewHitSlopTest) {
+  std::shared_ptr<RootShadowNode> rootShadowNode;
+  std::shared_ptr<ViewShadowNode> viewShadowNode;
+
+  // clang-format off
+  auto element =
+      Element<RootShadowNode>()
+        .reference(rootShadowNode)
+        .tag(1)
+        .props([] {
+          auto sharedProps = std::make_shared<RootProps>();
+          auto &props = *sharedProps;
+          props.layoutConstraints = LayoutConstraints{
+              .minimumSize = {.width = 0, .height = 0},
+              .maximumSize = {.width = 500, .height = 500}};
+          props.yogaStyle.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(200));
+          props.yogaStyle.setDimension(yoga::Dimension::Height, yoga::StyleSizeLength::points(200));
+          return sharedProps;
+        })
+        .children({
+          Element<ViewShadowNode>()
+            .reference(viewShadowNode)
+            .tag(2)
+            .props([] {
+              auto sharedProps = std::make_shared<ViewProps>();
+              auto &props = *sharedProps;
+              props.yogaStyle.setPositionType(yoga::PositionType::Absolute);
+              props.yogaStyle.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(100));
+              props.yogaStyle.setDimension(yoga::Dimension::Height, yoga::StyleSizeLength::points(100));
+              return sharedProps;
+            })
+            .children({
+              Element<ScrollViewShadowNode>()
+                .tag(3)
+                .props([] {
+                  auto sharedProps = std::make_shared<ScrollViewProps>();
+                  auto &props = *sharedProps;
+                  props.yogaStyle.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(40));
+                  props.yogaStyle.setDimension(yoga::Dimension::Height, yoga::StyleSizeLength::points(40));
+                  props.hitSlop = EdgeInsets{.left = 20, .top = 10, .right = 80, .bottom = 70};
+                  return sharedProps;
+                })
+            })
+        });
+  // clang-format on
+
+  builder_.build(element);
+  rootShadowNode->layoutIfNeeded();
+
+  auto layoutMetrics = viewShadowNode->getLayoutMetrics();
+  EXPECT_EQ(layoutMetrics.overflowInset.left, -20);
+  EXPECT_EQ(layoutMetrics.overflowInset.top, -10);
+  EXPECT_EQ(layoutMetrics.overflowInset.right, -20);
+  EXPECT_EQ(layoutMetrics.overflowInset.bottom, -10);
 }
 
 } // namespace facebook::react
