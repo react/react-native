@@ -94,6 +94,34 @@ if(RN_STRICT_API)
         target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE RN_STRICT_API)
 endif()
 
+# Links `common_flags` onto `target` via target properties rather than
+# `target_link_libraries`, so targets that already used keyword
+# (`PRIVATE`/`PUBLIC`/`INTERFACE`) or plain `target_link_libraries` signatures
+# do not fail with a mixed-signature error.
+function(target_link_common_flags target)
+        if(NOT TARGET ${target})
+                return()
+        endif()
+
+        get_target_property(aliased_target ${target} ALIASED_TARGET)
+        if(aliased_target)
+                set(target ${aliased_target})
+        endif()
+
+        get_target_property(is_imported ${target} IMPORTED)
+        if(is_imported)
+                return()
+        endif()
+
+        get_target_property(target_type ${target} TYPE)
+        if(target_type STREQUAL "INTERFACE_LIBRARY")
+                set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LINK_LIBRARIES common_flags)
+                return()
+        endif()
+
+        set_property(TARGET ${target} APPEND PROPERTY LINK_LIBRARIES common_flags)
+endfunction()
+
 # Defines the `reactnative_pch` target and `target_reuse_reactnative_pch()`, so
 # the codegen targets below share a single precompiled header. Has to come after
 # `common_flags`, as the precompiled header is built with the same flags as its
@@ -105,7 +133,7 @@ if(EXISTS ${PROJECT_BUILD_DIR}/generated/autolinking/src/main/jni/Android-autoli
         include(${PROJECT_BUILD_DIR}/generated/autolinking/src/main/jni/Android-autolinking.cmake)
         target_link_libraries(${CMAKE_PROJECT_NAME} ${AUTOLINKED_LIBRARIES})
         foreach(autolinked_library ${AUTOLINKED_LIBRARIES})
-            target_link_libraries(${autolinked_library} common_flags)
+                target_link_common_flags(${autolinked_library})
         endforeach()
 
         foreach(autolinked_library ${AUTOLINKED_CODEGEN_LIBRARIES})
@@ -118,8 +146,10 @@ if(EXISTS ${PROJECT_BUILD_DIR}/generated/source/codegen/jni/CMakeLists.txt)
         add_subdirectory(${PROJECT_BUILD_DIR}/generated/source/codegen/jni/ codegen_app_build)
         get_property(APP_CODEGEN_TARGET DIRECTORY ${PROJECT_BUILD_DIR}/generated/source/codegen/jni/ PROPERTY BUILDSYSTEM_TARGETS)
         target_link_libraries(${CMAKE_PROJECT_NAME} ${APP_CODEGEN_TARGET})
-        target_link_libraries(${APP_CODEGEN_TARGET} common_flags)
-        target_reuse_reactnative_pch(${APP_CODEGEN_TARGET})
+        foreach(codegen_target ${APP_CODEGEN_TARGET})
+                target_link_common_flags(${codegen_target})
+                target_reuse_reactnative_pch(${codegen_target})
+        endforeach()
 
         # We need to pass the generated header and module provider to the OnLoad.cpp file so
         # local app modules can properly be linked.
