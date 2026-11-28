@@ -6561,7 +6561,7 @@ struct facebook::react::RecoverableError : public std::exception {
 }
 
 struct facebook::react::Rect {
-  public bool containsPoint(facebook::react::Point point) noexcept;
+  public bool containsPoint(facebook::react::Point point) const noexcept;
   public bool operator==(const facebook::react::Rect& rhs) const noexcept = default;
   public facebook::react::Float getMaxX() const noexcept;
   public facebook::react::Float getMaxY() const noexcept;
