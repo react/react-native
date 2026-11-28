@@ -102,6 +102,17 @@ function pushDimensions(
   }
 }
 
+function updateDimensions(
+  surfaceId: RootTag,
+  displayMetrics: DisplayMetrics,
+): void {
+  if (!activeRootDisplayMetrics.has(surfaceId)) {
+    return;
+  }
+  activeRootDisplayMetrics.set(surfaceId, displayMetrics);
+  Dimensions.set({window: displayMetrics, screen: displayMetrics});
+}
+
 function popDimensions(surfaceId: RootTag): void {
   activeRootDisplayMetrics.delete(surfaceId);
   const displayMetrics = Array.from(activeRootDisplayMetrics.values()).pop();
@@ -180,24 +191,76 @@ class Root {
     }
   }
 
-  takeMountingManagerLogs(): Array<string> {
-    return NativeFantom.takeMountingManagerLogs(this.#surfaceId);
+  /**
+   * Updates native surface constraints and runs the pending JavaScript work.
+   * The width/height form only resizes the native surface without flushing work.
+   */
+  updateSurfaceConstraints(config: RootConfig | number, height?: number): void {
+    if (typeof config === 'number') {
+      if (this.#destroyed) {
+        throw new Error('Cannot resize a destroyed root.');
+      }
+      if (height == null) {
+        throw new Error('A height is required when resizing a root.');
+      }
+      NativeFantom.updateSurfaceConstraints(
+        this.#surfaceId,
+        config,
+        height,
+        this.#devicePixelRatio,
+      );
+      return;
+    }
+
+    runOnUIThread(() => this.enqueueUpdateSurfaceConstraints(config));
+    if (!flushingQueue) {
+      runWorkLoop();
+    }
   }
 
   /**
-   * Changes the root's native surface constraints without rendering React,
-   * updating Dimensions, or flushing pending work.
+   * Updates native surface constraints without running JavaScript work.
+   * Call within `runOnUIThread` when batching UI-thread changes.
    */
-  updateSurfaceConstraints(width: number, height: number): void {
+  enqueueUpdateSurfaceConstraints(config: RootConfig): void {
     if (this.#destroyed) {
-      throw new Error('Cannot resize a destroyed root.');
+      throw new Error('Cannot update the constraints of a destroyed root.');
     }
+
+    const viewportWidth = config.viewportWidth ?? this.#viewportWidth;
+    const viewportHeight = config.viewportHeight ?? this.#viewportHeight;
+    const devicePixelRatio = config.devicePixelRatio ?? this.#devicePixelRatio;
+    const fontScale = config.fontScale ?? this.#fontScale;
+    const viewportOffsetX = config.viewportOffsetX ?? this.#viewportOffsetX;
+    const viewportOffsetY = config.viewportOffsetY ?? this.#viewportOffsetY;
+
     NativeFantom.updateSurfaceConstraints(
       this.#surfaceId,
-      width,
-      height,
-      this.#devicePixelRatio,
+      viewportWidth,
+      viewportHeight,
+      devicePixelRatio,
+      fontScale,
+      viewportOffsetX,
+      viewportOffsetY,
     );
+    this.#viewportWidth = viewportWidth;
+    this.#viewportHeight = viewportHeight;
+    this.#devicePixelRatio = devicePixelRatio;
+    this.#fontScale = fontScale;
+    this.#viewportOffsetX = viewportOffsetX;
+    this.#viewportOffsetY = viewportOffsetY;
+
+    const displayMetrics = {
+      width: viewportWidth,
+      height: viewportHeight,
+      scale: devicePixelRatio,
+      fontScale,
+    };
+    scheduleTask(() => updateDimensions(this.#surfaceId, displayMetrics));
+  }
+
+  takeMountingManagerLogs(): Array<string> {
+    return NativeFantom.takeMountingManagerLogs(this.#surfaceId);
   }
 
   destroy() {

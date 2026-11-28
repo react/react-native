@@ -56,21 +56,27 @@ SurfaceId NativeFantom::startSurface(
   return surfaceId;
 }
 
-void NativeFantom::stopSurface(jsi::Runtime& /*runtime*/, SurfaceId surfaceId) {
-  appDelegate_.stopSurface(surfaceId);
-}
-
 void NativeFantom::updateSurfaceConstraints(
     jsi::Runtime& /*runtime*/,
     SurfaceId surfaceId,
     double viewportWidth,
     double viewportHeight,
-    double devicePixelRatio) {
+    double devicePixelRatio,
+    std::optional<double> fontScale,
+    std::optional<double> viewportOffsetX,
+    std::optional<double> viewportOffsetY) {
   appDelegate_.updateSurfaceConstraints(
       surfaceId,
       static_cast<float>(viewportWidth),
       static_cast<float>(viewportHeight),
-      static_cast<float>(devicePixelRatio));
+      static_cast<float>(devicePixelRatio),
+      static_cast<float>(fontScale.value_or(1)),
+      static_cast<float>(viewportOffsetX.value_or(0)),
+      static_cast<float>(viewportOffsetY.value_or(0)));
+}
+
+void NativeFantom::stopSurface(jsi::Runtime& /*runtime*/, SurfaceId surfaceId) {
+  appDelegate_.stopSurface(surfaceId);
 }
 
 void NativeFantom::produceFramesForDuration(
