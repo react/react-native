@@ -124,13 +124,16 @@ void RCTDevSettingsSetEnabled(BOOL enabled)
 @end
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-static RCTHandlerToken reloadToken;
-static RCTHandlerToken devMenuToken;
-static constinit std::atomic<int> numInitializedModules{0};
+// A packager sends each command to every connection, one per instance. The first reload handler retires every
+// instance before the next one runs. devMenu retires nobody, so one live instance owns it until it retires.
+static __weak RCTDevSettings *devMenuOwner;
 #endif
 
 @interface RCTDevSettings () <RCTBridgeModule, RCTInvalidating, NativeDevSettingsSpec, RCTDevSettingsInspectable> {
   BOOL _isJSLoaded;
+#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+  std::atomic<bool> _retired;
+#endif
 }
 
 @property (nonatomic, strong) Class executorClass;
@@ -179,6 +182,12 @@ RCT_EXPORT_MODULE()
                                              selector:@selector(jsLoaded:)
                                                  name:@"RCTInstanceDidLoadBundle"
                                                object:nil];
+#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_retire:)
+                                                 name:RCTTriggerReloadCommandNotification
+                                               object:nil];
+#endif
   }
   return self;
 }
@@ -190,27 +199,26 @@ RCT_EXPORT_MODULE()
 #endif
 
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  if (numInitializedModules++ == 0) {
-    reloadToken = [self
-        addNotificationHandler:^(id params) {
+  __weak __typeof(self) weakSelf = self;
+  [self
+      addNotificationHandler:^(__unused id params) {
+        if ([weakSelf _canHandlePackagerReload]) {
           RCTTriggerReloadCommandListeners(@"Global hotkey");
         }
-                         queue:dispatch_get_main_queue()
-                     forMethod:@"reload"];
+      }
+                       queue:dispatch_get_main_queue()
+                   forMethod:@"reload"];
 #if RCT_DEV_MENU
-    __weak __typeof(self) weakSelf = self;
-    devMenuToken = [self
-        addNotificationHandler:^(id params) {
-          __typeof(self) strongSelf = weakSelf;
-          if (strongSelf == nullptr) {
-            return;
-          }
+  [self
+      addNotificationHandler:^(__unused id params) {
+        __typeof(self) strongSelf = weakSelf;
+        if ([strongSelf _claimDevMenu]) {
           [[strongSelf.moduleRegistry moduleForName:"DevMenu"] show];
         }
-                         queue:dispatch_get_main_queue()
-                     forMethod:@"devMenu"];
+      }
+                       queue:dispatch_get_main_queue()
+                   forMethod:@"devMenu"];
 #endif
-  }
 #endif
 
 #if RCT_ENABLE_INSPECTOR
@@ -218,6 +226,32 @@ RCT_EXPORT_MODULE()
   [RCTInspectorDevServerHelper connectWithBundleURL:url];
 #endif
 }
+
+#if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
+- (BOOL)_canHandlePackagerReload
+{
+  return !_retired;
+}
+
+- (BOOL)_claimDevMenu
+{
+  RCTAssertMainQueue();
+  if (_retired) {
+    return NO;
+  }
+  RCTDevSettings *owner = devMenuOwner;
+  if (owner != nil && owner != self && !owner->_retired) {
+    return NO;
+  }
+  devMenuOwner = self;
+  return YES;
+}
+
+- (void)_retire:(__unused NSNotification *)notification
+{
+  _retired = true;
+}
+#endif
 
 - (dispatch_queue_t)methodQueue
 {
@@ -228,12 +262,11 @@ RCT_EXPORT_MODULE()
 {
   [super invalidate];
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  if (--numInitializedModules == 0) {
-    [_packagerConnection removeHandler:reloadToken];
-#if RCT_DEV_MENU
-    [_packagerConnection removeHandler:devMenuToken];
+  [self _retire:nil];
 #endif
-  }
+#if RCT_DEV
+  // stop removes the handlers, but a command already queued on the main queue still runs; _retired stops it.
+  [_packagerConnection stop];
 #endif
 }
 
