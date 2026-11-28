@@ -14,6 +14,7 @@
 #include <react/renderer/attributedstring/AttributedString.h>
 #include <react/renderer/attributedstring/ParagraphAttributes.h>
 #include <react/renderer/textlayoutmanager/TextLayoutManager.h>
+#include <optional>
 
 namespace facebook::react {
 
@@ -31,6 +32,10 @@ struct TextLine {
   Float width{};
   Float height{};
   Float ascent{};
+  Float capHeight{};
+  Float xHeight{};
+  // The style of a line ended by a hard break before any text.
+  std::optional<TextAttributes> breakAttributes;
 };
 
 struct TextLayout {
@@ -54,6 +59,8 @@ class FantomTextLayoutManager : public TextLayoutManager {
       const ParagraphAttributes &paragraph,
       const TextLayoutContext &context,
       const LayoutConstraints &constraints) const override;
+  LinesMeasurements
+  measureLines(const AttributedStringBox &text, const ParagraphAttributes &paragraph, const Size &size) const override;
 };
 
 } // namespace facebook::react

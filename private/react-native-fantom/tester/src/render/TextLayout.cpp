@@ -26,6 +26,7 @@
 #include <mutex>
 #include <span>
 #include <stdexcept>
+#include <string_view>
 
 #ifndef FANTOM_SKIA_FACTORY_PROVIDED
 /* static */ sk_sp<SkFontMgr> SkFontMgr::Factory() {
@@ -390,6 +391,130 @@ SkFont applyFont(SkCanvas* /*canvas*/, const TextAttributes& attributes) {
   return font;
 }
 
+// Where `text` must end, at a text unit boundary, to fit in `limit` with
+// `font`, and how wide that start of it is.
+static std::pair<size_t, Float>
+fittingPrefix(const std::string& text, const SkFont& font, Float limit) {
+  Float width = 0;
+  size_t end = 0;
+  while (end < text.size()) {
+    const auto next = nextTextUnitEnd(text, end);
+    const auto unit = std::string_view(text).substr(end, next - end);
+    const auto advance =
+        font.measureText(unit.data(), unit.size(), SkTextEncoding::kUTF8);
+    if (width + advance > limit) {
+      break;
+    }
+    width += advance;
+    end = next;
+  }
+  return {end, width};
+}
+
+// Ends a cut paragraph's last line with "…", keeping the longest start of it
+// that fits with the ellipsis. Runs are unshaped text (see the caller).
+static void ellipsizeTail(TextLine& line, Float maximumWidth) {
+  if (line.runs.empty() && !line.breakAttributes.has_value()) {
+    return;
+  }
+  const std::string ellipsis = "\u2026";
+  auto attributes =
+      line.runs.empty() ? *line.breakAttributes : line.runs.back().attributes;
+  // An emoji font has no ellipsis glyph.
+  if (!hasGlyphs(applyFont(nullptr, attributes), ellipsis)) {
+    attributes.fontFamily = fallbackFamily(ellipsis, attributes);
+  }
+  const auto ascent = line.runs.empty() ? line.ascent : line.runs.back().ascent;
+  const auto ellipsisFont = applyFont(nullptr, attributes);
+  const auto ellipsisWidth = ellipsisFont.measureText(
+      ellipsis.data(), ellipsis.size(), SkTextEncoding::kUTF8);
+  while (!line.runs.empty() && line.width + ellipsisWidth > maximumWidth) {
+    auto& run = line.runs.back();
+    const auto [end, width] = fittingPrefix(
+        run.text,
+        applyFont(nullptr, run.attributes),
+        maximumWidth - ellipsisWidth - run.x);
+    if (end > 0) {
+      run.text.resize(end);
+      run.width = width;
+      line.width = run.x + width;
+      break;
+    }
+    line.width = run.x;
+    line.runs.pop_back();
+  }
+  SkFontMetrics metrics{};
+  ellipsisFont.getMetrics(&metrics);
+  line.capHeight =
+      std::max(line.capHeight, static_cast<Float>(metrics.fCapHeight));
+  line.xHeight = std::max(line.xHeight, static_cast<Float>(metrics.fXHeight));
+  line.runs.push_back(
+      {ellipsis, attributes, line.width, ellipsisWidth, ascent, nullptr});
+  line.width += ellipsisWidth;
+}
+
+// Inline views are not runs, and shaped runs (emoji) cannot be cut at a
+// character, so a last line with either is cut without an ellipsis instead.
+static bool canEllipsize(const TextLayout& layout) {
+  Float lastLineTop = 0;
+  for (size_t i = 0; i + 1 < layout.lines.size(); ++i) {
+    lastLineTop += layout.lines[i].height;
+  }
+  const auto& attachments = layout.measurement.attachments;
+  const bool hasInlineViewOnLastLine = std::any_of(
+      attachments.begin(), attachments.end(), [&](const auto& attachment) {
+        return !attachment.isClipped &&
+            attachment.frame.origin.y >= lastLineTop;
+      });
+  if (hasInlineViewOnLastLine) {
+    return false;
+  }
+  return std::none_of(
+      layout.lines.back().runs.begin(),
+      layout.lines.back().runs.end(),
+      [](const TextRun& run) { return run.blob != nullptr; });
+}
+
+// A line a hard break ends before any text keeps the break's height, ascent
+// and style.
+static void endWithHardBreak(
+    TextLine& line,
+    Float height,
+    Float ascent,
+    const TextAttributes& attributes) {
+  line.height = std::max(line.height, height);
+  if (!line.runs.empty()) {
+    return;
+  }
+  line.ascent = std::max(line.ascent, ascent);
+  line.breakAttributes = attributes;
+}
+
+static bool hasText(const TextLine& line) {
+  return std::any_of(line.runs.begin(), line.runs.end(), [](const auto& run) {
+    return run.text.find_first_not_of(" \t") != std::string::npos;
+  });
+}
+
+// Whether the lines after the first `count` show anything: text other than
+// spaces, or an inline view. Spaces wrapped before a final line break leave an
+// empty line that cuts nothing.
+static bool hasContentAfter(const TextLayout& layout, int count) {
+  const auto& attachments = layout.measurement.attachments;
+  if (std::any_of(
+          attachments.begin(), attachments.end(), [](const auto& attachment) {
+            return attachment.isClipped;
+          })) {
+    return true;
+  }
+  for (auto i = static_cast<size_t>(count); i < layout.lines.size(); ++i) {
+    if (hasText(layout.lines[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
 TextLayout layoutText(
     SkCanvas* canvas,
     const AttributedString& text,
@@ -438,6 +563,9 @@ TextLayout layoutText(
       line.width += shaped.width;
       line.height = std::max(line.height, height);
       line.ascent = std::max(line.ascent, static_cast<Float>(-font.fAscent));
+      line.capHeight =
+          std::max(line.capHeight, static_cast<Float>(font.fCapHeight));
+      line.xHeight = std::max(line.xHeight, static_cast<Float>(font.fXHeight));
     };
 
     if (fragment.isAttachment()) {
@@ -459,7 +587,11 @@ TextLayout layoutText(
     // Break at whitespace, then at UTF-8 character boundaries for long words.
     for (size_t start = 0; start < fragment.string.size();) {
       if (fragment.string[start] == '\n') {
-        line.height = std::max(line.height, height);
+        endWithHardBreak(
+            line,
+            height,
+            static_cast<Float>(-font.fAscent),
+            fragment.textAttributes);
         finishLine();
         ++start;
         continue;
@@ -502,6 +634,7 @@ TextLayout layoutText(
     finishLine();
   }
   if (static_cast<int>(result.lines.size()) > maxLines) {
+    const bool cutsContent = hasContentAfter(result, maxLines);
     result.lines.resize(maxLines);
     result.measurement.size = {};
     for (const auto& visibleLine : result.lines) {
@@ -509,8 +642,37 @@ TextLayout layoutText(
           std::max(result.measurement.size.width, visibleLine.width);
       result.measurement.size.height += visibleLine.height;
     }
+    if (paragraph.ellipsizeMode == EllipsizeMode::Tail && cutsContent &&
+        canEllipsize(result)) {
+      ellipsizeTail(result.lines.back(), maximumWidth);
+      // Wide enough for the lines before and after the ellipsis, so laying
+      // out again at the measured width gives the same lines.
+      result.measurement.size.width =
+          std::max(result.measurement.size.width, result.lines.back().width);
+    }
   }
+
   return result;
+}
+
+// How far below the line's top `paintText` puts its baseline.
+static Float getLineBaseline(const TextLine& line) {
+  return (line.height - line.ascent) / 2 + line.ascent;
+}
+
+// Where a line starts in a paragraph `width` wide, from its alignment.
+static Float getLineOffset(const TextLine& line, Float width) {
+  if (line.runs.empty()) {
+    return 0;
+  }
+  const auto alignment = line.runs.front().attributes.alignment;
+  if (alignment == TextAlignment::Center) {
+    return (width - line.width) / 2;
+  }
+  if (alignment == TextAlignment::Right) {
+    return width - line.width;
+  }
+  return 0;
 }
 
 void paintText(SkCanvas* canvas, const TextLayout& layout, Float width) {
@@ -519,15 +681,7 @@ void paintText(SkCanvas* canvas, const TextLayout& layout, Float width) {
   }
   Float y = 0;
   for (const auto& line : layout.lines) {
-    Float offset = 0;
-    if (!line.runs.empty()) {
-      const auto alignment = line.runs.front().attributes.alignment;
-      if (alignment == TextAlignment::Center) {
-        offset = (width - line.width) / 2;
-      } else if (alignment == TextAlignment::Right) {
-        offset = width - line.width;
-      }
-    }
+    const auto offset = getLineOffset(line, width);
     for (const auto& run : line.runs) {
       const auto font = applyFont(canvas, run.attributes);
       const auto opacity =
@@ -551,7 +705,7 @@ void paintText(SkCanvas* canvas, const TextLayout& layout, Float width) {
       const auto color = run.attributes.foregroundColor
           ? run.attributes.foregroundColor
           : blackColor();
-      const auto baseline = y + (line.height - line.ascent) / 2 + line.ascent;
+      const auto baseline = y + getLineBaseline(line);
       if (run.blob) {
         canvas->drawTextBlob(
             run.blob, offset + run.x, baseline, paintFor(color));
@@ -581,6 +735,45 @@ TextMeasurement FantomTextLayoutManager::measure(
           .measurement;
   result.size = constraints.clamp(result.size);
   return result;
+}
+
+LinesMeasurements FantomTextLayoutManager::measureLines(
+    const AttributedStringBox& text,
+    const ParagraphAttributes& paragraph,
+    const Size& size) const {
+  LinesMeasurements lines;
+  Float y = 0;
+  for (const auto& line :
+       layoutText(nullptr, text.getValue(), paragraph, size.width).lines) {
+    std::string lineText;
+    for (const auto& run : line.runs) {
+      lineText += run.text;
+    }
+    const auto ascender = getLineBaseline(line);
+    lines.emplace_back(
+        std::move(lineText),
+        Rect{
+            .origin = {.x = getLineOffset(line, size.width), .y = y},
+            .size = {.width = line.width, .height = line.height}},
+        /* descender */ line.height - ascender,
+        line.capHeight,
+        ascender,
+        line.xHeight);
+    y += line.height;
+  }
+  // Like Android, a paragraph with no text still has one empty line.
+  if (lines.empty()) {
+    lines.emplace_back(
+        "",
+        Rect{
+            .origin = {.x = 0, .y = 0},
+            .size = {.width = 0, .height = size.height}},
+        /* descender */ 0,
+        /* capHeight */ 0,
+        /* ascender */ 0,
+        /* xHeight */ 0);
+  }
+  return lines;
 }
 
 } // namespace facebook::react

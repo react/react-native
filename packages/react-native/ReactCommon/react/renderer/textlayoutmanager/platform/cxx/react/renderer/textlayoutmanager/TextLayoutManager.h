@@ -51,6 +51,16 @@ class TextLayoutManager {
       const TextLayoutContext &layoutContext,
       const LayoutConstraints &layoutConstraints) const;
 
+  /*
+   * Measures the lines of `attributedStringBox` laid out at `size`. This
+   * implementation does not lay text out and returns no lines; a subclass that
+   * does, such as Fantom's `FantomTextLayoutManager`, overrides it.
+   */
+  virtual LinesMeasurements measureLines(
+      const AttributedStringBox &attributedStringBox,
+      const ParagraphAttributes &paragraphAttributes,
+      const Size &size) const;
+
  protected:
   std::shared_ptr<const ContextContainer> contextContainer_;
   TextMeasureCache textMeasureCache_;

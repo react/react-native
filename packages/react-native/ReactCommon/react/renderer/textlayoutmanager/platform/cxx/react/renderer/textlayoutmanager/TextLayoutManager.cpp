@@ -36,4 +36,11 @@ TextMeasurement TextLayoutManager::measure(
       .attachments = attachments};
 }
 
+LinesMeasurements TextLayoutManager::measureLines(
+    const AttributedStringBox& /*attributedStringBox*/,
+    const ParagraphAttributes& /*paragraphAttributes*/,
+    const Size& /*size*/) const {
+  return {};
+}
+
 } // namespace facebook::react

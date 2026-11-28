@@ -11,7 +11,7 @@
 import '@react-native/fantom/src/setUpDefaultReactNativeEnvironment';
 
 import type {HostInstance} from 'react-native';
-import type {AccessibilityProps} from 'react-native';
+import type {AccessibilityProps, TextLayoutEvent} from 'react-native';
 
 import accessibilityPropsSuite, {
   rolePropSuite,
@@ -22,7 +22,7 @@ import * as Fantom from '@react-native/fantom';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import {createRef} from 'react';
-import {Text} from 'react-native';
+import {Text, View} from 'react-native';
 
 const TEST_TEXT = 'the text';
 
@@ -648,6 +648,300 @@ describe('<Text>', () => {
           </rn-paragraph>,
         );
       });
+    });
+  });
+
+  describe('onTextLayout', () => {
+    it('reports each line where it is drawn', () => {
+      const lines: Array<{
+        text: string,
+        x: number,
+        width: number,
+        capHeight: number,
+        xHeight: number,
+        height: number,
+        ascender: number,
+        descender: number,
+      }> = [];
+      const root = Fantom.createRoot();
+
+      Fantom.runTask(() => {
+        root.render(
+          <Text
+            onTextLayout={event => {
+              for (const line of event.nativeEvent.lines) {
+                lines.push({
+                  text: line.text,
+                  x: line.x,
+                  width: line.width,
+                  capHeight: line.capHeight,
+                  xHeight: line.xHeight,
+                  height: line.height,
+                  ascender: line.ascender,
+                  descender: line.descender,
+                });
+              }
+            }}
+            style={{width: 200, textAlign: 'center'}}>
+            {TEST_TEXT}
+          </Text>,
+        );
+      });
+      Fantom.flushAllNativeEvents();
+
+      expect(lines).toHaveLength(1);
+      expect(lines[0].text).toBe(TEST_TEXT);
+      expect(lines[0].width).toBeGreaterThan(0);
+      expect(lines[0].width).toBeLessThan(200);
+      expect(lines[0].x).toBeCloseTo((200 - lines[0].width) / 2);
+      expect(lines[0].xHeight).toBeGreaterThan(0);
+      expect(lines[0].capHeight).toBeGreaterThan(lines[0].xHeight);
+      expect(lines[0].ascender).toBeGreaterThan(lines[0].capHeight);
+      expect(lines[0].ascender + lines[0].descender).toBeCloseTo(
+        lines[0].height,
+      );
+    });
+
+    it('draws the lines it reports when only `numberOfLines` changes', () => {
+      const LONG_TEXT = 'the text that is long enough to wrap onto more lines';
+      const renderText = (
+        root: ReturnType<typeof Fantom.createRoot>,
+        numberOfLines: number,
+      ): ReadonlyArray<string> => {
+        let reportedLines: ReadonlyArray<string> = [];
+        Fantom.runTask(() => {
+          root.render(
+            <Text
+              numberOfLines={numberOfLines}
+              onTextLayout={event => {
+                reportedLines = event.nativeEvent.lines.map(line => line.text);
+              }}
+              style={{width: 100, height: 60}}>
+              {LONG_TEXT}
+            </Text>,
+          );
+        });
+        Fantom.flushAllNativeEvents();
+        return reportedLines;
+      };
+
+      const changedRoot = Fantom.createRoot();
+      expect(renderText(changedRoot, 2)).toHaveLength(2);
+      const twoLines = changedRoot.takeScreenshot();
+      expect(renderText(changedRoot, 1)).toHaveLength(1);
+      const oneLineRoot = Fantom.createRoot();
+      renderText(oneLineRoot, 1);
+
+      expect(twoLines.isEqual(oneLineRoot.takeScreenshot())).toBe(false);
+      expect(
+        changedRoot.takeScreenshot().isEqual(oneLineRoot.takeScreenshot()),
+      ).toBe(true);
+    });
+
+    it('draws the lines it reports for a selectable text', () => {
+      const renderText = (
+        root: ReturnType<typeof Fantom.createRoot>,
+        selectable: boolean,
+      ): ReadonlyArray<string> => {
+        let reportedLines: ReadonlyArray<string> = [];
+        Fantom.runTask(() => {
+          root.render(
+            <Text
+              onTextLayout={event => {
+                reportedLines = event.nativeEvent.lines.map(line => line.text);
+              }}
+              selectable={selectable}
+              style={{width: 100}}>
+              {TEST_TEXT}
+            </Text>,
+          );
+        });
+        Fantom.flushAllNativeEvents();
+        return reportedLines;
+      };
+
+      const selectableRoot = Fantom.createRoot();
+      expect(renderText(selectableRoot, true)).toEqual([TEST_TEXT]);
+      const plainRoot = Fantom.createRoot();
+      renderText(plainRoot, false);
+      const emptyRoot = Fantom.createRoot();
+      Fantom.runTask(() => {
+        emptyRoot.render(<Text style={{width: 100}} />);
+      });
+
+      expect(
+        selectableRoot.takeScreenshot().isEqual(plainRoot.takeScreenshot()),
+      ).toBe(true);
+      expect(
+        selectableRoot.takeScreenshot().isEqual(emptyRoot.takeScreenshot()),
+      ).toBe(false);
+    });
+
+    it('ends a cut last line with an ellipsis (plain text only)', () => {
+      const LONG_TEXT =
+        'The quick brown fox jumps over the lazy dog again and again';
+      const linesByText: {[name: string]: ReadonlyArray<string>} = {};
+      let blankLineLines: TextLayoutEvent['nativeEvent']['lines'] = [];
+      const reportLines =
+        (name: string) =>
+        (event: TextLayoutEvent): void => {
+          linesByText[name] = event.nativeEvent.lines.map(line => line.text);
+          if (name === 'blankLine') {
+            blankLineLines = event.nativeEvent.lines;
+          }
+        };
+
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <View style={{width: 100}}>
+            <Text numberOfLines={2} onTextLayout={reportLines('cut')}>
+              {LONG_TEXT}
+            </Text>
+            <Text numberOfLines={2} onTextLayout={reportLines('fitting')}>
+              The quick fox
+            </Text>
+            <Text numberOfLines={2} onTextLayout={reportLines('inlineView')}>
+              {'The quick brown '}
+              <View style={{width: 10, height: 10}} />
+              {' fox jumps over the lazy dog again and again'}
+            </Text>
+            <Text numberOfLines={1} onTextLayout={reportLines('emoji')}>
+              {'\u{1F600}\u{1F600}\u{1F600} and more text after them'}
+            </Text>
+            <Text numberOfLines={2} onTextLayout={reportLines('blankLine')}>
+              {'Title\n\nMore details'}
+            </Text>
+            <Text numberOfLines={2} onTextLayout={reportLines('fittingLines')}>
+              {'Title\nMore'}
+            </Text>
+            <Text
+              numberOfLines={2}
+              onTextLayout={reportLines('trailingSpaces')}>
+              {`Title\nMore${' '.repeat(100)}\n`}
+            </Text>
+            <Text numberOfLines={1} onTextLayout={reportLines('clippedView')}>
+              {'Title\n'}
+              <View style={{width: 10, height: 10}} />
+            </Text>
+          </View>,
+        );
+      });
+      Fantom.flushAllNativeEvents();
+
+      expect(linesByText.cut).toHaveLength(2);
+      expect(linesByText.cut[1].endsWith('\u2026')).toBe(true);
+      expect(linesByText.fitting).toEqual(['The quick fox']);
+      // With an inline view or shaped emoji on the last line, the cut stays without an ellipsis.
+      expect(linesByText.inlineView).toHaveLength(2);
+      expect(linesByText.inlineView[1].endsWith('\u2026')).toBe(false);
+      expect(linesByText.emoji).toHaveLength(1);
+      expect(linesByText.emoji[0].endsWith('\u2026')).toBe(false);
+      // A blank line cut by a hard break still marks the cut.
+      expect(linesByText.blankLine).toEqual(['Title', '\u2026']);
+      // The ellipsis on a blank line has the metrics of its font, like the line above.
+      expect(blankLineLines[1].capHeight).toBeCloseTo(
+        blankLineLines[0].capHeight,
+      );
+      expect(blankLineLines[1].xHeight).toBeCloseTo(blankLineLines[0].xHeight);
+      expect(blankLineLines[1].xHeight).toBeGreaterThan(0);
+      expect(linesByText.fittingLines).toEqual(['Title', 'More']);
+      // Spaces wrapped before a final line break cut no text.
+      expect(linesByText.trailingSpaces).toEqual(['Title', 'More']);
+      // An inline view on a line that was cut away does not stop the ellipsis.
+      expect(linesByText.clippedView).toEqual(['Title\u2026']);
+    });
+
+    it('draws the ellipsis after a cut emoji in a font that has it', () => {
+      const renderText = (
+        root: ReturnType<typeof Fantom.createRoot>,
+        text: string,
+        numberOfLines: number,
+      ): ReadonlyArray<string> => {
+        let reportedLines: ReadonlyArray<string> = [];
+        Fantom.runTask(() => {
+          root.render(
+            <View style={{width: 200, alignItems: 'flex-start'}}>
+              <Text
+                numberOfLines={numberOfLines}
+                onTextLayout={event => {
+                  reportedLines = event.nativeEvent.lines.map(
+                    line => line.text,
+                  );
+                }}>
+                {text}
+              </Text>
+            </View>,
+          );
+        });
+        Fantom.flushAllNativeEvents();
+        return reportedLines;
+      };
+
+      const cutRoot = Fantom.createRoot();
+      const [cutLine] = renderText(
+        cutRoot,
+        'Nice \u{1F600}\nmore words after the line break',
+        1,
+      );
+      const typedRoot = Fantom.createRoot();
+      renderText(typedRoot, 'Nice \u{1F600}\u2026', 1);
+
+      expect(cutLine).toBe('Nice \u{1F600}\u2026');
+      expect(cutRoot.takeScreenshot().isEqual(typedRoot.takeScreenshot())).toBe(
+        true,
+      );
+    });
+
+    it('reports the same lines for a cut text that shrinks to fit', () => {
+      const LONG_TEXT =
+        'The quick brown fox jumps over the lazy dog again and again';
+      const cases = Array.from({length: 61}, (_, i) => ({
+        numberOfLines: 1 + (i % 2),
+        width: 80 + i,
+        stretchedLines: [] as Array<string>,
+        shrunkLines: [] as Array<string>,
+      }));
+      const root = Fantom.createRoot();
+      Fantom.runTask(() => {
+        root.render(
+          <>
+            {cases.map(testCase => (
+              <React.Fragment key={testCase.width}>
+                <View style={{width: testCase.width}}>
+                  <Text
+                    numberOfLines={testCase.numberOfLines}
+                    onTextLayout={event => {
+                      testCase.stretchedLines = event.nativeEvent.lines.map(
+                        line => line.text,
+                      );
+                    }}>
+                    {LONG_TEXT}
+                  </Text>
+                </View>
+                <View style={{width: testCase.width, alignItems: 'flex-start'}}>
+                  <Text
+                    numberOfLines={testCase.numberOfLines}
+                    onTextLayout={event => {
+                      testCase.shrunkLines = event.nativeEvent.lines.map(
+                        line => line.text,
+                      );
+                    }}>
+                    {LONG_TEXT}
+                  </Text>
+                </View>
+              </React.Fragment>
+            ))}
+          </>,
+        );
+      });
+      Fantom.flushAllNativeEvents();
+
+      for (const {numberOfLines, stretchedLines, shrunkLines} of cases) {
+        expect(stretchedLines).toHaveLength(numberOfLines);
+        expect(stretchedLines[numberOfLines - 1].endsWith('\u2026')).toBe(true);
+        expect(shrunkLines).toEqual(stretchedLines);
+      }
     });
   });
 

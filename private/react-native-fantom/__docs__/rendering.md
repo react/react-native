@@ -33,8 +33,12 @@ without custom path mappings. Keep a fixture alongside the test that uses it.
 Default color emoji selection follows Unicode 16.0 `Emoji_Presentation`.
 Explicit text and emoji variation selectors override that default. Selectors and
 keycap sequences stay with their bases during fallback and wrapping; HarfBuzz
-shapes color emoji sequences for both measurement and painting. General script
-shaping, text decorations and ellipsis are not implemented.
+shapes color emoji sequences for both measurement and painting. With the default
+`ellipsizeMode` (`tail`), text cut by `numberOfLines` ends with a tail ellipsis,
+except when its last visible line has an inline view or shaped emoji, or when
+only spaces were cut. A trailing line break adds no empty last line. General
+script shaping, text decorations and head or middle ellipsis are not
+implemented.
 
 ### Public native build
 
