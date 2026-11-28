@@ -144,12 +144,22 @@ Pod::Spec.new do |spec|
       'HERMES_CLI_PATH' => "#{hermesc_path}/bin/hermesc"
     }
 
-    spec.prepare_command = ". '#{react_native_path}/sdks/hermes-engine/utils/create-dummy-hermes-xcframework.sh'"
+    spec.prepare_command = File.read(File.join(react_native_path, "sdks/hermes-engine/utils/create-dummy-hermes-xcframework.sh"))
 
     # This podspec is also run in CI to build Hermes without using Pod install
     # and sometimes CI fails because `Pod::Executable` does not exist if it is not run with Pod Install.
     if defined?(Pod::Executable.to_s)
-      CMAKE_BINARY = Pod::Executable::which!('cmake')
+      Pod::Executable::which!('cmake')
+      resolve_cmake_binary = <<~'SH'.chomp
+        if [ -z "${CMAKE_BINARY:-}" ]; then
+          CMAKE_BINARY=$(PATH="$PATH:/opt/homebrew/bin:/usr/local/bin:/opt/local/bin:/Applications/CMake.app/Contents/bin" command -v cmake || true)
+        fi
+        if [ -z "${CMAKE_BINARY:-}" ]; then
+          echo "error: cmake not found. Install cmake or set CMAKE_BINARY in .xcode.env." >&2
+          exit 1
+        fi
+        export CMAKE_BINARY
+      SH
       # NOTE: Script phases are sorted alphabetically inside Xcode project
       spec.script_phases = [
         {
@@ -157,10 +167,10 @@ Pod::Spec.new do |spec|
           :output_files => [
             "#{hermesc_path}/ImportHostCompilers.cmake"
           ],
-          :script => <<-EOS
-          . "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
-          export CMAKE_BINARY=${CMAKE_BINARY:-#{CMAKE_BINARY}}
-          . ${REACT_NATIVE_PATH}/sdks/hermes-engine/utils/build-hermesc-xcode.sh #{hermesc_path} ${REACT_NATIVE_PATH}/ReactCommon/jsi
+          :script => <<~EOS
+            . "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
+            #{resolve_cmake_binary}
+            . ${REACT_NATIVE_PATH}/sdks/hermes-engine/utils/build-hermesc-xcode.sh #{hermesc_path} ${REACT_NATIVE_PATH}/ReactCommon/jsi
           EOS
         },
         {
@@ -169,10 +179,10 @@ Pod::Spec.new do |spec|
           :output_files => [
             "${PODS_ROOT}/hermes-engine/build/iphonesimulator/API/hermes/hermesvm.framework/hermesvm"
           ],
-          :script => <<-EOS
-          . "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
-          export CMAKE_BINARY=${CMAKE_BINARY:-#{CMAKE_BINARY}}
-          . ${REACT_NATIVE_PATH}/sdks/hermes-engine/utils/build-hermes-xcode.sh #{version} #{hermesc_path}/ImportHostCompilers.cmake ${REACT_NATIVE_PATH}/ReactCommon/jsi
+          :script => <<~EOS
+            . "${REACT_NATIVE_PATH}/scripts/xcode/with-environment.sh"
+            #{resolve_cmake_binary}
+            . ${REACT_NATIVE_PATH}/sdks/hermes-engine/utils/build-hermes-xcode.sh #{version} #{hermesc_path}/ImportHostCompilers.cmake ${REACT_NATIVE_PATH}/ReactCommon/jsi
           EOS
         }
       ]
