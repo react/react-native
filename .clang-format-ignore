@@ -7,3 +7,4 @@ packages/react-native/ReactAndroid/src/main/jni/third-party/**
 packages/react-native/ReactCommon/**/platform/windows/third-party/**
 packages/react-native/ReactCommon/jsi/jsi/**
 packages/react-native/ReactCommon/yoga/**
+scripts/abi-check/__tests__/__fixtures__/**
