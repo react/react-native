@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<67d108d1c225a982e2b6d443d19ea02d>>
+ * @generated SignedSource<<c1b78c8c411e2a1c905709d302de91c3>>
  */
 
 /**
@@ -64,10 +64,6 @@ bool ReactNativeFeatureFlags::disableImageViewPreallocationAndroid() {
 
 bool ReactNativeFeatureFlags::disableMountItemReorderingAndroid() {
   return getAccessor().disableMountItemReorderingAndroid();
-}
-
-bool ReactNativeFeatureFlags::disableSubviewClippingAndroid() {
-  return getAccessor().disableSubviewClippingAndroid();
 }
 
 bool ReactNativeFeatureFlags::disableTextLayoutManagerCacheAndroid() {

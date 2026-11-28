@@ -519,17 +519,8 @@ public open class ReactViewGroup public constructor(context: Context?) :
   }
 
   override var removeClippedSubviews: Boolean
-    get() {
-      if (ReactNativeFeatureFlags.disableSubviewClippingAndroid()) {
-        return false
-      }
-      return _removeClippedSubviews
-    }
+    get() = _removeClippedSubviews
     set(newValue) {
-      if (ReactNativeFeatureFlags.disableSubviewClippingAndroid()) {
-        return
-      }
-
       if (newValue == _removeClippedSubviews) {
         return
       }

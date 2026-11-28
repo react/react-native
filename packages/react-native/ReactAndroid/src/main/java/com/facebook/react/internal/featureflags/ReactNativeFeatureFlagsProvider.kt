@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<33bd0d69031266aecf69a8b4b216936f>>
+ * @generated SignedSource<<98450b6eac700f2596b65fbd32417e3a>>
  */
 
 /**
@@ -42,8 +42,6 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun disableImageViewPreallocationAndroid(): Boolean
 
   @DoNotStrip public fun disableMountItemReorderingAndroid(): Boolean
-
-  @DoNotStrip public fun disableSubviewClippingAndroid(): Boolean
 
   @DoNotStrip public fun disableTextLayoutManagerCacheAndroid(): Boolean
 

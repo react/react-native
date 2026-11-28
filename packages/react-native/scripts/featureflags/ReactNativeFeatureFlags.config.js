@@ -158,17 +158,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    disableSubviewClippingAndroid: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2025-11-05',
-        description:
-          'Force disable subview clipping for ReactViewGroup on Android',
-        expectedReleaseValue: false,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     disableTextLayoutManagerCacheAndroid: {
       defaultValue: false,
       metadata: {
