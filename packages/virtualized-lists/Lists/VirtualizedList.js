@@ -430,7 +430,7 @@ class VirtualizedList extends StateSafePureComponent<
       return false;
     }
 
-    const cell = this._cellRefs[cellKey];
+    const cell = this._cellRefs[cellKey]?.current;
     if (cell == null) {
       return null;
     }
@@ -1016,9 +1016,7 @@ class VirtualizedList extends StateSafePureComponent<
           onUpdateSeparators={this._onUpdateSeparators}
           onCellFocusCapture={this._onCellFocusCapture}
           onUnmount={this._onCellUnmount}
-          ref={ref => {
-            this._cellRefs[key] = ref;
-          }}
+          ref={this._getCellRef(key)}
           renderItem={renderItem}
           {...(shouldListenForLayout && {
             onCellLayout: this._onCellLayout,
@@ -1052,8 +1050,8 @@ class VirtualizedList extends StateSafePureComponent<
 
   _onUpdateSeparators = (keys: Array<?string>, newProps: any) => {
     keys.forEach(key => {
-      const ref = key != null && this._cellRefs[key];
-      ref && ref.updateSeparatorProps(newProps);
+      const cell = key != null ? this._cellRefs[key]?.current : null;
+      cell?.updateSeparatorProps(newProps);
     });
   };
 
@@ -1467,7 +1465,9 @@ class VirtualizedList extends StateSafePureComponent<
     }
   }
 
-  _cellRefs: {[key: string]: null | CellRenderer<any>} = {};
+  // One ref object per cell key, kept across renders so React doesn't detach
+  // and re-attach every cell's ref on each commit.
+  _cellRefs: {[key: string]: {current: null | CellRenderer<any>}} = {};
   _fillRateHelper: FillRateHelper;
   _listMetrics: ListMetricsAggregator = new ListMetricsAggregator();
   _footerLength = 0;
@@ -1600,6 +1600,15 @@ class VirtualizedList extends StateSafePureComponent<
       this._updateCellsToRender();
     }
   };
+
+  _getCellRef(cellKey: string): {current: null | CellRenderer<any>} {
+    let ref = this._cellRefs[cellKey];
+    if (ref == null) {
+      ref = {current: null};
+      this._cellRefs[cellKey] = ref;
+    }
+    return ref;
+  }
 
   _onCellUnmount = (cellKey: string) => {
     delete this._cellRefs[cellKey];
@@ -2255,13 +2264,13 @@ class VirtualizedList extends StateSafePureComponent<
     // Keep a viewport's worth of content around the last focused cell to allow
     // random navigation around it without any blanking. E.g. tabbing from one
     // focused item out of viewport to another.
-    if (!(
-      this._lastFocusedCellKey && this._cellRefs[this._lastFocusedCellKey]
-    )) {
+    const lastFocusedCellRenderer =
+      this._lastFocusedCellKey != null
+        ? this._cellRefs[this._lastFocusedCellKey]?.current
+        : null;
+    if (lastFocusedCellRenderer == null) {
       return [];
     }
-
-    const lastFocusedCellRenderer = this._cellRefs[this._lastFocusedCellKey];
     const focusedCellIndex = lastFocusedCellRenderer.props.index;
     const itemCount = props.getItemCount(props.data);
 
