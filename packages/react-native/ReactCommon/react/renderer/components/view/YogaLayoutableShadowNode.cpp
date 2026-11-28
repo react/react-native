@@ -13,7 +13,6 @@
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/view/LayoutConformanceShadowNode.h>
 #include <react/renderer/components/view/ViewProps.h>
-#include <react/renderer/components/view/ViewShadowNode.h>
 #include <react/renderer/components/view/conversions.h>
 #include <react/renderer/core/ComponentDescriptor.h>
 #include <react/renderer/core/LayoutConstraints.h>
@@ -892,14 +891,8 @@ Rect YogaLayoutableShadowNode::getContentBounds() const {
 
     auto layoutMetricsWithOverflowInset = childNode.getLayoutMetrics();
     if (layoutMetricsWithOverflowInset.displayType != DisplayType::None) {
-      // ViewShadowNode is final, so comparing component handles is equivalent
-      // to a `dynamic_cast`, without its cost for every non-View child.
-      auto viewChildNode =
-          childNode.getComponentHandle() == ViewShadowNode::Handle()
-          ? static_cast<const ViewShadowNode*>(&childNode)
-          : nullptr;
-      auto hitSlop = viewChildNode != nullptr
-          ? viewChildNode->getConcreteProps().hitSlop
+      auto hitSlop = childNode.getTraits().check(ShadowNodeTraits::ViewKind)
+          ? static_cast<const ViewProps&>(*childNode.getProps()).hitSlop
           : EdgeInsets{};
 
       // The contentBounds should always union with existing child node layout
