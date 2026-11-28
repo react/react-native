@@ -67,7 +67,7 @@ struct Rect {
     size = {.width = x2 - x1, .height = y2 - y1};
   }
 
-  bool containsPoint(Point point) noexcept
+  bool containsPoint(Point point) const noexcept
   {
     return point.x >= origin.x && point.y >= origin.y && point.x <= (origin.x + size.width) &&
         point.y <= (origin.y + size.height);

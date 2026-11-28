@@ -1996,7 +1996,7 @@ struct facebook::react::Rect {
   public Float getMidY() const noexcept;
   public Float getMinX() const noexcept;
   public Float getMinY() const noexcept;
-  public bool containsPoint(facebook::react::Point point) noexcept;
+  public bool containsPoint(facebook::react::Point point) const noexcept;
   public bool operator==(const facebook::react::Rect& rhs) const noexcept = default;
   public facebook::react::Point getCenter() const noexcept;
   public facebook::react::Point origin;
