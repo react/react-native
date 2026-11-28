@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<22b28ed43914155e9274821135c34ccb>>
+ * @generated SignedSource<<3603cae1aa69c0461a9e378cd8169b7c>>
  * @flow strict
  * @noformat
  */
@@ -110,6 +110,7 @@ export type ReactNativeFeatureFlags = Readonly<{
   enableVirtualViewContainerStateExperimental: Getter<boolean>,
   fixBorderlessRippleAndroid: Getter<boolean>,
   fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean>,
+  fixMultilineContentJumpAndroid: Getter<boolean>,
   fixProgrammaticScrollMomentumEventsIOS: Getter<boolean>,
   fixTextInlineViewLineHeight: Getter<boolean>,
   fixTextLayoutOnPixelDensityChange: Getter<boolean>,
@@ -468,6 +469,10 @@ export const fixBorderlessRippleAndroid: Getter<boolean> = createNativeFlagGette
  * Uses the default event priority instead of the discreet event priority by default when dispatching events from Fabric to React.
  */
 export const fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean> = createNativeFlagGetter('fixMappingOfEventPrioritiesBetweenFabricAndReact', false);
+/**
+ * Flushes TextInput state updates synchronously on Android when a multiline input changes line count, so the new height mounts in the same frame instead of the content jumping. Pairs with enableFollowUpMountItemDispatchAndroid for updates that happen during mount dispatch.
+ */
+export const fixMultilineContentJumpAndroid: Getter<boolean> = createNativeFlagGetter('fixMultilineContentJumpAndroid', false);
 /**
  * Dispatches `onMomentumScrollBegin` and `onMomentumScrollEnd` as an ordered pair for animated programmatic scrolls on iOS, and neither for non-animated programmatic scrolls.
  */

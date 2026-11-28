@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0ede0b5ce319a8416c3b3d848cc7a726>>
+ * @generated SignedSource<<c8c48c89a08da739f0836b3cae61bd00>>
  */
 
 /**
@@ -96,6 +96,7 @@ class ReactNativeFeatureFlagsAccessor {
   bool enableVirtualViewContainerStateExperimental();
   bool fixBorderlessRippleAndroid();
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact();
+  bool fixMultilineContentJumpAndroid();
   bool fixProgrammaticScrollMomentumEventsIOS();
   bool fixTextInlineViewLineHeight();
   bool fixTextLayoutOnPixelDensityChange();
@@ -146,7 +147,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::unique_ptr<ReactNativeFeatureFlagsProvider> currentProvider_;
   bool wasOverridden_;
 
-  std::array<std::atomic<const char*>, 101> accessedFeatureFlags_;
+  std::array<std::atomic<const char*>, 102> accessedFeatureFlags_;
 
   std::atomic<std::optional<bool>> commonTestFlag_;
   std::atomic<std::optional<bool>> cdpInteractionMetricsEnabled_;
@@ -210,6 +211,7 @@ class ReactNativeFeatureFlagsAccessor {
   std::atomic<std::optional<bool>> enableVirtualViewContainerStateExperimental_;
   std::atomic<std::optional<bool>> fixBorderlessRippleAndroid_;
   std::atomic<std::optional<bool>> fixMappingOfEventPrioritiesBetweenFabricAndReact_;
+  std::atomic<std::optional<bool>> fixMultilineContentJumpAndroid_;
   std::atomic<std::optional<bool>> fixProgrammaticScrollMomentumEventsIOS_;
   std::atomic<std::optional<bool>> fixTextInlineViewLineHeight_;
   std::atomic<std::optional<bool>> fixTextLayoutOnPixelDensityChange_;

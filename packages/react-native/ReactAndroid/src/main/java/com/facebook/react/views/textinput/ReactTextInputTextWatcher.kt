@@ -12,9 +12,13 @@ import android.text.TextWatcher
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
+import com.facebook.react.uimanager.StateWrapper.UpdateMode
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.EventDispatcher
 
+@OptIn(UnstableReactNativeAPI::class)
 internal class ReactTextInputTextWatcher(
     reactContext: ReactContext,
     private val editText: ReactEditText,
@@ -22,10 +26,13 @@ internal class ReactTextInputTextWatcher(
   private val eventDispatcher: EventDispatcher? = UIManagerHelper.getEventDispatcher(reactContext)
   private val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
   private var previousText: String? = null
+  private var previousLineCount: Int? = null
+  private var pendingEventCount: Int? = null
 
   override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
     // Incoming charSequence gets mutated before onTextChanged() is invoked
     previousText = s.toString()
+    previousLineCount = editText.layout?.lineCount
   }
 
   override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -46,13 +53,13 @@ internal class ReactTextInputTextWatcher(
       return
     }
 
-    val stateWrapper = editText.stateWrapper
-
-    if (stateWrapper != null) {
-      val newStateData: WritableMap = WritableNativeMap()
-      newStateData.putInt("mostRecentEventCount", editText.incrementAndGetEventCounter())
-      newStateData.putInt("opaqueCacheId", editText.id)
-      stateWrapper.updateState(newStateData)
+    if (editText.stateWrapper != null) {
+      val eventCount = editText.incrementAndGetEventCounter()
+      if (shouldUpdateSynchronously) {
+        pendingEventCount = eventCount
+      } else {
+        updateState(eventCount)
+      }
     }
 
     // The event that contains the event counter and updates it must be sent first.
@@ -68,5 +75,31 @@ internal class ReactTextInputTextWatcher(
     )
   }
 
-  override fun afterTextChanged(s: Editable) = Unit
+  override fun afterTextChanged(s: Editable) {
+    // Update here rather than in on TextChanged since ReactEditText updates the cached spannable
+    // only after every TextWatcher has seen onTextChanged
+    pendingEventCount?.let { eventCount ->
+      // A synchronous update flushes all enqueued state updates. Mounting a queued text update
+      // calls maybeSetTextFromState() which re-runs this callback, so clear pendingEventCount first
+      pendingEventCount = null
+      updateState(eventCount, UpdateMode.unstable_Immediate)
+    }
+  }
+
+  private fun updateState(eventCount: Int, updateMode: UpdateMode = UpdateMode.Asynchronous) {
+    val stateWrapper = editText.stateWrapper ?: return
+    val newStateData: WritableMap = WritableNativeMap()
+    newStateData.putInt("mostRecentEventCount", eventCount)
+    newStateData.putInt("opaqueCacheId", editText.id)
+    stateWrapper.updateState(newStateData, updateMode)
+  }
+
+  private val shouldUpdateSynchronously: Boolean
+    get() {
+      if (!ReactNativeFeatureFlags.fixMultilineContentJumpAndroid()) {
+        return false
+      }
+      val lineCount = editText.layout?.lineCount
+      return editText.isMultiline && lineCount != null && lineCount != previousLineCount
+    }
 }

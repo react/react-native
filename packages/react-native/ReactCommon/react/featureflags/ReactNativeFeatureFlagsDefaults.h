@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<1a71fb4528797b171985c1f778c00741>>
+ * @generated SignedSource<<af52039c46fc0389a5ac5f966c9cfbcb>>
  */
 
 /**
@@ -274,6 +274,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact() override {
+    return false;
+  }
+
+  bool fixMultilineContentJumpAndroid() override {
     return false;
   }
 
