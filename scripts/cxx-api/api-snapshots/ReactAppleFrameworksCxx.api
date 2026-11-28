@@ -7684,6 +7684,7 @@ struct facebook::react::AccessibilityLabelledBy {
 struct facebook::react::AccessibilityState {
   public bool busy;
   public bool disabled;
+  public bool isMeaningful() const;
   public facebook::react::AccessibilityState::CheckedState checked;
   public std::optional<bool> expanded;
   public std::optional<bool> selected;

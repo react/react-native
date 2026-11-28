@@ -65,7 +65,17 @@ void ViewShadowNode::initialize() noexcept {
       viewProps.mixBlendMode != BlendMode::Normal ||
       viewProps.isolation == Isolation::Isolate ||
       HostPlatformViewTraitsInitializer::formsStackingContext(viewProps) ||
-      !viewProps.accessibilityOrder.empty();
+      !viewProps.accessibilityOrder.empty() ||
+      !viewProps.accessibilityLabel.empty() ||
+      (!viewProps.accessibilityRole.empty() &&
+       viewProps.accessibilityRole != "none") ||
+      viewProps.role.value_or(Role::None) != Role::None ||
+      (viewProps.accessibilityState.has_value() &&
+       viewProps.accessibilityState->isMeaningful()) ||
+      !viewProps.accessibilityActions.empty() ||
+      viewProps.onAccessibilityEscape || viewProps.onAccessibilityMagicTap ||
+      viewProps.accessibilityShowsLargeContentViewer ||
+      viewProps.accessibilityIgnoresInvertColors;
 
   bool formsView = formsStackingContext ||
       isColorMeaningful(viewProps.backgroundColor) || hasBorder() ||

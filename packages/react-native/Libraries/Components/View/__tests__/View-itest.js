@@ -512,7 +512,7 @@ describe('<View>', () => {
           );
         });
 
-        it('does not unflatten view', () => {
+        it('unflattens view', () => {
           const root = Fantom.createRoot();
 
           Fantom.runTask(() => {
@@ -527,8 +527,10 @@ describe('<View>', () => {
           });
 
           expect(
-            root.getRenderedOutput({props: ['accessibilityRole']}).toJSX(),
-          ).toEqual(null);
+            root.getRenderedOutput({props: ['accessibilityActions']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityActions="[activate, increment: 'random label']" />,
+          );
         });
       });
 
@@ -627,7 +629,7 @@ describe('<View>', () => {
           ).toEqual(<rn-view accessibilityLabel="custom label" />);
         });
 
-        it('does not unflatten view', () => {
+        it('unflattens view', () => {
           const root = Fantom.createRoot();
 
           Fantom.runTask(() => {
@@ -636,7 +638,7 @@ describe('<View>', () => {
 
           expect(
             root.getRenderedOutput({props: ['accessibilityLabel']}).toJSX(),
-          ).toEqual(null);
+          ).toEqual(<rn-view accessibilityLabel="custom label" />);
         });
       });
 
@@ -687,7 +689,7 @@ describe('<View>', () => {
           ).toEqual(<rn-view accessibilityRole="button" />);
         });
 
-        it('does not unflatten view', () => {
+        it('unflattens view', () => {
           const root = Fantom.createRoot();
 
           Fantom.runTask(() => {
@@ -696,9 +698,44 @@ describe('<View>', () => {
 
           expect(
             root.getRenderedOutput({props: ['accessibilityRole']}).toJSX(),
+          ).toEqual(<rn-view accessibilityRole="button" />);
+        });
+
+        it('does not unflatten view when none', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View accessibilityRole={'none'} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityRole']}).toJSX(),
           ).toEqual(null);
         });
       });
+
+      describe('role', () => {
+        it('unflattens view', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View role="heading" />);
+          });
+
+          expect(root.getRenderedOutput().toJSX()).toEqual(<rn-view />);
+        });
+
+        it('does not unflatten view when none', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View role="none" />);
+          });
+
+          expect(root.getRenderedOutput().toJSX()).toEqual(null);
+        });
+      });
+
       describe('aria-label', () => {
         it('is mapped to accessibilityLabel', () => {
           const root = Fantom.createRoot();
@@ -945,6 +982,18 @@ describe('<View>', () => {
             root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
           ).toEqual(<rn-view />);
         });
+
+        it('does not unflatten view', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-busy={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(null);
+        });
       });
 
       describe('aria-disabled', () => {
@@ -1080,6 +1129,32 @@ describe('<View>', () => {
           expect(
             root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
           ).toEqual(<rn-view />);
+        });
+
+        it('unflattens view', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-checked={true} />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(
+            <rn-view accessibilityState="{disabled:false,selected:null,checked:Checked,busy:false,expanded:null}" />,
+          );
+        });
+
+        it('does not unflatten view when mixed', () => {
+          const root = Fantom.createRoot();
+
+          Fantom.runTask(() => {
+            root.render(<View aria-checked="mixed" />);
+          });
+
+          expect(
+            root.getRenderedOutput({props: ['accessibilityState']}).toJSX(),
+          ).toEqual(null);
         });
       });
     });
