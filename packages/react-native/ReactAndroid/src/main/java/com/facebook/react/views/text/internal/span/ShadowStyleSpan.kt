@@ -17,6 +17,8 @@ internal class ShadowStyleSpan(
     val color: Int,
 ) : CharacterStyle(), ReactSpan {
   override fun updateDrawState(textPaint: TextPaint) {
-    textPaint.setShadowLayer(radius, dx, dy, color)
+    // A radius of 0 removes the shadow layer, so use the smallest positive radius to draw a sharp
+    // shadow instead.
+    textPaint.setShadowLayer(maxOf(radius, Float.MIN_VALUE), dx, dy, color)
   }
 }
