@@ -738,3 +738,52 @@ describe('generateSchemaInfos', () => {
     }
   });
 });
+
+describe('execute with codegen', () => {
+  beforeEach(() => {
+    jest.resetModules();
+  });
+
+  it('skips the JS sources of libraries that include generated code', () => {
+    const mockCombineSchemasInFileList = jest.fn(
+      (_files: ReadonlyArray<string>, _platform: string) => ({}),
+    );
+    const mockGenerateNativeCode = jest.fn();
+    const mockLibraries = [
+      {config: {name: 'LibA', jsSrcsDir: 'src'}, libraryPath: '/tmp/libA'},
+      {
+        config: {name: 'LibB', jsSrcsDir: 'src', includesGeneratedCode: true},
+        libraryPath: '/tmp/libB',
+      },
+    ];
+    jest.mock('../codegen-utils', () => ({
+      getCombineJSToSchema: () => ({
+        combineSchemasInFileList: mockCombineSchemasInFileList,
+      }),
+    }));
+    jest.mock('tinyglobby', () => ({globSync: () => []}));
+    jest.mock('../generate-artifacts-executor/generateNativeCode', () => ({
+      generateNativeCode: mockGenerateNativeCode,
+    }));
+    jest.mock('../generate-artifacts-executor/utils', () => ({
+      ...jest.requireActual('../generate-artifacts-executor/utils'),
+      buildCodegenIfNeeded: () => {},
+      cleanupEmptyFilesAndFolders: () => {},
+      findCodegenEnabledLibraries: () => mockLibraries,
+      readPkgJsonInDirectory: () => ({}),
+      readReactNativeConfig: () => ({}),
+    }));
+
+    const {execute: executeCodegen} = require('../generate-artifacts-executor');
+
+    executeCodegen('/tmp/app', 'android', '/tmp/app', 'app');
+
+    expect(mockCombineSchemasInFileList).toHaveBeenCalledTimes(1);
+    expect(mockCombineSchemasInFileList.mock.calls[0][0]).toEqual([
+      path.join('/tmp/libA', 'src'),
+    ]);
+    expect(mockGenerateNativeCode.mock.calls[0][1]).toEqual([
+      expect.objectContaining({library: mockLibraries[0]}),
+    ]);
+  });
+});
